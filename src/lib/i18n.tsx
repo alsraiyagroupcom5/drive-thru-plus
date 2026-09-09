@@ -181,3 +181,18 @@ export function money(amount: number, lang: Lang) {
   const value = Number(amount || 0).toFixed(2).replace(/\.00$/, "");
   return lang === "ar" ? `${value} ر.ق` : `QAR ${value}`;
 }
+
+/** Dates always render with Western (English) digits, in both languages. */
+export function formatDate(iso: string | number | Date, lang: Lang) {
+  return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-QA-u-nu-latn" : "en-GB");
+}
+
+export function formatDateTime(iso: string | number | Date, lang: Lang) {
+  return new Date(iso).toLocaleString(lang === "ar" ? "ar-QA-u-nu-latn" : "en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

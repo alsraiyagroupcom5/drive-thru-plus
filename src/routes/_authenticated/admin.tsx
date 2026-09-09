@@ -565,6 +565,7 @@ function AdminConsole() {
           </div>
         </section>
       )}
-    </div>
+    </ConsoleShell>
+
   );
 }

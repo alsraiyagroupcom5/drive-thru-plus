@@ -52,7 +52,10 @@ function OrdersPage() {
       });
       added += 1;
     }
-    if (!added) return toast.error(t("unavailable"));
+    if (!added) {
+      toast.error(t("unavailable"));
+      return;
+    }
     navigate({ to: "/cart" });
   };
 

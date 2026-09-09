@@ -67,6 +67,7 @@ export function AppShell({
                 <li key={item.to}>
                   <Link
                     to={item.to}
+                    search={{}}
                     className={cn(
                       "relative flex flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors",
                       active ? "text-primary" : "text-muted-foreground hover:text-foreground",

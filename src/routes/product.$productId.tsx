@@ -115,7 +115,7 @@ function ProductPage() {
       nameEn: p.name_en,
       nameAr: p.name_ar,
       image: p.image_url,
-      basePrice: Number(p.price),
+      basePrice: base,
       quantity,
       options: selectedOptions,
     });
@@ -170,8 +170,16 @@ function ProductPage() {
         </p>
         <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
           <span className="font-display text-lg font-semibold text-primary">
-            {money(Number(p.price), lang)}
+            {money(base, lang)}
           </span>
+          {discount > 0 && (
+            <>
+              <span className="line-through">{money(Number(p.price), lang)}</span>
+              <span className="rounded-full bg-success/15 px-2 py-0.5 font-bold text-success">
+                -{discount}%
+              </span>
+            </>
+          )}
           {p.calories ? (
             <span>
               {p.calories} {t("calories")}

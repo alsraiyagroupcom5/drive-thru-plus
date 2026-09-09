@@ -28,13 +28,14 @@ const STEPS = ["RECEIVED", "PREPARING", "READY", "COMPLETED"] as const;
 function TrackPage() {
   const { orderId } = Route.useParams();
   const { t, pick, lang } = useI18n();
-  const { session, ready } = useCustomerAuth();
+  const { session, ready, signOut } = useCustomerAuth();
   const queryClient = useQueryClient();
 
   const order = useQuery({
     queryKey: ["order", orderId],
     queryFn: () => getOrder({ data: { token: session!.token, orderId } }),
     enabled: !!session?.token,
+    retry: false,
     refetchInterval: 15_000,
   });
 
@@ -60,14 +61,52 @@ function TrackPage() {
     },
   });
 
-  if (ready && !session) {
+  const expired =
+    order.isError &&
+    order.error instanceof Error &&
+    /UNAUTHENTICATED|ORDER_NOT_FOUND/.test(order.error.message);
+
+  if ((ready && !session) || expired) {
+    return (
+      <AppShell>
+        <div className="px-5 py-24 text-center">
+          <p className="font-display text-lg font-semibold">
+            {pick("سجّل دخولك برقم جوالك لعرض هذا الطلب", "Sign in with your phone to view this order")}
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pick(
+              "انتهت جلستك أو أن هذا الطلب لحساب آخر.",
+              "Your session expired, or this order belongs to another account.",
+            )}
+          </p>
+          <div className="mt-5 flex flex-col items-center gap-3">
+            <Link
+              to="/checkout"
+              onClick={() => signOut()}
+              className="rounded-full bg-[image:var(--gradient-brass)] px-6 py-3 text-sm font-bold text-primary-foreground"
+            >
+              {pick("تسجيل الدخول", "Sign in")}
+            </Link>
+            <Link to="/menu" className="text-sm text-primary underline">
+              {t("viewMenu")}
+            </Link>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (order.isError) {
     return (
       <AppShell>
         <div className="px-5 py-24 text-center">
           <p className="font-display text-lg font-semibold">{t("somethingWrong")}</p>
-          <Link to="/menu" className="mt-4 inline-block text-sm text-primary underline">
-            {t("viewMenu")}
-          </Link>
+          <button
+            onClick={() => order.refetch()}
+            className="mt-4 rounded-full border border-primary px-6 py-2.5 text-sm font-semibold text-primary"
+          >
+            {t("tryAgain")}
+          </button>
         </div>
       </AppShell>
     );

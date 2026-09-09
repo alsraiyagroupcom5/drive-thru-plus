@@ -4,19 +4,29 @@ import { useI18n, money } from "@/lib/i18n";
 import { foodImage } from "@/lib/food-images";
 import type { Product } from "@/lib/menu-data";
 import { cn } from "@/lib/utils";
+import { effectivePrice } from "@/lib/pricing";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  soldOutToday = false,
+}: {
+  product: Product;
+  soldOutToday?: boolean;
+}) {
   const { pick, lang, t } = useI18n();
   const name = pick(product.name_ar, product.name_en);
+  const discount = Number(product.discount_percent ?? 0);
+  const price = effectivePrice(product.price, discount);
+  const available = product.is_available && !soldOutToday;
 
   return (
     <Link
       to="/product/$productId"
       params={{ productId: product.id }}
-      disabled={!product.is_available}
+      disabled={!available}
       className={cn(
         "group surface flex gap-3 overflow-hidden rounded-2xl p-3 transition-transform duration-300",
-        product.is_available ? "hover:-translate-y-0.5" : "opacity-55",
+        available ? "hover:-translate-y-0.5" : "opacity-55",
       )}
     >
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-elevated">
@@ -40,8 +50,20 @@ export function ProductCard({ product }: { product: Product }) {
           {pick(product.description_ar, product.description_en)}
         </p>
         <div className="mt-2 flex items-center justify-between gap-2">
-          <span className="font-display text-base font-semibold text-primary">
-            {money(Number(product.price), lang)}
+          <span className="flex items-baseline gap-1.5">
+            <span className="font-display text-base font-semibold text-primary">
+              {money(price, lang)}
+            </span>
+            {discount > 0 && (
+              <>
+                <span className="text-[11px] text-muted-foreground line-through">
+                  {money(Number(product.price), lang)}
+                </span>
+                <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-bold text-success">
+                  -{discount}%
+                </span>
+              </>
+            )}
           </span>
           {product.calories ? (
             <span className="text-[11px] text-muted-foreground">
@@ -49,7 +71,7 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
           ) : null}
         </div>
-        {!product.is_available && (
+        {!available && (
           <span className="mt-1 inline-block text-[11px] font-semibold text-destructive">
             {t("unavailable")}
           </span>

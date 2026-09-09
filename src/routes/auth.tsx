@@ -37,6 +37,7 @@ function StaffAuth() {
         : { data: [] };
       const list = (roles ?? []).map((r) => r.role as string);
       if (list.includes("super_admin")) navigate({ to: "/admin" });
+      else if (list.includes("general_manager")) navigate({ to: "/owner" });
       else if (list.includes("kitchen")) navigate({ to: "/kitchen" });
       else navigate({ to: "/live" });
     } catch (error) {

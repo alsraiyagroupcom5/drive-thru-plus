@@ -11,6 +11,7 @@ type Ctx = {
 
 const AuthContext = createContext<Ctx | null>(null);
 const KEY = "origami.session";
+const LEGACY_KEY = "masar.session";
 
 export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session>(null);
@@ -18,7 +19,16 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(KEY);
+      let raw = window.localStorage.getItem(KEY);
+      if (!raw) {
+        // Carry over sessions saved before the rebrand.
+        const legacy = window.localStorage.getItem(LEGACY_KEY);
+        if (legacy) {
+          window.localStorage.setItem(KEY, legacy);
+          window.localStorage.removeItem(LEGACY_KEY);
+          raw = legacy;
+        }
+      }
       if (raw) setSession(JSON.parse(raw) as Session);
     } catch {
       /* ignore */

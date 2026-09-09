@@ -9,6 +9,7 @@ import { useCart, type CartOption } from "@/lib/cart";
 import { foodImage } from "@/lib/food-images";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { effectivePrice } from "@/lib/pricing";
 
 export const Route = createFileRoute("/product/$productId")({
   head: () => ({
@@ -75,7 +76,9 @@ function ProductPage() {
   }
 
   const p = product.data;
-  const unit = Number(p.price) + selectedOptions.reduce((s, o) => s + o.price_delta, 0);
+  const base = effectivePrice(p.price, p.discount_percent);
+  const discount = Number(p.discount_percent ?? 0);
+  const unit = base + selectedOptions.reduce((s, o) => s + o.price_delta, 0);
   const name = pick(p.name_ar, p.name_en);
 
   const toggle = (modifierId: string, optionId: string, kind: string, max: number) => {
@@ -112,7 +115,7 @@ function ProductPage() {
       nameEn: p.name_en,
       nameAr: p.name_ar,
       image: p.image_url,
-      basePrice: Number(p.price),
+      basePrice: base,
       quantity,
       options: selectedOptions,
     });
@@ -167,8 +170,16 @@ function ProductPage() {
         </p>
         <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
           <span className="font-display text-lg font-semibold text-primary">
-            {money(Number(p.price), lang)}
+            {money(base, lang)}
           </span>
+          {discount > 0 && (
+            <>
+              <span className="line-through">{money(Number(p.price), lang)}</span>
+              <span className="rounded-full bg-success/15 px-2 py-0.5 font-bold text-success">
+                -{discount}%
+              </span>
+            </>
+          )}
           {p.calories ? (
             <span>
               {p.calories} {t("calories")}

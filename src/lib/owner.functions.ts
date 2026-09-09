@@ -292,3 +292,212 @@ export const setProductAvailable = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ------------------------- menu appearance ------------------------- */
+
+export const saveCategory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (d: {
+      id?: string | null;
+      name_en: string;
+      name_ar: string;
+      slug?: string;
+      sort_order?: number;
+      is_active?: boolean;
+    }) => d,
+  )
+  .handler(async ({ data, context }) => {
+    await assertOwner(context.supabase, context.userId);
+    if (!data.name_en.trim() || !data.name_ar.trim()) throw new Error("MISSING_FIELDS");
+    const db = await admin();
+    const slug =
+      (data.slug?.trim() || data.name_en.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"))
+        .replace(/^-|-$/g, "")
+        .slice(0, 40) || "category";
+    const row = {
+      restaurant_id: RESTAURANT_ID,
+      name_en: data.name_en.trim().slice(0, 60),
+      name_ar: data.name_ar.trim().slice(0, 60),
+      slug,
+      sort_order: clamp(Math.round(Number(data.sort_order ?? 0)), 0, 999),
+      is_active: data.is_active ?? true,
+    };
+    if (data.id) {
+      const { error } = await db
+        .from("categories")
+        .update(row)
+        .eq("id", data.id)
+        .eq("restaurant_id", RESTAURANT_ID);
+      if (error) throw new Error(error.message);
+      return { id: data.id };
+    }
+    const { data: created, error } = await db
+      .from("categories")
+      .insert(row)
+      .select("id")
+      .single();
+    if (error || !created) throw new Error(error?.message ?? "CATEGORY_CREATE_FAILED");
+    return { id: created.id };
+  });
+
+export const setProductLayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (d: { productId: string; sortOrder?: number; isPopular?: boolean; isNew?: boolean }) => d,
+  )
+  .handler(async ({ data, context }) => {
+    await assertOwner(context.supabase, context.userId);
+    const db = await admin();
+    const patch: Record<string, unknown> = {};
+    if (data.sortOrder !== undefined) patch["sort_order"] = clamp(Math.round(Number(data.sortOrder)), 0, 999);
+    if (data.isPopular !== undefined) patch["is_popular"] = data.isPopular;
+    if (data.isNew !== undefined) patch["is_new"] = data.isNew;
+    if (!Object.keys(patch).length) return { ok: true };
+    const { error } = await db
+      .from("products")
+      .update(patch)
+      .eq("id", data.productId)
+      .eq("restaurant_id", RESTAURANT_ID);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/* ---------------------------- the team ---------------------------- */
+
+type TeamRole = "branch_manager" | "cashier" | "kitchen";
+const TEAM_ROLES: TeamRole[] = ["branch_manager", "cashier", "kitchen"];
+
+export const ownerTeam = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertOwner(context.supabase, context.userId);
+    const db = await admin();
+    const { data: branches } = await db
+      .from("branches")
+      .select("id, name_en, name_ar")
+      .eq("restaurant_id", RESTAURANT_ID);
+    const branchIds = new Set((branches ?? []).map((b) => b.id));
+
+    const { data: roles } = await db
+      .from("user_roles")
+      .select("id, user_id, role, branch_id");
+    const mine = (roles ?? []).filter(
+      (r) => TEAM_ROLES.includes(r.role as TeamRole) && r.branch_id && branchIds.has(r.branch_id),
+    );
+    const { data: profiles } = await db
+      .from("profiles")
+      .select("id, full_name, email, branch_id");
+    const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
+
+    return mine.map((r) => ({
+      userId: r.user_id,
+      role: r.role as string,
+      branchId: r.branch_id as string,
+      fullName: byId.get(r.user_id)?.full_name ?? "",
+      email: byId.get(r.user_id)?.email ?? "",
+    }));
+  });
+
+export const createTeamMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (d: { email: string; password: string; fullName: string; role: TeamRole; branchId: string }) => d,
+  )
+  .handler(async ({ data, context }) => {
+    await assertOwner(context.supabase, context.userId);
+    if (!TEAM_ROLES.includes(data.role)) throw new Error("INVALID_ROLE");
+    const email = data.email.trim().toLowerCase();
+    if (!email.includes("@")) throw new Error("INVALID_EMAIL");
+    if (data.password.length < 8) throw new Error("WEAK_PASSWORD");
+    const db = await admin();
+
+    const { data: branch } = await db
+      .from("branches")
+      .select("id")
+      .eq("id", data.branchId)
+      .eq("restaurant_id", RESTAURANT_ID)
+      .maybeSingle();
+    if (!branch) throw new Error("BRANCH_NOT_FOUND");
+
+    const { data: created, error: userError } = await db.auth.admin.createUser({
+      email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName.trim().slice(0, 80) },
+    });
+    if (userError || !created?.user) throw new Error(userError?.message ?? "USER_CREATE_FAILED");
+    const userId = created.user.id;
+
+    await db.from("profiles").upsert(
+      { id: userId, full_name: data.fullName.trim().slice(0, 80), email, branch_id: data.branchId },
+      { onConflict: "id" },
+    );
+    const { error: roleError } = await db
+      .from("user_roles")
+      .upsert({ user_id: userId, role: data.role, branch_id: data.branchId }, { onConflict: "user_id,role" });
+    if (roleError) {
+      await db.auth.admin.deleteUser(userId);
+      throw new Error(roleError.message);
+    }
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "team_member_created",
+      entity: "user_roles",
+      entity_id: userId,
+      details: { email, role: data.role, branch_id: data.branchId },
+    });
+    return { userId };
+  });
+
+export const setTeamMemberAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { userId: string; role: TeamRole; branchId: string }) => d)
+  .handler(async ({ data, context }) => {
+    await assertOwner(context.supabase, context.userId);
+    if (!TEAM_ROLES.includes(data.role)) throw new Error("INVALID_ROLE");
+    const db = await admin();
+    const { data: branch } = await db
+      .from("branches")
+      .select("id")
+      .eq("id", data.branchId)
+      .eq("restaurant_id", RESTAURANT_ID)
+      .maybeSingle();
+    if (!branch) throw new Error("BRANCH_NOT_FOUND");
+
+    await db.from("user_roles").delete().eq("user_id", data.userId).in("role", TEAM_ROLES);
+    const { error } = await db
+      .from("user_roles")
+      .insert({ user_id: data.userId, role: data.role, branch_id: data.branchId });
+    if (error) throw new Error(error.message);
+    await db.from("profiles").update({ branch_id: data.branchId }).eq("id", data.userId);
+    return { ok: true };
+  });
+
+export const setTeamMemberPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { userId: string; password: string }) => d)
+  .handler(async ({ data, context }) => {
+    await assertOwner(context.supabase, context.userId);
+    if (data.password.length < 8) throw new Error("WEAK_PASSWORD");
+    const db = await admin();
+    const { error } = await db.auth.admin.updateUserById(data.userId, { password: data.password });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const removeTeamMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { userId: string }) => d)
+  .handler(async ({ data, context }) => {
+    await assertOwner(context.supabase, context.userId);
+    if (data.userId === context.userId) throw new Error("CANNOT_REMOVE_SELF");
+    const db = await admin();
+    const { data: roles } = await db.from("user_roles").select("role").eq("user_id", data.userId);
+    const onlyTeam = (roles ?? []).every((r) => TEAM_ROLES.includes(r.role as TeamRole));
+    if (!onlyTeam) throw new Error("FORBIDDEN");
+    await db.from("user_roles").delete().eq("user_id", data.userId);
+    const { error } = await db.auth.admin.deleteUser(data.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

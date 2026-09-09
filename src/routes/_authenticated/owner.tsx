@@ -48,7 +48,7 @@ const IMAGE_KEYS = [
   "cooler",
 ];
 
-type Tab = "branches" | "menu" | "orders";
+type Tab = "branches" | "menu" | "design" | "team" | "orders";
 
 function OwnerConsole() {
   const { pick, lang } = useI18n();

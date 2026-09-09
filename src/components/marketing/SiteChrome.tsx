@@ -8,17 +8,17 @@ import { CONTACT } from "@/lib/marketing";
 import logo from "@/assets/origami-logo.jpg.asset.json";
 
 const NAV = [
-  { to: "/business" as const, ar: "الرئيسية", en: "Home" },
-  { to: "/business/features" as const, ar: "المزايا", en: "Features" },
-  { to: "/business/pricing" as const, ar: "الأسعار", en: "Pricing" },
-  { to: "/business/contact" as const, ar: "تواصل معنا", en: "Contact" },
+  { to: "/" as const, ar: "الرئيسية", en: "Home" },
+  { to: "/features" as const, ar: "المزايا", en: "Features" },
+  { to: "/pricing" as const, ar: "الأسعار", en: "Pricing" },
+  { to: "/contact" as const, ar: "تواصل معنا", en: "Contact" },
 ];
 
 const ACCESS = [
   { to: "/admin" as const, ar: "المسؤول العام", en: "Platform admin" },
   { to: "/owner" as const, ar: "مالك المطعم", en: "Restaurant owner" },
   { to: "/auth" as const, ar: "فريق الفرع", en: "Branch team" },
-  { to: "/" as const, ar: "تطبيق العملاء", en: "Customer app" },
+  { to: "/app" as const, ar: "تطبيق العملاء", en: "Customer app" },
 ];
 
 export function SiteHeader() {
@@ -30,7 +30,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
-        <Link to="/business" className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center gap-2.5">
           <img
             src={logo.url}
             alt="Origami Platform"
@@ -48,7 +48,7 @@ export function SiteHeader() {
             <Link
               key={n.to}
               to={n.to}
-              activeOptions={{ exact: n.to === "/business" }}
+              activeOptions={{ exact: n.to === "/" }}
               activeProps={{ className: "bg-accent text-accent-foreground" }}
               className="rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
             >

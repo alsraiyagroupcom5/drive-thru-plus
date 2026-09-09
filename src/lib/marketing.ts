@@ -242,7 +242,7 @@ export const ROLES: RoleBlock[] = [
     titleEn: "Customer app",
     linkLabelAr: "جرّب التطبيق",
     linkLabelEn: "Open the app",
-    to: "/",
+    to: "/app",
     pointsAr: [
       "اختيار الفرع ومشاهدة وقت التحضير",
       "منيو بالصور مع تخصيص كامل",

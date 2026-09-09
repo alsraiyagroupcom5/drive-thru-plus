@@ -94,12 +94,12 @@ function FeaturesPage() {
         </h2>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link
-            to="/business/contact"
+            to="/contact"
             className="rounded-full bg-[image:var(--gradient-brass)] px-6 py-3.5 font-display text-sm font-bold text-primary-foreground"
           >
             {pick("اطلب حسابك", "Request your account")}
           </Link>
-          <Link to="/business/pricing" className="rounded-full border border-border px-6 py-3.5 text-sm font-semibold">
+          <Link to="/pricing" className="rounded-full border border-border px-6 py-3.5 text-sm font-semibold">
             {pick("عرض الأسعار", "View pricing")}
           </Link>
         </div>

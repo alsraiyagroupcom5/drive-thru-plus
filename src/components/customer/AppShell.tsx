@@ -76,7 +76,7 @@ export function AppShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const items = [
-    { to: "/", icon: Home, label: t("home") },
+    { to: "/app", icon: Home, label: t("home") },
     { to: "/menu", icon: UtensilsCrossed, label: t("menu") },
     { to: "/cart", icon: ShoppingBag, label: t("cart"), badge: count },
     { to: "/orders", icon: ReceiptText, label: t("orders") },

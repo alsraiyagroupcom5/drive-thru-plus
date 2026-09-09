@@ -101,7 +101,7 @@ function PricingPage() {
                 ))}
               </ul>
               <Link
-                to="/business/contact"
+                to="/contact"
                 className={cn(
                   "mt-6 rounded-full py-3 text-center text-sm font-bold",
                   p.highlight

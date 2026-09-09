@@ -54,14 +54,14 @@ function BusinessHome() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              to="/business/contact"
+              to="/contact"
               className="inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient-brass)] px-6 py-3.5 font-display text-sm font-bold text-primary-foreground shadow-[var(--shadow-lift)]"
             >
               {pick("اطلب حساب مطعمك", "Request your account")}
               <ArrowRight className={cn("h-4 w-4", dir === "rtl" && "rotate-180")} aria-hidden />
             </Link>
             <Link
-              to="/"
+              to="/app"
               search={{ branch: undefined }}
               className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3.5 text-sm font-semibold"
             >
@@ -106,7 +106,7 @@ function BusinessHome() {
             ))}
           </div>
           <Link
-            to="/business/features"
+            to="/features"
             className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-primary underline underline-offset-4"
           >
             {pick("استعرض كل المزايا", "Explore all features")}
@@ -192,7 +192,7 @@ function BusinessHome() {
               </p>
               <p className="text-xs text-muted-foreground">{pick(p.perAr, p.perEn)}</p>
               <Link
-                to="/business/pricing"
+                to="/pricing"
                 className="mt-6 rounded-full border border-border py-2.5 text-center text-sm font-bold"
               >
                 {pick("تفاصيل الباقة", "Plan details")}

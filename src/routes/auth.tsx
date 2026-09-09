@@ -25,32 +25,24 @@ export const Route = createFileRoute("/auth")({
 function StaffAuth() {
   const { t, pick } = useI18n();
   const navigate = useNavigate();
-  const branches = useQuery(branchesQuery);
 
-  const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"kitchen" | "branch_manager">("kitchen");
-  const [branchId, setBranchId] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     setBusy(true);
     try {
-      if (mode === "up") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin + "/auth" },
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
-      const chosen = branchId || branches.data?.[0]?.id;
-      if (chosen) await claimStaffRole({ data: { role, branchId: chosen } });
-      navigate({ to: role === "kitchen" ? "/kitchen" : "/live" });
+      const { data: signIn, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      const userId = signIn.user?.id;
+      const { data: roles } = userId
+        ? await supabase.from("user_roles").select("role").eq("user_id", userId)
+        : { data: [] };
+      const list = (roles ?? []).map((r) => r.role as string);
+      if (list.includes("super_admin")) navigate({ to: "/admin" });
+      else if (list.includes("kitchen")) navigate({ to: "/kitchen" });
+      else navigate({ to: "/live" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("somethingWrong"));
     } finally {

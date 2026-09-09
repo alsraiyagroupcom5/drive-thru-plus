@@ -207,3 +207,195 @@ export const removeClientAccount = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ---------------------------------------------------------------
+ * Marketplace: restaurants sign up for an account from /business
+ * ------------------------------------------------------------- */
+
+export const submitSignupRequest = createServerFn({ method: "POST" })
+  .inputValidator(
+    (d: {
+      restaurantName: string;
+      contactName: string;
+      email: string;
+      phone?: string;
+      branchesCount?: number;
+      plan?: string;
+      message?: string;
+    }) => d,
+  )
+  .handler(async ({ data }) => {
+    const clean = (v: string | undefined, max: number) => (v ?? "").trim().slice(0, max);
+    const restaurantName = clean(data.restaurantName, 120);
+    const contactName = clean(data.contactName, 120);
+    const email = clean(data.email, 160).toLowerCase();
+    if (!restaurantName || !contactName || !email.includes("@")) throw new Error("INVALID_INPUT");
+    const db = await admin();
+    const { error } = await db.from("signup_requests").insert({
+      restaurant_name: restaurantName,
+      contact_name: contactName,
+      email,
+      phone: clean(data.phone, 40) || null,
+      branches_count: Math.min(Math.max(1, Math.round(Number(data.branchesCount ?? 1) || 1)), 500),
+      plan: ["starter", "growth", "enterprise"].includes(data.plan ?? "")
+        ? (data.plan as string)
+        : "growth",
+      message: clean(data.message, 1000) || null,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const listSignupRequests = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const { data } = await db
+      .from("signup_requests")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    return data ?? [];
+  });
+
+export const setSignupStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; status: "NEW" | "CONTACTED" | "ONBOARDED" | "REJECTED" }) => d)
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const { error } = await db
+      .from("signup_requests")
+      .update({ status: data.status, handled_at: new Date().toISOString() })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/* ---------------------------------------------------------------
+ * Platform administration: restaurants + overview
+ * ------------------------------------------------------------- */
+
+export const listRestaurants = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const [{ data: orgs }, { data: restaurants }, { data: branches }] = await Promise.all([
+      db.from("organizations").select("id, name_en, name_ar").order("name_en"),
+      db.from("restaurants").select("*").order("name_en"),
+      db.from("branches").select("id, restaurant_id, code, name_en, name_ar, is_open"),
+    ]);
+    return {
+      organizations: orgs ?? [],
+      restaurants: (restaurants ?? []).map((r) => ({
+        ...r,
+        branches: (branches ?? []).filter((b) => b.restaurant_id === r.id),
+      })),
+    };
+  });
+
+export const saveRestaurant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (d: {
+      id?: string | null;
+      organizationId?: string | null;
+      newOrganization?: { name_en: string; name_ar: string } | null;
+      slug: string;
+      name_en: string;
+      name_ar: string;
+      currency?: string;
+      tax_rate?: number;
+    }) => d,
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const patch = {
+      slug: data.slug.trim().toLowerCase().slice(0, 40),
+      name_en: data.name_en.trim().slice(0, 80),
+      name_ar: data.name_ar.trim().slice(0, 80),
+      currency: (data.currency || "QAR").trim().slice(0, 6).toUpperCase(),
+      tax_rate: Math.min(Math.max(Number(data.tax_rate ?? 0) || 0, 0), 1),
+    };
+    if (!patch.slug || !patch.name_en || !patch.name_ar) throw new Error("INVALID_INPUT");
+
+    if (data.id) {
+      const { error } = await db.from("restaurants").update(patch).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { id: data.id };
+    }
+
+    let organizationId = data.organizationId ?? null;
+    if (!organizationId) {
+      const no = data.newOrganization;
+      if (!no?.name_en?.trim() || !no?.name_ar?.trim()) throw new Error("ORG_REQUIRED");
+      const { data: org, error: orgError } = await db
+        .from("organizations")
+        .insert({ name_en: no.name_en.trim().slice(0, 80), name_ar: no.name_ar.trim().slice(0, 80) })
+        .select("id")
+        .single();
+      if (orgError || !org) throw new Error(orgError?.message ?? "ORG_CREATE_FAILED");
+      organizationId = org.id;
+    }
+
+    const { data: created, error } = await db
+      .from("restaurants")
+      .insert({ ...patch, organization_id: organizationId })
+      .select("id")
+      .single();
+    if (error || !created) throw new Error(error?.message ?? "RESTAURANT_CREATE_FAILED");
+    return { id: created.id };
+  });
+
+export const adminOverview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const since = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
+    const [restaurants, branches, products, accounts, leads, orders, recent] = await Promise.all([
+      db.from("restaurants").select("id", { count: "exact", head: true }),
+      db.from("branches").select("id", { count: "exact", head: true }),
+      db.from("products").select("id", { count: "exact", head: true }),
+      db.from("user_roles").select("id", { count: "exact", head: true }),
+      db.from("signup_requests").select("id", { count: "exact", head: true }).eq("status", "NEW"),
+      db.from("orders").select("total, status, created_at").gte("created_at", since),
+      db
+        .from("orders")
+        .select("id, order_number, status, total, created_at, branches(name_en, name_ar)")
+        .order("created_at", { ascending: false })
+        .limit(12),
+    ]);
+    const rows = orders.data ?? [];
+    return {
+      restaurants: restaurants.count ?? 0,
+      branches: branches.count ?? 0,
+      products: products.count ?? 0,
+      accounts: accounts.count ?? 0,
+      newLeads: leads.count ?? 0,
+      orders24h: rows.length,
+      revenue24h: rows.reduce((s, o) => s + Number(o.total || 0), 0),
+      inProgress: rows.filter((o) =>
+        ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "READY"].includes(o.status as string),
+      ).length,
+      recent: recent.data ?? [],
+    };
+  });
+
+export const setAccountRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { roleRowId: string; role: StaffRole; branchId: string | null }) => d)
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    if (!STAFF_ROLES.includes(data.role)) throw new Error("INVALID_ROLE");
+    const db = await admin();
+    const { error } = await db
+      .from("user_roles")
+      .update({ role: data.role, branch_id: data.branchId })
+      .eq("id", data.roleRowId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

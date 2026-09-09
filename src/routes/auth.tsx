@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -137,6 +137,13 @@ function StaffAuth() {
           >
             {mode === "in" ? "Create a staff account" : "I already have an account"}
           </button>
+          <Link
+            to="/admin"
+            className="block w-full text-center text-xs text-muted-foreground underline underline-offset-4"
+          >
+            {pick("لوحة المسؤول العام", "General admin console")}
+          </Link>
+
         </div>
       </div>
     </div>

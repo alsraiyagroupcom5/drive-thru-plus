@@ -9,6 +9,7 @@ import { useCart, type CartOption } from "@/lib/cart";
 import { foodImage } from "@/lib/food-images";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { effectivePrice } from "@/lib/pricing";
 
 export const Route = createFileRoute("/product/$productId")({
   head: () => ({
@@ -75,7 +76,9 @@ function ProductPage() {
   }
 
   const p = product.data;
-  const unit = Number(p.price) + selectedOptions.reduce((s, o) => s + o.price_delta, 0);
+  const base = effectivePrice(p.price, p.discount_percent);
+  const discount = Number(p.discount_percent ?? 0);
+  const unit = base + selectedOptions.reduce((s, o) => s + o.price_delta, 0);
   const name = pick(p.name_ar, p.name_en);
 
   const toggle = (modifierId: string, optionId: string, kind: string, max: number) => {

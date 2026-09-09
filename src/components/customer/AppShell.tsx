@@ -1,35 +1,66 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, UtensilsCrossed, ShoppingBag, ReceiptText, Languages } from "lucide-react";
+import { Home, UtensilsCrossed, ShoppingBag, ReceiptText, Languages, Moon, Sun } from "lucide-react";
 import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
 import { useCart } from "@/lib/cart";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/origami-logo.jpg.asset.json";
 
 export function BrandMark({ className }: { className?: string }) {
   const { t } = useI18n();
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-[image:var(--gradient-brass)] font-display text-lg font-bold text-primary-foreground">
-        M
+    <div className={cn("flex items-center gap-2.5", className)}>
+      <img
+        src={logo.url}
+        alt="Origami Qatar"
+        width={40}
+        height={40}
+        className="h-10 w-10 rounded-xl border border-border bg-white object-contain p-0.5"
+      />
+      <span className="flex flex-col leading-tight">
+        <span className="font-display text-lg font-semibold tracking-wide">{t("brandFull")}</span>
+        <span className="text-[10px] text-muted-foreground">{t("tagline")}</span>
       </span>
-      <span className="font-display text-lg font-semibold tracking-wide">{t("brandFull")}</span>
     </div>
+  );
+}
+
+export function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  const { t } = useI18n();
+  return (
+    <button
+      onClick={toggle}
+      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-accent"
+      aria-label={theme === "light" ? t("darkMode") : t("lightMode")}
+    >
+      {theme === "light" ? (
+        <Moon className="h-4 w-4" aria-hidden />
+      ) : (
+        <Sun className="h-4 w-4" aria-hidden />
+      )}
+    </button>
   );
 }
 
 export function LanguageToggle() {
   const { t, toggle } = useI18n();
   return (
-    <button
-      onClick={toggle}
-      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-accent"
-      aria-label="Switch language"
-    >
-      <Languages className="h-3.5 w-3.5" aria-hidden />
-      {t("language")}
-    </button>
+    <div className="flex items-center gap-2">
+      <ThemeToggle />
+      <button
+        onClick={toggle}
+        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-accent"
+        aria-label="Switch language"
+      >
+        <Languages className="h-3.5 w-3.5" aria-hidden />
+        {t("language")}
+      </button>
+    </div>
   );
 }
+
 
 export function AppShell({
   children,

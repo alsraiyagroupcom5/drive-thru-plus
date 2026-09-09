@@ -1,9 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Smile } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { demoCredentials, type DemoRole } from "@/lib/demo.functions";
 import { BrandMark, LanguageToggle } from "@/components/customer/AppShell";
+
 
 export const Route = createFileRoute("/auth")({
   head: () => ({

@@ -52,10 +52,11 @@ function KitchenPage() {
     try {
       await setOrderStatus(order.id, next);
       queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
-    } catch {
-      toast.error(t("somethingWrong"));
+    } catch (e) {
+      toast.error(e instanceof Error && e.message ? e.message : t("somethingWrong"));
     }
   };
+
 
   const signOut = async () => {
     await queryClient.cancelQueries();

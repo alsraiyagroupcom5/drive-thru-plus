@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Repeat, ReceiptText } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/customer/AppShell";
-import { useI18n, money } from "@/lib/i18n";
+import { useI18n, money, formatDate } from "@/lib/i18n";
 import { useCustomerAuth } from "@/lib/customer-auth";
 import { myOrders } from "@/lib/customer.functions";
 import { productsQuery } from "@/lib/menu-data";
@@ -105,7 +105,7 @@ function OrdersPage() {
                   <p className="font-display text-base font-semibold">{o.order_number}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {pick(o.branches?.name_ar, o.branches?.name_en)} ·{" "}
-                    {new Date(o.created_at).toLocaleDateString(lang === "ar" ? "ar-QA" : "en-GB")}
+                    {formatDate(o.created_at, lang)}
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full bg-elevated px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">

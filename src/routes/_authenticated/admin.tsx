@@ -2,9 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Inbox, LayoutDashboard, Store, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useI18n, money } from "@/lib/i18n";
+import { useI18n, money, formatDateTime } from "@/lib/i18n";
+import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { cn } from "@/lib/utils";
+
 import {
   adminOverview,
   adminStatus,
@@ -43,11 +46,12 @@ const ROLES = [
 type StaffRole = (typeof ROLES)[number]["id"];
 
 const TABS = [
-  { id: "overview", ar: "نظرة عامة", en: "Overview" },
-  { id: "accounts", ar: "الحسابات", en: "Accounts" },
-  { id: "restaurants", ar: "المطاعم", en: "Restaurants" },
-  { id: "requests", ar: "طلبات الاشتراك", en: "Sign-up requests" },
+  { id: "overview", ar: "نظرة عامة", en: "Overview", hintAr: "المؤشرات", hintEn: "Key numbers", icon: LayoutDashboard },
+  { id: "accounts", ar: "الحسابات", en: "Accounts", hintAr: "الفريق والصلاحيات", hintEn: "People & access", icon: Users },
+  { id: "restaurants", ar: "المطاعم", en: "Restaurants", hintAr: "العملاء", hintEn: "Clients", icon: Store },
+  { id: "requests", ar: "طلبات الاشتراك", en: "Sign-up requests", hintAr: "عملاء محتملون", hintEn: "Leads", icon: Inbox },
 ] as const;
+
 
 const input =
   "h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2";
@@ -216,56 +220,31 @@ function AdminConsole() {
 
   const o = overview.data;
 
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold">{pick("لوحة إدارة المنصة", "Platform admin")}</h1>
-          <p className="text-xs text-muted-foreground">
-            {pick(
-              "المطاعم، الحسابات، الفروع، المنيو، الطلبات وطلبات الاشتراك",
-              "Restaurants, accounts, branches, menu, orders and sign-up requests",
-            )}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link to="/owner" className="rounded-full border border-border px-4 py-2 text-xs font-semibold">
-            {pick("المنيو والفروع", "Menu & branches")}
-          </Link>
-          <Link to="/live" className="rounded-full border border-border px-4 py-2 text-xs font-semibold">
-            {pick("الطلبات المباشرة", "Live orders")}
-          </Link>
-          <Link to="/kitchen" className="rounded-full border border-border px-4 py-2 text-xs font-semibold">
-            {pick("شاشة المطبخ", "Kitchen screen")}
-          </Link>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="rounded-full border border-border px-4 py-2 text-xs"
-          >
-            {pick("تسجيل الخروج", "Sign out")}
-          </button>
-        </div>
-      </header>
+  const navItems = TABS.map((tb) => ({
+    id: tb.id,
+    label: pick(tb.ar, tb.en),
+    hint: pick(tb.hintAr, tb.hintEn),
+    icon: tb.icon,
+    badge: tb.id === "requests" ? (o?.newLeads ?? null) : null,
+  }));
 
-      <nav className="mb-5 flex flex-wrap gap-2">
-        {TABS.map((tb) => (
-          <button
-            key={tb.id}
-            onClick={() => setTab(tb.id)}
-            className={cn(
-              "rounded-full border px-4 py-2 text-xs font-semibold",
-              tab === tb.id ? "border-primary bg-primary/10 text-primary" : "border-border",
-            )}
-          >
-            {pick(tb.ar, tb.en)}
-            {tb.id === "requests" && o?.newLeads ? (
-              <span className="ms-2 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
-                {o.newLeads}
-              </span>
-            ) : null}
-          </button>
-        ))}
-      </nav>
+  return (
+    <ConsoleShell
+      title={pick("لوحة إدارة المنصة", "Platform admin")}
+      subtitle={pick(
+        "المطاعم، الحسابات، الفروع، الطلبات وطلبات الاشتراك",
+        "Restaurants, accounts, branches, orders and sign-up requests",
+      )}
+      items={navItems}
+      active={tab}
+      onSelect={(id) => setTab(id as (typeof TABS)[number]["id"])}
+      quickLinks={[
+        { to: "/owner", label: pick("المنيو والفروع", "Menu & branches") },
+        { to: "/live", label: pick("الطلبات المباشرة", "Live orders") },
+        { to: "/kitchen", label: pick("شاشة المطبخ", "Kitchen screen") },
+      ]}
+    >
+
 
       {tab === "overview" && (
         <section className="space-y-5">
@@ -300,7 +279,7 @@ function AdminConsole() {
                     <p className="font-semibold">{r.order_number}</p>
                     <p className="truncate text-xs text-muted-foreground">
                       {r.branches ? pick(r.branches.name_ar, r.branches.name_en) : ""} ·{" "}
-                      {new Date(r.created_at).toLocaleString(lang === "ar" ? "ar-QA" : "en-GB")}
+                      {formatDateTime(r.created_at, lang)}
                     </p>
                   </div>
                   <div className="shrink-0 text-end">
@@ -590,6 +569,7 @@ function AdminConsole() {
           </div>
         </section>
       )}
-    </div>
+    </ConsoleShell>
+
   );
 }

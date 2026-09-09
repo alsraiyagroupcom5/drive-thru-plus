@@ -43,6 +43,20 @@
       "when": 1788970045997,
       "tag": "0005_branch_location_details",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788971417399,
+      "tag": "0006_grant_data_api_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788971602938,
+      "tag": "0007_fix_order_status_transitions",
+      "breakpoints": true
     }
   ]
 }

@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users } from "lucide-react";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
+import { ConsoleShell } from "@/components/console/ConsoleShell";
+
 import { supabase } from "@/integrations/supabase/client";
-import { useI18n, money } from "@/lib/i18n";
+import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { effectivePrice, hasDiscount, todayISO } from "@/lib/pricing";
 import {
@@ -82,50 +84,29 @@ function OwnerConsole() {
 
   const data = menu.data!;
 
+  const navItems = [
+    { id: "menu", label: pick("المنيو", "Menu"), hint: pick("الأصناف والأسعار", "Items & pricing"), icon: UtensilsCrossed },
+    { id: "design", label: pick("شكل المنيو", "Menu design"), hint: pick("الترتيب والتمييز", "Order & highlights"), icon: Palette },
+    { id: "branches", label: pick("الفروع", "Branches"), hint: pick("المواقع والتفاصيل", "Locations & details"), icon: Store },
+    { id: "team", label: pick("الفريق", "Team"), hint: pick("الحسابات والصلاحيات", "Accounts & access"), icon: Users },
+    { id: "orders", label: pick("الطلبات", "Orders"), hint: pick("قيد التنفيذ ومكتملة", "In progress & done"), icon: ClipboardList },
+  ];
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold">{pick("لوحة المالك", "Owner console")}</h1>
-          <p className="text-xs text-muted-foreground">
-            {pick(
-              "إدارة الفروع والمنيو والخصومات والمخزون والطلبات",
-              "Branches, menu, discounts, stock and orders",
-            )}
-          </p>
-        </div>
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="rounded-full border border-border px-4 py-2 text-xs"
-        >
-          {pick("تسجيل الخروج", "Sign out")}
-        </button>
-      </header>
-
-      <div className="mb-5 flex gap-2">
-        {(
-          [
-            { id: "menu", ar: "المنيو", en: "Menu", icon: UtensilsCrossed },
-            { id: "design", ar: "شكل المنيو", en: "Menu design", icon: Palette },
-            { id: "branches", ar: "الفروع", en: "Branches", icon: Store },
-            { id: "team", ar: "الفريق", en: "Team", icon: Users },
-            { id: "orders", ar: "الطلبات", en: "Orders", icon: ClipboardList },
-          ] as const
-        ).map((x) => (
-          <button
-            key={x.id}
-            onClick={() => setTab(x.id)}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold",
-              tab === x.id ? "border-primary bg-primary/10 text-primary" : "border-border",
-            )}
-          >
-            <x.icon className="h-3.5 w-3.5" aria-hidden />
-            {pick(x.ar, x.en)}
-          </button>
-        ))}
-      </div>
-
+    <ConsoleShell
+      title={pick("لوحة المالك", "Owner console")}
+      subtitle={pick(
+        "الفروع والمنيو والخصومات والمخزون والطلبات",
+        "Branches, menu, discounts, stock and orders",
+      )}
+      items={navItems}
+      active={tab}
+      onSelect={(id) => setTab(id as Tab)}
+      quickLinks={[
+        { to: "/live", label: pick("الطلبات المباشرة", "Live orders") },
+        { to: "/kitchen", label: pick("شاشة المطبخ", "Kitchen screen") },
+      ]}
+    >
       {tab === "menu" && (
         <MenuTab
           branches={data.branches}
@@ -142,9 +123,10 @@ function OwnerConsole() {
       {tab === "branches" && <BranchesTab branches={data.branches} onChanged={refreshMenu} />}
       {tab === "team" && <TeamTab branches={data.branches} />}
       {tab === "orders" && <OrdersTab branches={data.branches} lang={lang} />}
-    </div>
+    </ConsoleShell>
   );
 }
+
 
 /* ----------------------------- menu ----------------------------- */
 
@@ -808,9 +790,7 @@ function OrdersTab({ branches, lang }: { branches: Row[]; lang: "ar" | "en" }) {
                 <p className="font-display font-bold">{o["order_number"] as string}</p>
                 <p className="truncate text-xs text-muted-foreground">
                   {branch ? pick(branch["name_ar"] as string, branch["name_en"] as string) : ""} ·{" "}
-                  {new Date(o["created_at"] as string).toLocaleString(
-                    lang === "ar" ? "ar-QA" : "en-GB",
-                  )}
+                  {formatDateTime(o["created_at"] as string, lang)}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
                   {items

@@ -91,6 +91,11 @@ type BranchInput = {
   code: string;
   city_en?: string | null;
   city_ar?: string | null;
+  address_en?: string | null;
+  address_ar?: string | null;
+  maps_url?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   phone?: string | null;
   opens_at?: string;
   closes_at?: string;

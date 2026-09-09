@@ -21,6 +21,10 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedKitchenRouteImport } from './routes/_authenticated/kitchen'
 import { Route as AuthenticatedLiveRouteImport } from './routes/_authenticated/live'
 import { Route as AuthenticatedOwnerRouteImport } from './routes/_authenticated/owner'
+import { Route as BusinessIndexRouteImport } from './routes/business.index'
+import { Route as BusinessContactRouteImport } from './routes/business.contact'
+import { Route as BusinessFeaturesRouteImport } from './routes/business.features'
+import { Route as BusinessPricingRouteImport } from './routes/business.pricing'
 import { Route as OrderOrderIdRouteImport } from './routes/order.$orderId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
 
@@ -83,6 +87,26 @@ const AuthenticatedOwnerRoute = AuthenticatedOwnerRouteImport.update({
   path: '/owner',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const BusinessIndexRoute = BusinessIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessContactRoute = BusinessContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessFeaturesRoute = BusinessFeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessPricingRoute = BusinessPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => BusinessRoute,
+} as any)
 const OrderOrderIdRoute = OrderOrderIdRouteImport.update({
   id: '/order/$orderId',
   path: '/order/$orderId',
@@ -97,7 +121,7 @@ const ProductProductIdRoute = ProductProductIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/business': typeof BusinessRoute
+  '/business': typeof BusinessRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/menu': typeof MenuRoute
@@ -106,13 +130,16 @@ export interface FileRoutesByFullPath {
   '/kitchen': typeof AuthenticatedKitchenRoute
   '/live': typeof AuthenticatedLiveRoute
   '/owner': typeof AuthenticatedOwnerRoute
+  '/business/contact': typeof BusinessContactRoute
+  '/business/features': typeof BusinessFeaturesRoute
+  '/business/pricing': typeof BusinessPricingRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/business/': typeof BusinessIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/business': typeof BusinessRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/menu': typeof MenuRoute
@@ -121,15 +148,19 @@ export interface FileRoutesByTo {
   '/kitchen': typeof AuthenticatedKitchenRoute
   '/live': typeof AuthenticatedLiveRoute
   '/owner': typeof AuthenticatedOwnerRoute
+  '/business/contact': typeof BusinessContactRoute
+  '/business/features': typeof BusinessFeaturesRoute
+  '/business/pricing': typeof BusinessPricingRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/business': typeof BusinessIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/business': typeof BusinessRoute
+  '/business': typeof BusinessRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/menu': typeof MenuRoute
@@ -138,8 +169,12 @@ export interface FileRoutesById {
   '/_authenticated/kitchen': typeof AuthenticatedKitchenRoute
   '/_authenticated/live': typeof AuthenticatedLiveRoute
   '/_authenticated/owner': typeof AuthenticatedOwnerRoute
+  '/business/contact': typeof BusinessContactRoute
+  '/business/features': typeof BusinessFeaturesRoute
+  '/business/pricing': typeof BusinessPricingRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/business/': typeof BusinessIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -155,13 +190,16 @@ export interface FileRouteTypes {
     | '/kitchen'
     | '/live'
     | '/owner'
+    | '/business/contact'
+    | '/business/features'
+    | '/business/pricing'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/business/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/business'
     | '/cart'
     | '/checkout'
     | '/menu'
@@ -170,8 +208,12 @@ export interface FileRouteTypes {
     | '/kitchen'
     | '/live'
     | '/owner'
+    | '/business/contact'
+    | '/business/features'
+    | '/business/pricing'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/business'
   id:
     | '__root__'
     | '/'
@@ -186,15 +228,19 @@ export interface FileRouteTypes {
     | '/_authenticated/kitchen'
     | '/_authenticated/live'
     | '/_authenticated/owner'
+    | '/business/contact'
+    | '/business/features'
+    | '/business/pricing'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/business/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  BusinessRoute: typeof BusinessRoute
+  BusinessRoute: typeof BusinessRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   MenuRoute: typeof MenuRoute
@@ -289,6 +335,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOwnerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/business/': {
+      id: '/business/'
+      path: '/'
+      fullPath: '/business/'
+      preLoaderRoute: typeof BusinessIndexRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/contact': {
+      id: '/business/contact'
+      path: '/contact'
+      fullPath: '/business/contact'
+      preLoaderRoute: typeof BusinessContactRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/features': {
+      id: '/business/features'
+      path: '/features'
+      fullPath: '/business/features'
+      preLoaderRoute: typeof BusinessFeaturesRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/pricing': {
+      id: '/business/pricing'
+      path: '/pricing'
+      fullPath: '/business/pricing'
+      preLoaderRoute: typeof BusinessPricingRouteImport
+      parentRoute: typeof BusinessRoute
+    }
     '/order/$orderId': {
       id: '/order/$orderId'
       path: '/order/$orderId'
@@ -323,11 +397,29 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface BusinessRouteChildren {
+  BusinessContactRoute: typeof BusinessContactRoute
+  BusinessFeaturesRoute: typeof BusinessFeaturesRoute
+  BusinessPricingRoute: typeof BusinessPricingRoute
+  BusinessIndexRoute: typeof BusinessIndexRoute
+}
+
+const BusinessRouteChildren: BusinessRouteChildren = {
+  BusinessContactRoute: BusinessContactRoute,
+  BusinessFeaturesRoute: BusinessFeaturesRoute,
+  BusinessPricingRoute: BusinessPricingRoute,
+  BusinessIndexRoute: BusinessIndexRoute,
+}
+
+const BusinessRouteWithChildren = BusinessRoute._addFileChildren(
+  BusinessRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  BusinessRoute: BusinessRoute,
+  BusinessRoute: BusinessRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   MenuRoute: MenuRoute,

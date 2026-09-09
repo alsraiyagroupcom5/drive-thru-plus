@@ -166,6 +166,16 @@ function CheckoutPage() {
               </button>
             </div>
 
+            <button
+              onClick={() => demoLogin.mutate()}
+              disabled={demoLogin.isPending}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-xs font-semibold transition hover:border-primary hover:text-primary disabled:opacity-50"
+            >
+              <Smile className="h-4 w-4" aria-hidden />
+              {pick("دخول تجريبي بنقرة واحدة", "One-tap demo sign in")}
+            </button>
+
+
             {demoCode && (
               <div className="mt-4">
                 <p className="text-xs text-muted-foreground">{t("enterCode")}</p>

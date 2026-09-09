@@ -18,19 +18,20 @@ export const Route = createFileRoute("/")({
   }),
   head: () => ({
     meta: [
-      { title: "Origami Qatar — Drive-Thru Ordering in Qatar" },
+      { title: "Origami Qatar — Specialty Coffee, Ice Cream & Desserts" },
       {
         name: "description",
         content:
-          "Scan, order and collect from your car in minutes. Premium burgers, chicken and sides across three Qatar branches.",
+          "Order specialty coffee, gelato and desserts ahead and collect in minutes at Duhail Night Market, Aspire Downtown or Lusail Marina. Open daily 7AM–12AM.",
       },
-      { property: "og:title", content: "Origami Qatar — Drive-Thru Ordering" },
+      { property: "og:title", content: "Origami Qatar — Specialty Coffee & Ice Cream" },
       {
         property: "og:description",
-        content: "Order ahead and pick up from your car in minutes.",
+        content: "Order ahead and collect in minutes across three Doha locations.",
       },
     ],
   }),
+
   component: Landing,
 });
 

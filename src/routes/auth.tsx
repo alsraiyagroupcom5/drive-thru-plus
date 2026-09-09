@@ -1,13 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { branchesQuery } from "@/lib/menu-data";
-import { claimStaffRole } from "@/lib/staff.functions";
 import { useI18n } from "@/lib/i18n";
 import { BrandMark, LanguageToggle } from "@/components/customer/AppShell";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({

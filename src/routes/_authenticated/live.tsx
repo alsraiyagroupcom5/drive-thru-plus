@@ -183,9 +183,16 @@ function LivePage() {
                       {o.status === "READY" && (
                         <button
                           onClick={async () => {
-                            await setOrderStatus(o.id, "COMPLETED");
-                            queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
+                            try {
+                              await setOrderStatus(o.id, "COMPLETED");
+                              queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
+                            } catch (e) {
+                              toast.error(
+                                e instanceof Error && e.message ? e.message : t("somethingWrong"),
+                              );
+                            }
                           }}
+
                           className="rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground"
                         >
                           {t("pickedUp")}

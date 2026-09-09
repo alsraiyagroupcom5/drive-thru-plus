@@ -82,53 +82,19 @@ function StaffAuth() {
             className="h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2"
           />
 
-          <div className="grid grid-cols-2 gap-2">
-            {(
-              [
-                { id: "kitchen", label: t("kitchen") },
-                { id: "branch_manager", label: t("liveOrders") },
-              ] as const
-            ).map((r) => (
-              <button
-                key={r.id}
-                onClick={() => setRole(r.id)}
-                className={cn(
-                  "rounded-xl border px-3 py-2.5 text-xs font-semibold",
-                  role === r.id ? "border-primary bg-primary/10 text-primary" : "border-border",
-                )}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-
-          <select
-            value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
-            aria-label={t("branch")}
-            className="h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none"
-          >
-            <option value="">{t("chooseBranch")}</option>
-            {(branches.data ?? []).map((b) => (
-              <option key={b.id} value={b.id}>
-                {pick(b.name_ar, b.name_en)}
-              </option>
-            ))}
-          </select>
-
           <button
             onClick={submit}
             disabled={busy || !email || password.length < 6}
             className="w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
           >
-            {mode === "in" ? t("staffLogin") : t("continue")}
+            {t("staffLogin")}
           </button>
-          <button
-            onClick={() => setMode(mode === "in" ? "up" : "in")}
-            className="w-full text-xs text-muted-foreground underline underline-offset-4"
-          >
-            {mode === "in" ? "Create a staff account" : "I already have an account"}
-          </button>
+          <p className="text-center text-xs text-muted-foreground">
+            {pick(
+              "الحسابات يتم إنشاؤها من قِبل المسؤول العام فقط.",
+              "Accounts are created by the general admin only.",
+            )}
+          </p>
           <Link
             to="/admin"
             className="block w-full text-center text-xs text-muted-foreground underline underline-offset-4"

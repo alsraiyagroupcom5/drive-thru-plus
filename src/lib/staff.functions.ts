@@ -26,7 +26,6 @@ export const claimStaffRole = createServerFn({ method: "POST" })
       {
         user_id: context.userId,
         role: data.role,
-        restaurant_id: RESTAURANT_ID,
         branch_id: data.branchId,
       } as never,
       { onConflict: "user_id,role" },

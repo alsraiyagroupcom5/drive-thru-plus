@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users } from "lucide-react";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
+import { ConsoleShell } from "@/components/console/ConsoleShell";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

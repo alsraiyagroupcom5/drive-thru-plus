@@ -93,7 +93,7 @@ export function AppShell({
         >
           <ul className="grid grid-cols-4">
             {items.map((item) => {
-              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+              const active = item.to === "/app" ? pathname === "/app" : pathname.startsWith(item.to);
               return (
                 <li key={item.to}>
                   <Link

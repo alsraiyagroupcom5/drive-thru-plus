@@ -162,7 +162,7 @@ export type RoleBlock = {
   titleEn: string;
   linkLabelAr: string;
   linkLabelEn: string;
-  to: "/admin" | "/owner" | "/live" | "/";
+  to: "/admin" | "/owner" | "/live" | "/app";
   pointsAr: string[];
   pointsEn: string[];
 };

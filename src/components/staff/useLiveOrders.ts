@@ -53,7 +53,7 @@ export function useLiveOrders(branchId: string | null | undefined) {
     enabled: !!branchId,
     refetchInterval: 20_000,
     queryFn: async () => {
-      const since = new Date(Date.now() - 12 * 60 * 60_000).toISOString();
+      const since = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
       const { data, error } = await supabase
         .from("orders")
         .select(

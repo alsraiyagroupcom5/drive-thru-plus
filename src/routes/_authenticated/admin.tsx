@@ -164,7 +164,7 @@ function AdminConsole() {
         <h2 className="font-display text-lg font-bold">{pick("حساب عميل جديد", "New client account")}</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <input className={input} placeholder={pick("الاسم", "Full name")} value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          <input className={input} dir="ltr" type="email" placeholder="client@masar.qa" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className={input} dir="ltr" type="email" placeholder="team@origami.qa" value={email} onChange={(e) => setEmail(e.target.value)} />
           <input className={input} dir="ltr" type="password" placeholder={pick("كلمة المرور (8+ أحرف)", "Password (8+ chars)")} value={password} onChange={(e) => setPassword(e.target.value)} />
           <select className={input} value={role} onChange={(e) => setRole(e.target.value as typeof role)}>
             {ROLES.map((r) => (

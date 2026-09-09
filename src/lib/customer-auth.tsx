@@ -10,7 +10,7 @@ type Ctx = {
 };
 
 const AuthContext = createContext<Ctx | null>(null);
-const KEY = "masar.session";
+const KEY = "origami.session";
 
 export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session>(null);

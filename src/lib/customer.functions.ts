@@ -226,15 +226,29 @@ export const placeOrder = createServerFn({ method: "POST" })
     const { data: products } = await db.from("products").select("*").in("id", ids);
     const byId = new Map((products ?? []).map((p) => [p.id, p]));
 
+    const { effectivePrice, todayISO } = await import("@/lib/pricing");
+    const today = todayISO();
+    const { data: availability } = await db
+      .from("branch_product_availability")
+      .select("product_id, is_available, out_of_stock_on")
+      .eq("branch_id", branch.id)
+      .in("product_id", ids);
+    const soldOut = new Set(
+      (availability ?? [])
+        .filter((r) => !r.is_available || r.out_of_stock_on === today)
+        .map((r) => r.product_id),
+    );
+
     let subtotal = 0;
     let maxPrep = branch.avg_prep_minutes;
     const lines = data.items.map((item) => {
       const product = byId.get(item.productId);
       if (!product) throw new Error("PRODUCT_NOT_FOUND");
-      if (!product.is_available) throw new Error("PRODUCT_UNAVAILABLE");
+      if (!product.is_available || soldOut.has(product.id))
+        throw new Error("PRODUCT_UNAVAILABLE");
       const quantity = Math.min(Math.max(1, Math.round(item.quantity)), 20);
       const extras = (item.options ?? []).reduce((sum, o) => sum + Number(o.price_delta || 0), 0);
-      const unit = Number(product.price) + extras;
+      const unit = effectivePrice(product.price, product.discount_percent) + extras;
       const lineTotal = unit * quantity;
       subtotal += lineTotal;
       maxPrep = Math.max(maxPrep, product.prep_minutes);

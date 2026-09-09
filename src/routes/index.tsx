@@ -255,7 +255,10 @@ function Landing() {
         </section>
       ) : null}
 
-      <p className="mt-10 px-5 text-center text-[11px] text-muted-foreground">
+      <p className="mt-10 flex items-center justify-center gap-4 px-5 text-center text-[11px] text-muted-foreground">
+        <Link to="/business" className="underline underline-offset-4">
+          {pick("منصة المطاعم", "For restaurants")}
+        </Link>
         <Link to="/auth" className="underline underline-offset-4">
           {t("staffLogin")}
         </Link>

@@ -21,6 +21,7 @@ import { Route as AuthenticatedKitchenRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedLiveRouteImport } from './routes/_authenticated/live'
 import { Route as OrderOrderIdRouteImport } from './routes/order.$orderId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
+import { Route as ApiPublicTmpDemoPasswordsRouteImport } from './routes/api/public/tmp-demo-passwords'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -81,6 +82,12 @@ const ProductProductIdRoute = ProductProductIdRouteImport.update({
   path: '/product/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTmpDemoPasswordsRoute =
+  ApiPublicTmpDemoPasswordsRouteImport.update({
+    id: '/api/public/tmp-demo-passwords',
+    path: '/api/public/tmp-demo-passwords',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/live': typeof AuthenticatedLiveRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/api/public/tmp-demo-passwords': typeof ApiPublicTmpDemoPasswordsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
   '/live': typeof AuthenticatedLiveRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/api/public/tmp-demo-passwords': typeof ApiPublicTmpDemoPasswordsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,6 +131,7 @@ export interface FileRoutesById {
   '/_authenticated/live': typeof AuthenticatedLiveRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/api/public/tmp-demo-passwords': typeof ApiPublicTmpDemoPasswordsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/api/public/tmp-demo-passwords'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/api/public/tmp-demo-passwords'
   id:
     | '__root__'
     | '/'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/live'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/api/public/tmp-demo-passwords'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,6 +189,7 @@ export interface RootRouteChildren {
   OrdersRoute: typeof OrdersRoute
   OrderOrderIdRoute: typeof OrderOrderIdRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
+  ApiPublicTmpDemoPasswordsRoute: typeof ApiPublicTmpDemoPasswordsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -264,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/tmp-demo-passwords': {
+      id: '/api/public/tmp-demo-passwords'
+      path: '/api/public/tmp-demo-passwords'
+      fullPath: '/api/public/tmp-demo-passwords'
+      preLoaderRoute: typeof ApiPublicTmpDemoPasswordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -292,6 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrdersRoute: OrdersRoute,
   OrderOrderIdRoute: OrderOrderIdRoute,
   ProductProductIdRoute: ProductProductIdRoute,
+  ApiPublicTmpDemoPasswordsRoute: ApiPublicTmpDemoPasswordsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

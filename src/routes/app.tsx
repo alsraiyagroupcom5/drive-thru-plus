@@ -12,7 +12,7 @@ import { getMe } from "@/lib/customer.functions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/app")({
   validateSearch: (search: Record<string, unknown>) => ({
     branch: typeof search["branch"] === "string" ? (search["branch"] as string) : undefined,
   }),

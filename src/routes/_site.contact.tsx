@@ -5,7 +5,7 @@ import { CONTACT } from "@/lib/marketing";
 import { SectionTitle } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 
-export const Route = createFileRoute("/business/contact")({
+export const Route = createFileRoute("/_site/contact")({
   head: () => ({
     meta: [
       { title: "Contact us — Origami Platform, Doha Qatar" },

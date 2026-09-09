@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { FEATURES, ROLES } from "@/lib/marketing";
 import { SectionTitle } from "@/components/marketing/SiteChrome";
 
-export const Route = createFileRoute("/business/features")({
+export const Route = createFileRoute("/_site/features")({
   head: () => ({
     meta: [
       { title: "Platform features — ordering, kitchen screen, branch control | Origami" },

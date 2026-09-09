@@ -7,7 +7,7 @@ import { SectionTitle } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 import heroImage from "@/assets/business-hero.jpg";
 
-export const Route = createFileRoute("/business/")({
+export const Route = createFileRoute("/_site/")({
   head: () => ({
     meta: [
       { title: "Origami Platform — smart drive-thru ordering for restaurants" },

@@ -11,8 +11,17 @@ import {
 export type Lang = "ar" | "en";
 
 const dict = {
-  brand: { ar: "مسار", en: "MASAR" },
-  brandFull: { ar: "مسار جريل", en: "MASAR Grill" },
+  brand: { ar: "أوريغامي", en: "ORIGAMI" },
+  brandFull: { ar: "أوريغامي قطر", en: "Origami Qatar" },
+  tagline: {
+    ar: "قهوة مختصة وآيس كريم وحلويات",
+    en: "Specialty Coffee, Ice Cream & Desserts",
+  },
+  openHours: { ar: "يومياً ٧ صباحاً – ١٢ منتصف الليل", en: "Daily 7AM – 12AM" },
+  callBranch: { ar: "اتصل بالفرع", en: "Call branch" },
+  theme: { ar: "الوضع", en: "Theme" },
+  lightMode: { ar: "الوضع الفاتح", en: "Light mode" },
+  darkMode: { ar: "الوضع الداكن", en: "Dark mode" },
   goodMorning: { ar: "صباح الخير", en: "Good morning" },
   goodAfternoon: { ar: "مساء الخير", en: "Good afternoon" },
   goodEvening: { ar: "مساء الخير", en: "Good evening" },
@@ -29,7 +38,7 @@ const dict = {
   busyHigh: { ar: "مزدحم", en: "Busy" },
   menu: { ar: "المنيو", en: "Menu" },
   search: { ar: "بحث", en: "Search" },
-  searchPlaceholder: { ar: "ابحث عن برجر، دجاج، حار...", en: "Search burgers, chicken, spicy..." },
+  searchPlaceholder: { ar: "ابحث عن لاتيه، ماتشا، آيس كريم...", en: "Search latte, matcha, ice cream..." },
   cart: { ar: "السلة", en: "Cart" },
   orders: { ar: "طلباتي", en: "Orders" },
   home: { ar: "الرئيسية", en: "Home" },
@@ -131,7 +140,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>("ar");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("masar.lang");
+    const stored = window.localStorage.getItem("origami.lang");
     if (stored === "en" || stored === "ar") setLang(stored);
   }, []);
 
@@ -143,7 +152,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback(() => {
     setLang((prev) => {
       const next = prev === "ar" ? "en" : "ar";
-      window.localStorage.setItem("masar.lang", next);
+      window.localStorage.setItem("origami.lang", next);
       return next;
     });
   }, []);

@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n";
+import { ThemeProvider } from "@/lib/theme";
 import { CartProvider } from "@/lib/cart";
 import { CustomerAuthProvider } from "@/lib/customer-auth";
 import { Toaster } from "@/components/ui/sonner";
@@ -82,23 +83,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#22201d" },
-      { title: "MASAR Grill — Drive-Thru Ordering" },
-      { name: "description", content: "Order ahead, pick up from your car in minutes." },
+      { name: "theme-color", content: "#ffffff" },
+      { title: "Origami Qatar — Specialty Coffee, Ice Cream & Desserts" },
+      { name: "description", content: "Order ahead and collect in minutes from Duhail, Aspire or Lusail." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400..700&family=Tajawal:wght@300;400;500;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@300..800&family=Tajawal:wght@300;400;500;700;800&display=swap",
       },
     ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -124,15 +126,18 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <CustomerAuthProvider>
-          <CartProvider>
-            {/* Required: nested routes render here. */}
-            <Outlet />
-            <Toaster position="top-center" richColors />
-          </CartProvider>
-        </CustomerAuthProvider>
-      </LanguageProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <CustomerAuthProvider>
+            <CartProvider>
+              {/* Required: nested routes render here. */}
+              <Outlet />
+              <Toaster position="top-center" richColors />
+            </CartProvider>
+          </CustomerAuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
+

@@ -28,8 +28,8 @@ type Ctx = {
 };
 
 const CartContext = createContext<Ctx | null>(null);
-const CART_KEY = "masar.cart";
-const BRANCH_KEY = "masar.branch";
+const CART_KEY = "origami.cart";
+const BRANCH_KEY = "origami.branch";
 
 export function lineUnitPrice(line: CartLine) {
   return line.basePrice + line.options.reduce((s, o) => s + Number(o.price_delta || 0), 0);

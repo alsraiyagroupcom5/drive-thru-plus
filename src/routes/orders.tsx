@@ -13,9 +13,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const Route = createFileRoute("/orders")({
   head: () => ({
     meta: [
-      { title: "Order history — MASAR Grill" },
+      { title: "Order history — Origami Qatar" },
       { name: "description", content: "Your past drive-thru orders, ready to reorder in one tap." },
-      { property: "og:title", content: "Order history — MASAR Grill" },
+      { property: "og:title", content: "Order history — Origami Qatar" },
       { property: "og:description", content: "Your past orders, ready to reorder in one tap." },
     ],
   }),

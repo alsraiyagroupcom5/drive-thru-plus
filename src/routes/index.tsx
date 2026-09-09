@@ -18,19 +18,20 @@ export const Route = createFileRoute("/")({
   }),
   head: () => ({
     meta: [
-      { title: "MASAR Grill — Drive-Thru Ordering in Qatar" },
+      { title: "Origami Qatar — Specialty Coffee, Ice Cream & Desserts" },
       {
         name: "description",
         content:
-          "Scan, order and collect from your car in minutes. Premium burgers, chicken and sides across three Qatar branches.",
+          "Order specialty coffee, gelato and desserts ahead and collect in minutes at Duhail Night Market, Aspire Downtown or Lusail Marina. Open daily 7AM–12AM.",
       },
-      { property: "og:title", content: "MASAR Grill — Drive-Thru Ordering" },
+      { property: "og:title", content: "Origami Qatar — Specialty Coffee & Ice Cream" },
       {
         property: "og:description",
-        content: "Order ahead and pick up from your car in minutes.",
+        content: "Order ahead and collect in minutes across three Doha locations.",
       },
     ],
   }),
+
   component: Landing,
 });
 
@@ -88,12 +89,20 @@ function Landing() {
               ? t("welcomeBack")
               : t("brandFull")}
         </h1>
-        {me.data ? (
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-            <Gift className="h-3.5 w-3.5" aria-hidden />
-            {me.data.loyaltyPoints} {t("points")}
-          </div>
-        ) : null}
+        <p className="mt-1.5 text-sm text-muted-foreground">{t("tagline")}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+            <Clock className="h-3.5 w-3.5 text-primary" aria-hidden />
+            {t("openHours")}
+          </span>
+          {me.data ? (
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+              <Gift className="h-3.5 w-3.5" aria-hidden />
+              {me.data.loyaltyPoints} {t("points")}
+            </span>
+          ) : null}
+        </div>
+
       </section>
 
       {/* Branch */}
@@ -144,7 +153,17 @@ function Landing() {
                         <p className="mt-0.5 text-xs text-muted-foreground">
                           {pick(b.city_ar, b.city_en)}
                         </p>
+                        {b.phone ? (
+                          <span
+                            dir="ltr"
+                            className="mt-1 inline-block text-xs font-semibold text-primary"
+                          >
+                            {b.phone}
+                          </span>
+                        ) : null}
                       </div>
+
+
                       <span
                         className={cn(
                           "rounded-full px-2 py-1 text-[11px] font-bold",

@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/product/$productId")({
   head: () => ({
     meta: [
-      { title: "Product — MASAR Grill" },
+      { title: "Product — Origami Qatar" },
       { name: "description", content: "Customise your item and add it to your drive-thru order." },
-      { property: "og:title", content: "Product — MASAR Grill" },
+      { property: "og:title", content: "Product — Origami Qatar" },
       { property: "og:description", content: "Customise your item and add it to your order." },
     ],
   }),

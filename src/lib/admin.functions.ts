@@ -11,16 +11,21 @@ async function admin() {
   return supabaseAdmin;
 }
 
+/** Admin (super_admin) or restaurant owner (general_manager) may manage accounts. */
 async function assertSuperAdmin(supabase: unknown, userId: string) {
   const client = supabase as {
     rpc: (
       fn: "has_role",
-      args: { _user_id: string; _role: "super_admin" },
+      args: { _user_id: string; _role: "super_admin" | "general_manager" },
     ) => PromiseLike<{ data: unknown }>;
   };
-  const { data } = await client.rpc("has_role", { _user_id: userId, _role: "super_admin" });
-  if (data !== true) throw new Error("FORBIDDEN");
+  const [{ data: isAdmin }, { data: isOwner }] = await Promise.all([
+    client.rpc("has_role", { _user_id: userId, _role: "super_admin" }),
+    client.rpc("has_role", { _user_id: userId, _role: "general_manager" }),
+  ]);
+  if (isAdmin !== true && isOwner !== true) throw new Error("FORBIDDEN");
 }
+
 
 
 /** Whether the signed-in user is the general admin, and whether one exists at all. */
@@ -36,10 +41,10 @@ export const adminStatus = createServerFn({ method: "POST" })
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId)
-      .eq("role", "super_admin")
-      .maybeSingle();
-    return { isSuperAdmin: !!mine, superAdminExists: (count ?? 0) > 0 };
+      .in("role", ["super_admin", "general_manager"]);
+    return { isSuperAdmin: (mine ?? []).length > 0, superAdminExists: (count ?? 0) > 0 };
   });
+
 
 /** First-run bootstrap: if no general admin exists yet, the signed-in user becomes one. */
 export const claimSuperAdmin = createServerFn({ method: "POST" })

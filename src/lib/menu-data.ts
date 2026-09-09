@@ -46,6 +46,22 @@ export const productsQuery = queryOptions({
   staleTime: 300_000,
 });
 
+export function branchAvailabilityQuery(branchId: string | null) {
+  return queryOptions({
+    queryKey: ["branch-availability", branchId],
+    enabled: !!branchId,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("branch_product_availability")
+        .select("product_id, is_available, out_of_stock_on")
+        .eq("branch_id", branchId!);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function productQuery(id: string) {
   return queryOptions({
     queryKey: ["product", id],

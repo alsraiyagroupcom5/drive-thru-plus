@@ -22,6 +22,13 @@
       "when": 1788935460154,
       "tag": "0002_next_order_number_fn",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788950721739,
+      "tag": "0003_owner_menu_discounts_and_daily_stock",
+      "breakpoints": true
     }
   ]
 }

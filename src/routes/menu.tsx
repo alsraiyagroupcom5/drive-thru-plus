@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { Search, ShoppingBag } from "lucide-react";
 import { AppShell, LanguageToggle } from "@/components/customer/AppShell";
 import { ProductCard } from "@/components/customer/ProductCard";
-import { categoriesQuery, productsQuery } from "@/lib/menu-data";
+import { branchAvailabilityQuery, categoriesQuery, productsQuery } from "@/lib/menu-data";
+import { todayISO } from "@/lib/pricing";
 import { useI18n, money } from "@/lib/i18n";
 import { useCart } from "@/lib/cart";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,12 +28,22 @@ export const Route = createFileRoute("/menu")({
 
 function MenuPage() {
   const { t, pick, lang } = useI18n();
-  const { count, subtotal } = useCart();
+  const { count, subtotal, branchId } = useCart();
   const [active, setActive] = useState<string>("all");
   const [term, setTerm] = useState("");
 
   const categories = useQuery(categoriesQuery);
   const products = useQuery(productsQuery);
+  const availability = useQuery(branchAvailabilityQuery(branchId));
+
+  const soldOut = useMemo(() => {
+    const today = todayISO();
+    const set = new Set<string>();
+    for (const row of availability.data ?? []) {
+      if (!row.is_available || row.out_of_stock_on === today) set.add(row.product_id);
+    }
+    return set;
+  }, [availability.data]);
 
   const filtered = useMemo(() => {
     const list = products.data ?? [];
@@ -90,7 +101,9 @@ function MenuPage() {
         {products.isLoading
           ? [0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)
           : filtered.length
-            ? filtered.map((p) => <ProductCard key={p.id} product={p} />)
+            ? filtered.map((p) => (
+                <ProductCard key={p.id} product={p} soldOutToday={soldOut.has(p.id)} />
+              ))
             : (
                 <div className="py-20 text-center">
                   <p className="font-display text-lg font-semibold">{t("noResults")}</p>

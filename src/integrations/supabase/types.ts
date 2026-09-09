@@ -51,16 +51,19 @@ export type Database = {
         Row: {
           branch_id: string
           is_available: boolean
+          out_of_stock_on: string | null
           product_id: string
         }
         Insert: {
           branch_id: string
           is_available?: boolean
+          out_of_stock_on?: string | null
           product_id: string
         }
         Update: {
           branch_id?: string
           is_available?: boolean
+          out_of_stock_on?: string | null
           product_id?: string
         }
         Relationships: [
@@ -693,6 +696,7 @@ export type Database = {
           created_at: string
           description_ar: string | null
           description_en: string | null
+          discount_percent: number
           id: string
           image_url: string | null
           is_available: boolean
@@ -714,6 +718,7 @@ export type Database = {
           created_at?: string
           description_ar?: string | null
           description_en?: string | null
+          discount_percent?: number
           id?: string
           image_url?: string | null
           is_available?: boolean
@@ -735,6 +740,7 @@ export type Database = {
           created_at?: string
           description_ar?: string | null
           description_en?: string | null
+          discount_percent?: number
           id?: string
           image_url?: string | null
           is_available?: boolean

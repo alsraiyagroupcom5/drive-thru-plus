@@ -85,6 +85,8 @@ export type Database = {
       }
       branches: {
         Row: {
+          address_ar: string | null
+          address_en: string | null
           avg_prep_minutes: number
           busy_level: number
           city_ar: string | null
@@ -96,6 +98,7 @@ export type Database = {
           is_open: boolean
           lat: number | null
           lng: number | null
+          maps_url: string | null
           name_ar: string
           name_en: string
           opens_at: string
@@ -103,6 +106,8 @@ export type Database = {
           restaurant_id: string
         }
         Insert: {
+          address_ar?: string | null
+          address_en?: string | null
           avg_prep_minutes?: number
           busy_level?: number
           city_ar?: string | null
@@ -114,6 +119,7 @@ export type Database = {
           is_open?: boolean
           lat?: number | null
           lng?: number | null
+          maps_url?: string | null
           name_ar: string
           name_en: string
           opens_at?: string
@@ -121,6 +127,8 @@ export type Database = {
           restaurant_id: string
         }
         Update: {
+          address_ar?: string | null
+          address_en?: string | null
           avg_prep_minutes?: number
           busy_level?: number
           city_ar?: string | null
@@ -132,6 +140,7 @@ export type Database = {
           is_open?: boolean
           lat?: number | null
           lng?: number | null
+          maps_url?: string | null
           name_ar?: string
           name_en?: string
           opens_at?: string

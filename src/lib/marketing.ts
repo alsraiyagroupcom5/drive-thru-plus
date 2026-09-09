@@ -162,7 +162,7 @@ export type RoleBlock = {
   titleEn: string;
   linkLabelAr: string;
   linkLabelEn: string;
-  to: "/admin" | "/owner" | "/live" | "/";
+  to: "/admin" | "/owner" | "/live" | "/app";
   pointsAr: string[];
   pointsEn: string[];
 };
@@ -242,7 +242,7 @@ export const ROLES: RoleBlock[] = [
     titleEn: "Customer app",
     linkLabelAr: "جرّب التطبيق",
     linkLabelEn: "Open the app",
-    to: "/",
+    to: "/app",
     pointsAr: [
       "اختيار الفرع ومشاهدة وقت التحضير",
       "منيو بالصور مع تخصيص كامل",

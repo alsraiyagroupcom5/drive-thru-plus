@@ -1,20 +1,8 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { useI18n } from "@/lib/i18n";
-import { SiteFooter, SiteHeader } from "@/components/marketing/SiteChrome";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+/** Legacy address: the product website now lives at the root. */
 export const Route = createFileRoute("/business")({
-  component: MarketingLayout,
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
 });
-
-function MarketingLayout() {
-  const { dir } = useI18n();
-  return (
-    <div dir={dir} className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
-      <main>
-        <Outlet />
-      </main>
-      <SiteFooter />
-    </div>
-  );
-}

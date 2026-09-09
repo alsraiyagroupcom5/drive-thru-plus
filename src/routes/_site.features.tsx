@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { FEATURES, ROLES } from "@/lib/marketing";
 import { SectionTitle } from "@/components/marketing/SiteChrome";
 
-export const Route = createFileRoute("/business/features")({
+export const Route = createFileRoute("/_site/features")({
   head: () => ({
     meta: [
       { title: "Platform features — ordering, kitchen screen, branch control | Origami" },
@@ -77,7 +77,7 @@ function FeaturesPage() {
                 </ul>
                 <Link
                   to={r.to}
-                  {...(r.to === "/" ? { search: { branch: undefined } } : {})}
+                  {...(r.to === "/app" ? { search: { branch: undefined } } : {})}
                   className="mt-6 rounded-full border border-primary px-5 py-2.5 text-center text-sm font-bold text-primary"
                 >
                   {pick(r.linkLabelAr, r.linkLabelEn)}
@@ -94,12 +94,12 @@ function FeaturesPage() {
         </h2>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link
-            to="/business/contact"
+            to="/contact"
             className="rounded-full bg-[image:var(--gradient-brass)] px-6 py-3.5 font-display text-sm font-bold text-primary-foreground"
           >
             {pick("اطلب حسابك", "Request your account")}
           </Link>
-          <Link to="/business/pricing" className="rounded-full border border-border px-6 py-3.5 text-sm font-semibold">
+          <Link to="/pricing" className="rounded-full border border-border px-6 py-3.5 text-sm font-semibold">
             {pick("عرض الأسعار", "View pricing")}
           </Link>
         </div>

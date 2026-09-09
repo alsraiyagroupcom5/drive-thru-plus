@@ -36,6 +36,13 @@
       "when": 1788951302268,
       "tag": "0004_signup_requests_and_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788970045997,
+      "tag": "0005_branch_location_details",
+      "breakpoints": true
     }
   ]
 }

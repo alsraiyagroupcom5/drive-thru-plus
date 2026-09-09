@@ -12,7 +12,7 @@ import { getMe } from "@/lib/customer.functions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/app")({
   validateSearch: (search: Record<string, unknown>) => ({
     branch: typeof search["branch"] === "string" ? (search["branch"] as string) : undefined,
   }),
@@ -256,7 +256,7 @@ function Landing() {
       ) : null}
 
       <p className="mt-10 flex items-center justify-center gap-4 px-5 text-center text-[11px] text-muted-foreground">
-        <Link to="/business" className="underline underline-offset-4">
+        <Link to="/" className="underline underline-offset-4">
           {pick("منصة المطاعم", "For restaurants")}
         </Link>
         <Link to="/auth" className="underline underline-offset-4">

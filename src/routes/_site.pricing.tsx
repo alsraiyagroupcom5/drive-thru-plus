@@ -6,7 +6,7 @@ import { PLANS } from "@/lib/marketing";
 import { SectionTitle } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 
-export const Route = createFileRoute("/business/pricing")({
+export const Route = createFileRoute("/_site/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — from QAR 349 per branch monthly | Origami Platform" },
@@ -101,7 +101,7 @@ function PricingPage() {
                 ))}
               </ul>
               <Link
-                to="/business/contact"
+                to="/contact"
                 className={cn(
                   "mt-6 rounded-full py-3 text-center text-sm font-bold",
                   p.highlight

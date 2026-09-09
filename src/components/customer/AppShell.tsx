@@ -76,7 +76,7 @@ export function AppShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const items = [
-    { to: "/", icon: Home, label: t("home") },
+    { to: "/app", icon: Home, label: t("home") },
     { to: "/menu", icon: UtensilsCrossed, label: t("menu") },
     { to: "/cart", icon: ShoppingBag, label: t("cart"), badge: count },
     { to: "/orders", icon: ReceiptText, label: t("orders") },
@@ -93,7 +93,7 @@ export function AppShell({
         >
           <ul className="grid grid-cols-4">
             {items.map((item) => {
-              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+              const active = item.to === "/app" ? pathname === "/app" : pathname.startsWith(item.to);
               return (
                 <li key={item.to}>
                   <Link

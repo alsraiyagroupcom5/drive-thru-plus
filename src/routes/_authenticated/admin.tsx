@@ -207,7 +207,7 @@ function AdminConsole() {
               </button>
             </>
           )}
-          <Link to="/" search={{ branch: undefined }} className="mt-4 block text-xs underline underline-offset-4">
+          <Link to="/app" search={{ branch: undefined }} className="mt-4 block text-xs underline underline-offset-4">
             {pick("العودة للرئيسية", "Back to home")}
           </Link>
         </div>

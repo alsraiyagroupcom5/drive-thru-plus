@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus } from "lucide-react";
+import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users } from "lucide-react";
+import { TeamTab } from "@/components/owner/TeamTab";
+import { DesignTab } from "@/components/owner/DesignTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -46,7 +48,7 @@ const IMAGE_KEYS = [
   "cooler",
 ];
 
-type Tab = "branches" | "menu" | "orders";
+type Tab = "branches" | "menu" | "design" | "team" | "orders";
 
 function OwnerConsole() {
   const { pick, lang } = useI18n();
@@ -72,7 +74,7 @@ function OwnerConsole() {
         <p className="mt-2 text-sm text-muted-foreground">
           {pick("هذا الحساب ليس لديه صلاحية المالك.", "This account is not a restaurant owner.")}
         </p>
-        <Link to="/" search={{ branch: undefined }} className="mt-4 block text-xs underline">
+        <Link to="/app" search={{ branch: undefined }} className="mt-4 block text-xs underline">
           {pick("العودة للرئيسية", "Back to home")}
         </Link>
       </div>
@@ -104,7 +106,9 @@ function OwnerConsole() {
         {(
           [
             { id: "menu", ar: "المنيو", en: "Menu", icon: UtensilsCrossed },
+            { id: "design", ar: "شكل المنيو", en: "Menu design", icon: Palette },
             { id: "branches", ar: "الفروع", en: "Branches", icon: Store },
+            { id: "team", ar: "الفريق", en: "Team", icon: Users },
             { id: "orders", ar: "الطلبات", en: "Orders", icon: ClipboardList },
           ] as const
         ).map((x) => (
@@ -132,7 +136,11 @@ function OwnerConsole() {
           lang={lang}
         />
       )}
+      {tab === "design" && (
+        <DesignTab categories={data.categories} products={data.products} onChanged={refreshMenu} />
+      )}
       {tab === "branches" && <BranchesTab branches={data.branches} onChanged={refreshMenu} />}
+      {tab === "team" && <TeamTab branches={data.branches} />}
       {tab === "orders" && <OrdersTab branches={data.branches} lang={lang} />}
     </div>
   );
@@ -639,6 +647,11 @@ function BranchForm({
     code: (branch?.["code"] as string) ?? "",
     city_ar: (branch?.["city_ar"] as string) ?? "",
     city_en: (branch?.["city_en"] as string) ?? "",
+    address_ar: (branch?.["address_ar"] as string) ?? "",
+    address_en: (branch?.["address_en"] as string) ?? "",
+    maps_url: (branch?.["maps_url"] as string) ?? "",
+    lat: branch?.["lat"] === null || branch?.["lat"] === undefined ? "" : String(branch["lat"]),
+    lng: branch?.["lng"] === null || branch?.["lng"] === undefined ? "" : String(branch["lng"]),
     phone: (branch?.["phone"] as string) ?? "",
     opens_at: String(branch?.["opens_at"] ?? "07:00:00").slice(0, 5),
     closes_at: String(branch?.["closes_at"] ?? "00:00:00").slice(0, 5),
@@ -656,6 +669,11 @@ function BranchForm({
           code: form.code,
           city_ar: form.city_ar,
           city_en: form.city_en,
+          address_ar: form.address_ar,
+          address_en: form.address_en,
+          maps_url: form.maps_url,
+          lat: form.lat.trim() === "" ? null : Number(form.lat),
+          lng: form.lng.trim() === "" ? null : Number(form.lng),
           phone: form.phone,
           opens_at: `${form.opens_at}:00`,
           closes_at: `${form.closes_at}:00`,
@@ -679,6 +697,11 @@ function BranchForm({
         <input className={input} dir="ltr" placeholder={pick("الهاتف", "Phone")} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
         <input className={input} placeholder={pick("المدينة (عربي)", "City (Arabic)")} value={form.city_ar} onChange={(e) => setForm({ ...form, city_ar: e.target.value })} />
         <input className={input} dir="ltr" placeholder="City (English)" value={form.city_en} onChange={(e) => setForm({ ...form, city_en: e.target.value })} />
+        <input className={input} placeholder={pick("العنوان (عربي)", "Address (Arabic)")} value={form.address_ar} onChange={(e) => setForm({ ...form, address_ar: e.target.value })} />
+        <input className={input} dir="ltr" placeholder="Address (English)" value={form.address_en} onChange={(e) => setForm({ ...form, address_en: e.target.value })} />
+        <input className={cn(input, "sm:col-span-2")} dir="ltr" placeholder={pick("رابط الموقع على الخرائط", "Google Maps link")} value={form.maps_url} onChange={(e) => setForm({ ...form, maps_url: e.target.value })} />
+        <input className={input} dir="ltr" placeholder={pick("خط العرض", "Latitude")} value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} />
+        <input className={input} dir="ltr" placeholder={pick("خط الطول", "Longitude")} value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} />
         <input className={input} dir="ltr" type="time" value={form.opens_at} onChange={(e) => setForm({ ...form, opens_at: e.target.value })} />
         <input className={input} dir="ltr" type="time" value={form.closes_at} onChange={(e) => setForm({ ...form, closes_at: e.target.value })} />
         <input className={input} dir="ltr" type="number" placeholder={pick("متوسط التحضير (دقيقة)", "Avg prep minutes")} value={form.avg_prep_minutes} onChange={(e) => setForm({ ...form, avg_prep_minutes: e.target.value })} />
@@ -687,6 +710,11 @@ function BranchForm({
           {pick("الفرع مفتوح", "Branch open")}
         </label>
       </div>
+      {form.maps_url ? (
+        <a href={form.maps_url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-xs underline">
+          {pick("فتح الموقع على الخرائط", "Open location on maps")}
+        </a>
+      ) : null}
       <div className="mt-5 flex gap-2">
         <button
           onClick={() => save.mutate()}

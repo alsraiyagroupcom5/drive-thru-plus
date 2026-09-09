@@ -11,8 +11,17 @@ import {
 export type Lang = "ar" | "en";
 
 const dict = {
-  brand: { ar: "مسار", en: "MASAR" },
-  brandFull: { ar: "مسار جريل", en: "MASAR Grill" },
+  brand: { ar: "أوريغامي", en: "ORIGAMI" },
+  brandFull: { ar: "أوريغامي قطر", en: "Origami Qatar" },
+  tagline: {
+    ar: "قهوة مختصة وآيس كريم وحلويات",
+    en: "Specialty Coffee, Ice Cream & Desserts",
+  },
+  openHours: { ar: "يومياً ٧ صباحاً – ١٢ منتصف الليل", en: "Daily 7AM – 12AM" },
+  callBranch: { ar: "اتصل بالفرع", en: "Call branch" },
+  theme: { ar: "الوضع", en: "Theme" },
+  lightMode: { ar: "الوضع الفاتح", en: "Light mode" },
+  darkMode: { ar: "الوضع الداكن", en: "Dark mode" },
   goodMorning: { ar: "صباح الخير", en: "Good morning" },
   goodAfternoon: { ar: "مساء الخير", en: "Good afternoon" },
   goodEvening: { ar: "مساء الخير", en: "Good evening" },

@@ -89,12 +89,20 @@ function Landing() {
               ? t("welcomeBack")
               : t("brandFull")}
         </h1>
-        {me.data ? (
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-            <Gift className="h-3.5 w-3.5" aria-hidden />
-            {me.data.loyaltyPoints} {t("points")}
-          </div>
-        ) : null}
+        <p className="mt-1.5 text-sm text-muted-foreground">{t("tagline")}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+            <Clock className="h-3.5 w-3.5 text-primary" aria-hidden />
+            {t("openHours")}
+          </span>
+          {me.data ? (
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+              <Gift className="h-3.5 w-3.5" aria-hidden />
+              {me.data.loyaltyPoints} {t("points")}
+            </span>
+          ) : null}
+        </div>
+
       </section>
 
       {/* Branch */}

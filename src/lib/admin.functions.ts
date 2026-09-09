@@ -41,10 +41,10 @@ export const adminStatus = createServerFn({ method: "POST" })
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId)
-      .eq("role", "super_admin")
-      .maybeSingle();
-    return { isSuperAdmin: !!mine, superAdminExists: (count ?? 0) > 0 };
+      .in("role", ["super_admin", "general_manager"]);
+    return { isSuperAdmin: (mine ?? []).length > 0, superAdminExists: (count ?? 0) > 0 };
   });
+
 
 /** First-run bootstrap: if no general admin exists yet, the signed-in user becomes one. */
 export const claimSuperAdmin = createServerFn({ method: "POST" })

@@ -319,7 +319,7 @@ function BusinessPage() {
                 </p>
                 <p className="text-xs text-muted-foreground">{pick(p.perAr, p.perEn)}</p>
                 <ul className="mt-4 flex-1 space-y-2 text-sm">
-                  {(pick(p.featuresAr, p.featuresEn) as readonly string[]).map((f) => (
+                  {(dir === "rtl" ? p.featuresAr : p.featuresEn).map((f: string) => (
                     <li key={f} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
                       {f}

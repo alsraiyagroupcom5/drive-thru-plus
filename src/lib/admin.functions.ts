@@ -11,12 +11,17 @@ async function admin() {
   return supabaseAdmin;
 }
 
-async function assertSuperAdmin(supabase: {
-  rpc: (fn: "has_role", args: { _user_id: string; _role: "super_admin" }) => Promise<{ data: unknown }>;
-}, userId: string) {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "super_admin" });
+async function assertSuperAdmin(supabase: unknown, userId: string) {
+  const client = supabase as {
+    rpc: (
+      fn: "has_role",
+      args: { _user_id: string; _role: "super_admin" },
+    ) => PromiseLike<{ data: unknown }>;
+  };
+  const { data } = await client.rpc("has_role", { _user_id: userId, _role: "super_admin" });
   if (data !== true) throw new Error("FORBIDDEN");
 }
+
 
 /** Whether the signed-in user is the general admin, and whether one exists at all. */
 export const adminStatus = createServerFn({ method: "POST" })

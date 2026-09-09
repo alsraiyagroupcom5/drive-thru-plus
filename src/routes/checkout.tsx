@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Car, CreditCard, Smartphone, Wallet, ShieldCheck } from "lucide-react";
+import { Car, CreditCard, Smartphone, Wallet, ShieldCheck, Smile } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/customer/AppShell";
 import { useI18n, money } from "@/lib/i18n";
@@ -82,6 +82,21 @@ function CheckoutPage() {
     },
     onError: () => toast.error(t("tryAgain")),
   });
+
+  const demoLogin = useMutation({
+    mutationFn: async () => {
+      const demoPhone = "+974 5555 1234";
+      setPhone(demoPhone);
+      const sent = await requestOtp({ data: { phone: demoPhone } });
+      return verifyOtp({ data: { phone: demoPhone, code: sent.demoCode } });
+    },
+    onSuccess: (res) => {
+      signIn(res.token, res.customer.id);
+      setDemoCode(null);
+    },
+    onError: () => toast.error(t("somethingWrong")),
+  });
+
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -165,6 +180,16 @@ function CheckoutPage() {
                 {t("sendCode")}
               </button>
             </div>
+
+            <button
+              onClick={() => demoLogin.mutate()}
+              disabled={demoLogin.isPending}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-xs font-semibold transition hover:border-primary hover:text-primary disabled:opacity-50"
+            >
+              <Smile className="h-4 w-4" aria-hidden />
+              {pick("دخول تجريبي بنقرة واحدة", "One-tap demo sign in")}
+            </button>
+
 
             {demoCode && (
               <div className="mt-4">

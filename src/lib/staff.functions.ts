@@ -22,17 +22,16 @@ export const claimStaffRole = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!branch) throw new Error("BRANCH_NOT_FOUND");
 
-    await supabaseAdmin
-      .from("user_roles")
-      .upsert(
-        {
-          user_id: context.userId,
-          role: data.role,
-          restaurant_id: RESTAURANT_ID,
-          branch_id: data.branchId,
-        } as never,
-        { onConflict: "user_id,role,branch_id" },
-      );
+    const { error } = await supabaseAdmin.from("user_roles").upsert(
+      {
+        user_id: context.userId,
+        role: data.role,
+        restaurant_id: RESTAURANT_ID,
+        branch_id: data.branchId,
+      } as never,
+      { onConflict: "user_id,role" },
+    );
+    if (error) throw new Error(error.message);
 
     return { ok: true };
   });

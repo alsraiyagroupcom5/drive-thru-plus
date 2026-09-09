@@ -108,12 +108,39 @@ function StaffAuth() {
           >
             {t("staffLogin")}
           </button>
+
+          <div className="rounded-2xl border border-dashed border-border p-3">
+            <p className="text-center text-[11px] text-muted-foreground">
+              {pick("دخول تجريبي بنقرة واحدة", "One-tap demo sign in")}
+            </p>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {(
+                [
+                  { role: "admin" as const, label: pick("المسؤول", "Admin") },
+                  { role: "owner" as const, label: pick("المالك", "Owner") },
+                  { role: "staff" as const, label: pick("الفريق", "Team") },
+                ]
+              ).map((d) => (
+                <button
+                  key={d.role}
+                  onClick={() => demoLogin(d.role)}
+                  disabled={busy}
+                  className="flex flex-col items-center gap-1 rounded-xl border border-border bg-elevated py-2.5 text-[11px] font-semibold transition hover:border-primary hover:text-primary disabled:opacity-50"
+                >
+                  <Smile className="h-5 w-5" aria-hidden />
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <p className="text-center text-xs text-muted-foreground">
             {pick(
               "الحسابات يتم إنشاؤها من قِبل المسؤول العام فقط.",
               "Accounts are created by the general admin only.",
             )}
           </p>
+
           <Link
             to="/admin"
             className="block w-full text-center text-xs text-muted-foreground underline underline-offset-4"

@@ -146,16 +146,15 @@ function Landing() {
                           {pick(b.city_ar, b.city_en)}
                         </p>
                         {b.phone ? (
-                          <a
-                            href={`tel:+974${b.phone}`}
+                          <span
                             dir="ltr"
-                            onClick={(e) => e.stopPropagation()}
-                            className="mt-1 inline-block text-xs font-semibold text-primary underline underline-offset-4"
+                            className="mt-1 inline-block text-xs font-semibold text-primary"
                           >
                             {b.phone}
-                          </a>
+                          </span>
                         ) : null}
                       </div>
+
 
                       <span
                         className={cn(

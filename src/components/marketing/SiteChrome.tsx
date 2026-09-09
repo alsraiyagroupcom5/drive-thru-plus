@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronDown, Instagram, Mail, Menu, Phone, X } from "lucide-react";
+import { ChevronDown, Instagram, Mail, Menu, Moon, Phone, Sun, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -61,9 +61,13 @@ export function SiteHeader() {
           <button
             onClick={toggleTheme}
             aria-label={theme === "light" ? "Dark mode" : "Light mode"}
-            className="rounded-full border border-border px-3 py-1.5 text-xs"
+            className="rounded-full border border-border p-2"
           >
-            {theme === "light" ? "🌙" : "☀️"}
+            {theme === "light" ? (
+              <Moon className="h-4 w-4" aria-hidden />
+            ) : (
+              <Sun className="h-4 w-4" aria-hidden />
+            )}
           </button>
           <button
             onClick={toggle}

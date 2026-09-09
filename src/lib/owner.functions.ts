@@ -359,7 +359,7 @@ export const setProductLayout = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertOwner(context.supabase, context.userId);
     const db = await admin();
-    const patch: Record<string, unknown> = {};
+    const patch: { sort_order?: number; is_popular?: boolean; is_new?: boolean } = {};
     if (data.sortOrder !== undefined) patch["sort_order"] = clamp(Math.round(Number(data.sortOrder)), 0, 999);
     if (data.isPopular !== undefined) patch["is_popular"] = data.isPopular;
     if (data.isNew !== undefined) patch["is_new"] = data.isNew;

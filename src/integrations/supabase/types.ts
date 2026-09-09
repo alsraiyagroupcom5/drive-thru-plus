@@ -848,6 +848,48 @@ export type Database = {
           },
         ]
       }
+      signup_requests: {
+        Row: {
+          branches_count: number
+          contact_name: string
+          created_at: string
+          email: string
+          handled_at: string | null
+          id: string
+          message: string | null
+          phone: string | null
+          plan: string
+          restaurant_name: string
+          status: string
+        }
+        Insert: {
+          branches_count?: number
+          contact_name: string
+          created_at?: string
+          email: string
+          handled_at?: string | null
+          id?: string
+          message?: string | null
+          phone?: string | null
+          plan?: string
+          restaurant_name: string
+          status?: string
+        }
+        Update: {
+          branches_count?: number
+          contact_name?: string
+          created_at?: string
+          email?: string
+          handled_at?: string | null
+          id?: string
+          message?: string | null
+          phone?: string | null
+          plan?: string
+          restaurant_name?: string
+          status?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           branch_id: string | null

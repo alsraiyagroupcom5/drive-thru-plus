@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Car, CreditCard, Smartphone, Wallet, ShieldCheck } from "lucide-react";
+import { Car, CreditCard, Smartphone, Wallet, ShieldCheck, Smile } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/customer/AppShell";
 import { useI18n, money } from "@/lib/i18n";

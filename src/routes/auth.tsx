@@ -1,13 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { branchesQuery } from "@/lib/menu-data";
-import { claimStaffRole } from "@/lib/staff.functions";
 import { useI18n } from "@/lib/i18n";
 import { BrandMark, LanguageToggle } from "@/components/customer/AppShell";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -25,32 +21,24 @@ export const Route = createFileRoute("/auth")({
 function StaffAuth() {
   const { t, pick } = useI18n();
   const navigate = useNavigate();
-  const branches = useQuery(branchesQuery);
 
-  const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"kitchen" | "branch_manager">("kitchen");
-  const [branchId, setBranchId] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     setBusy(true);
     try {
-      if (mode === "up") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin + "/auth" },
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
-      const chosen = branchId || branches.data?.[0]?.id;
-      if (chosen) await claimStaffRole({ data: { role, branchId: chosen } });
-      navigate({ to: role === "kitchen" ? "/kitchen" : "/live" });
+      const { data: signIn, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      const userId = signIn.user?.id;
+      const { data: roles } = userId
+        ? await supabase.from("user_roles").select("role").eq("user_id", userId)
+        : { data: [] };
+      const list = (roles ?? []).map((r) => r.role as string);
+      if (list.includes("super_admin")) navigate({ to: "/admin" });
+      else if (list.includes("kitchen")) navigate({ to: "/kitchen" });
+      else navigate({ to: "/live" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("somethingWrong"));
     } finally {
@@ -90,53 +78,19 @@ function StaffAuth() {
             className="h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2"
           />
 
-          <div className="grid grid-cols-2 gap-2">
-            {(
-              [
-                { id: "kitchen", label: t("kitchen") },
-                { id: "branch_manager", label: t("liveOrders") },
-              ] as const
-            ).map((r) => (
-              <button
-                key={r.id}
-                onClick={() => setRole(r.id)}
-                className={cn(
-                  "rounded-xl border px-3 py-2.5 text-xs font-semibold",
-                  role === r.id ? "border-primary bg-primary/10 text-primary" : "border-border",
-                )}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-
-          <select
-            value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
-            aria-label={t("branch")}
-            className="h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none"
-          >
-            <option value="">{t("chooseBranch")}</option>
-            {(branches.data ?? []).map((b) => (
-              <option key={b.id} value={b.id}>
-                {pick(b.name_ar, b.name_en)}
-              </option>
-            ))}
-          </select>
-
           <button
             onClick={submit}
             disabled={busy || !email || password.length < 6}
             className="w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
           >
-            {mode === "in" ? t("staffLogin") : t("continue")}
+            {t("staffLogin")}
           </button>
-          <button
-            onClick={() => setMode(mode === "in" ? "up" : "in")}
-            className="w-full text-xs text-muted-foreground underline underline-offset-4"
-          >
-            {mode === "in" ? "Create a staff account" : "I already have an account"}
-          </button>
+          <p className="text-center text-xs text-muted-foreground">
+            {pick(
+              "الحسابات يتم إنشاؤها من قِبل المسؤول العام فقط.",
+              "Accounts are created by the general admin only.",
+            )}
+          </p>
           <Link
             to="/admin"
             className="block w-full text-center text-xs text-muted-foreground underline underline-offset-4"

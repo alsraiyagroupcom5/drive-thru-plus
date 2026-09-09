@@ -77,7 +77,7 @@ function FeaturesPage() {
                 </ul>
                 <Link
                   to={r.to}
-                  {...(r.to === "/" ? { search: { branch: undefined } } : {})}
+                  {...(r.to === "/app" ? { search: { branch: undefined } } : {})}
                   className="mt-6 rounded-full border border-primary px-5 py-2.5 text-center text-sm font-bold text-primary"
                 >
                   {pick(r.linkLabelAr, r.linkLabelEn)}

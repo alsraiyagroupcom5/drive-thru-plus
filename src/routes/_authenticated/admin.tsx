@@ -279,7 +279,7 @@ function AdminConsole() {
                     <p className="font-semibold">{r.order_number}</p>
                     <p className="truncate text-xs text-muted-foreground">
                       {r.branches ? pick(r.branches.name_ar, r.branches.name_en) : ""} ·{" "}
-                      {new Date(r.created_at).toLocaleString(lang === "ar" ? "ar-QA" : "en-GB")}
+                      {formatDateTime(r.created_at, lang)}
                     </p>
                   </div>
                   <div className="shrink-0 text-end">

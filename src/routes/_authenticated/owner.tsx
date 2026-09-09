@@ -8,7 +8,7 @@ import { DesignTab } from "@/components/owner/DesignTab";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useI18n, money } from "@/lib/i18n";
+import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { effectivePrice, hasDiscount, todayISO } from "@/lib/pricing";
 import {
@@ -790,9 +790,7 @@ function OrdersTab({ branches, lang }: { branches: Row[]; lang: "ar" | "en" }) {
                 <p className="font-display font-bold">{o["order_number"] as string}</p>
                 <p className="truncate text-xs text-muted-foreground">
                   {branch ? pick(branch["name_ar"] as string, branch["name_en"] as string) : ""} ·{" "}
-                  {new Date(o["created_at"] as string).toLocaleString(
-                    lang === "ar" ? "ar-QA" : "en-GB",
-                  )}
+                  {formatDateTime(o["created_at"] as string, lang)}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
                   {items

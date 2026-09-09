@@ -22,9 +22,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — MASAR Grill" },
+      { title: "Checkout — Origami Qatar" },
       { name: "description", content: "Confirm your car, payment method and place your order." },
-      { property: "og:title", content: "Checkout — MASAR Grill" },
+      { property: "og:title", content: "Checkout — Origami Qatar" },
       { property: "og:description", content: "Confirm your car and place your drive-thru order." },
     ],
   }),

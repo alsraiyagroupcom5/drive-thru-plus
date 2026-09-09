@@ -8,9 +8,9 @@ import { foodImage } from "@/lib/food-images";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Your cart — MASAR Grill" },
+      { title: "Your cart — Origami Qatar" },
       { name: "description", content: "Review your drive-thru order before checkout." },
-      { property: "og:title", content: "Your cart — MASAR Grill" },
+      { property: "og:title", content: "Your cart — Origami Qatar" },
       { property: "og:description", content: "Review your drive-thru order before checkout." },
     ],
   }),

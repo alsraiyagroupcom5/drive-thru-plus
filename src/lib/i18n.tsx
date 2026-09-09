@@ -38,7 +38,7 @@ const dict = {
   busyHigh: { ar: "مزدحم", en: "Busy" },
   menu: { ar: "المنيو", en: "Menu" },
   search: { ar: "بحث", en: "Search" },
-  searchPlaceholder: { ar: "ابحث عن برجر، دجاج، حار...", en: "Search burgers, chicken, spicy..." },
+  searchPlaceholder: { ar: "ابحث عن لاتيه، ماتشا، آيس كريم...", en: "Search latte, matcha, ice cream..." },
   cart: { ar: "السلة", en: "Cart" },
   orders: { ar: "طلباتي", en: "Orders" },
   home: { ar: "الرئيسية", en: "Home" },
@@ -140,7 +140,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>("ar");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("masar.lang");
+    const stored = window.localStorage.getItem("origami.lang");
     if (stored === "en" || stored === "ar") setLang(stored);
   }, []);
 
@@ -152,7 +152,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback(() => {
     setLang((prev) => {
       const next = prev === "ar" ? "en" : "ar";
-      window.localStorage.setItem("masar.lang", next);
+      window.localStorage.setItem("origami.lang", next);
       return next;
     });
   }, []);

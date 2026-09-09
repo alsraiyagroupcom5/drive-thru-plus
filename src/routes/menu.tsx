@@ -13,13 +13,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/menu")({
   head: () => ({
     meta: [
-      { title: "Menu — MASAR Grill Drive-Thru" },
+      { title: "Menu — Origami Qatar" },
       {
         name: "description",
         content: "Burgers, chicken, meals, sides, drinks and desserts. Order ahead and collect.",
       },
-      { property: "og:title", content: "Menu — MASAR Grill" },
-      { property: "og:description", content: "Browse the full MASAR Grill drive-thru menu." },
+      { property: "og:title", content: "Menu — Origami Qatar" },
+      { property: "og:description", content: "Browse the full Origami Qatar menu." },
     ],
   }),
   component: MenuPage,

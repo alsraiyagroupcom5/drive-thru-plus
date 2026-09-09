@@ -17,9 +17,9 @@ import {
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Admin console — MASAR Grill" },
+      { title: "Admin console — Origami Qatar" },
       { name: "description", content: "Create client accounts and assign each one its own branch." },
-      { property: "og:title", content: "Admin console — MASAR Grill" },
+      { property: "og:title", content: "Admin console — Origami Qatar" },
       { property: "og:description", content: "Create client accounts and branches." },
       { name: "robots", content: "noindex" },
     ],

@@ -18,13 +18,13 @@ export const Route = createFileRoute("/")({
   }),
   head: () => ({
     meta: [
-      { title: "MASAR Grill — Drive-Thru Ordering in Qatar" },
+      { title: "Origami Qatar — Drive-Thru Ordering in Qatar" },
       {
         name: "description",
         content:
           "Scan, order and collect from your car in minutes. Premium burgers, chicken and sides across three Qatar branches.",
       },
-      { property: "og:title", content: "MASAR Grill — Drive-Thru Ordering" },
+      { property: "og:title", content: "Origami Qatar — Drive-Thru Ordering" },
       {
         property: "og:description",
         content: "Order ahead and pick up from your car in minutes.",

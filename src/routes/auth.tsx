@@ -8,9 +8,9 @@ import { BrandMark, LanguageToggle } from "@/components/customer/AppShell";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Staff sign in — MASAR Grill" },
+      { title: "Staff sign in — Origami Qatar" },
       { name: "description", content: "Kitchen and branch team access to live drive-thru orders." },
-      { property: "og:title", content: "Staff sign in — MASAR Grill" },
+      { property: "og:title", content: "Staff sign in — Origami Qatar" },
       { property: "og:description", content: "Team access to live drive-thru orders." },
       { name: "robots", content: "noindex" },
     ],

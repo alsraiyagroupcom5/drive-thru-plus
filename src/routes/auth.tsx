@@ -29,26 +29,45 @@ function StaffAuth() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const routeByRole = async (userId: string | undefined) => {
+    const { data: roles } = userId
+      ? await supabase.from("user_roles").select("role").eq("user_id", userId)
+      : { data: [] };
+    const list = (roles ?? []).map((r) => r.role as string);
+    if (list.includes("super_admin")) navigate({ to: "/admin" });
+    else if (list.includes("general_manager")) navigate({ to: "/owner" });
+    else if (list.includes("kitchen")) navigate({ to: "/kitchen" });
+    else navigate({ to: "/live" });
+  };
+
   const submit = async () => {
     setBusy(true);
     try {
       const { data: signIn, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      const userId = signIn.user?.id;
-      const { data: roles } = userId
-        ? await supabase.from("user_roles").select("role").eq("user_id", userId)
-        : { data: [] };
-      const list = (roles ?? []).map((r) => r.role as string);
-      if (list.includes("super_admin")) navigate({ to: "/admin" });
-      else if (list.includes("general_manager")) navigate({ to: "/owner" });
-      else if (list.includes("kitchen")) navigate({ to: "/kitchen" });
-      else navigate({ to: "/live" });
+      await routeByRole(signIn.user?.id);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("somethingWrong"));
     } finally {
       setBusy(false);
     }
   };
+
+  const demoLogin = async (role: DemoRole) => {
+    setBusy(true);
+    try {
+      const creds = await demoCredentials({ data: { role } });
+      const { data: signIn, error } = await supabase.auth.signInWithPassword(creds);
+      if (error) throw error;
+      await routeByRole(signIn.user?.id);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("somethingWrong"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6">

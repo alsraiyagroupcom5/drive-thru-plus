@@ -216,56 +216,31 @@ function AdminConsole() {
 
   const o = overview.data;
 
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold">{pick("لوحة إدارة المنصة", "Platform admin")}</h1>
-          <p className="text-xs text-muted-foreground">
-            {pick(
-              "المطاعم، الحسابات، الفروع، المنيو، الطلبات وطلبات الاشتراك",
-              "Restaurants, accounts, branches, menu, orders and sign-up requests",
-            )}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link to="/owner" className="rounded-full border border-border px-4 py-2 text-xs font-semibold">
-            {pick("المنيو والفروع", "Menu & branches")}
-          </Link>
-          <Link to="/live" className="rounded-full border border-border px-4 py-2 text-xs font-semibold">
-            {pick("الطلبات المباشرة", "Live orders")}
-          </Link>
-          <Link to="/kitchen" className="rounded-full border border-border px-4 py-2 text-xs font-semibold">
-            {pick("شاشة المطبخ", "Kitchen screen")}
-          </Link>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="rounded-full border border-border px-4 py-2 text-xs"
-          >
-            {pick("تسجيل الخروج", "Sign out")}
-          </button>
-        </div>
-      </header>
+  const navItems = TABS.map((tb) => ({
+    id: tb.id,
+    label: pick(tb.ar, tb.en),
+    hint: pick(tb.hintAr, tb.hintEn),
+    icon: tb.icon,
+    badge: tb.id === "requests" ? (o?.newLeads ?? null) : null,
+  }));
 
-      <nav className="mb-5 flex flex-wrap gap-2">
-        {TABS.map((tb) => (
-          <button
-            key={tb.id}
-            onClick={() => setTab(tb.id)}
-            className={cn(
-              "rounded-full border px-4 py-2 text-xs font-semibold",
-              tab === tb.id ? "border-primary bg-primary/10 text-primary" : "border-border",
-            )}
-          >
-            {pick(tb.ar, tb.en)}
-            {tb.id === "requests" && o?.newLeads ? (
-              <span className="ms-2 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
-                {o.newLeads}
-              </span>
-            ) : null}
-          </button>
-        ))}
-      </nav>
+  return (
+    <ConsoleShell
+      title={pick("لوحة إدارة المنصة", "Platform admin")}
+      subtitle={pick(
+        "المطاعم، الحسابات، الفروع، الطلبات وطلبات الاشتراك",
+        "Restaurants, accounts, branches, orders and sign-up requests",
+      )}
+      items={navItems}
+      active={tab}
+      onSelect={(id) => setTab(id as (typeof TABS)[number]["id"])}
+      quickLinks={[
+        { to: "/owner", label: pick("المنيو والفروع", "Menu & branches") },
+        { to: "/live", label: pick("الطلبات المباشرة", "Live orders") },
+        { to: "/kitchen", label: pick("شاشة المطبخ", "Kitchen screen") },
+      ]}
+    >
+
 
       {tab === "overview" && (
         <section className="space-y-5">

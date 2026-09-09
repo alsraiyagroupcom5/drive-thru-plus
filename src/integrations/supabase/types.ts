@@ -884,6 +884,7 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      next_order_number: { Args: never; Returns: string }
     }
     Enums: {
       app_role:

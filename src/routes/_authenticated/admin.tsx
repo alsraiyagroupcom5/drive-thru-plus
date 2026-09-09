@@ -43,11 +43,12 @@ const ROLES = [
 type StaffRole = (typeof ROLES)[number]["id"];
 
 const TABS = [
-  { id: "overview", ar: "نظرة عامة", en: "Overview" },
-  { id: "accounts", ar: "الحسابات", en: "Accounts" },
-  { id: "restaurants", ar: "المطاعم", en: "Restaurants" },
-  { id: "requests", ar: "طلبات الاشتراك", en: "Sign-up requests" },
+  { id: "overview", ar: "نظرة عامة", en: "Overview", hintAr: "المؤشرات", hintEn: "Key numbers", icon: LayoutDashboard },
+  { id: "accounts", ar: "الحسابات", en: "Accounts", hintAr: "الفريق والصلاحيات", hintEn: "People & access", icon: Users },
+  { id: "restaurants", ar: "المطاعم", en: "Restaurants", hintAr: "العملاء", hintEn: "Clients", icon: Store },
+  { id: "requests", ar: "طلبات الاشتراك", en: "Sign-up requests", hintAr: "عملاء محتملون", hintEn: "Leads", icon: Inbox },
 ] as const;
+
 
 const input =
   "h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2";

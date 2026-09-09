@@ -83,6 +83,21 @@ function CheckoutPage() {
     onError: () => toast.error(t("tryAgain")),
   });
 
+  const demoLogin = useMutation({
+    mutationFn: async () => {
+      const demoPhone = "+974 5555 1234";
+      setPhone(demoPhone);
+      const sent = await requestOtp({ data: { phone: demoPhone } });
+      return verifyOtp({ data: { phone: demoPhone, code: sent.demoCode } });
+    },
+    onSuccess: (res) => {
+      signIn(res.token, res.customer.id);
+      setDemoCode(null);
+    },
+    onError: () => toast.error(t("somethingWrong")),
+  });
+
+
   const submit = useMutation({
     mutationFn: async () => {
       const token = session!.token;

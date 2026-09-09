@@ -22,12 +22,14 @@ export const claimStaffRole = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!branch) throw new Error("BRANCH_NOT_FOUND");
 
-    const { error } = await supabaseAdmin.from("user_roles").upsert(
-      {
-        user_id: context.userId,
-        role: data.role,
-        branch_id: data.branchId,
-      } as never,
+    const rolesTable = supabaseAdmin.from("user_roles") as unknown as {
+      upsert: (
+        values: { user_id: string; role: string; branch_id: string },
+        options: { onConflict: string },
+      ) => Promise<{ error: { message: string } | null }>;
+    };
+    const { error } = await rolesTable.upsert(
+      { user_id: context.userId, role: data.role, branch_id: data.branchId },
       { onConflict: "user_id,role" },
     );
     if (error) throw new Error(error.message);

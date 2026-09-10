@@ -30,17 +30,14 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
-        <Link to="/" className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center">
           <img
             src={logo.url}
             alt="QR-Spring"
-            width={36}
-            height={36}
-            className="h-9 w-9 rounded-xl border border-border bg-white object-contain p-0.5"
+            width={48}
+            height={48}
+            className="h-12 w-12 rounded-xl border border-border bg-white object-contain p-0.5"
           />
-          <span className="font-display text-base font-bold">
-            {pick("كيو آر سبرينغ", "QR-Spring")}
-          </span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -154,15 +151,14 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card/40">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-3">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center">
             <img
               src={logo.url}
               alt=""
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-lg border border-border bg-white object-contain p-0.5"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-xl border border-border bg-white object-contain p-0.5"
             />
-            <span className="font-display font-bold">{pick("كيو آر سبرينغ", "QR-Spring")}</span>
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             {pick(

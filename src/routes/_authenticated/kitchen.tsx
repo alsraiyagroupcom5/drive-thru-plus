@@ -675,7 +675,7 @@ function statusText(s: string, _t?: unknown) {
 
 function StatusFlow({ status, compact = false }: { status: string; compact?: boolean }) {
   const { t } = useI18n();
-  const idx = Math.max(0, FLOW.indexOf(status as (typeof FLOW)[number]));
+  const idx = Math.max(0, FLOW.indexOf((stageOf(status) ?? status) as (typeof FLOW)[number]));
   return (
     <ol className={cn("flex items-center gap-1.5", compact ? "" : "rounded-2xl bg-elevated/60 p-3")}>
       {FLOW.map((s, i) => {

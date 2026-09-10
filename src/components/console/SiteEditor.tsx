@@ -393,6 +393,37 @@ export function SiteEditor() {
             value={draft.brand.name}
             onChange={(v) => set("brand", { ...draft.brand, name: v })}
           />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block text-sm font-semibold">
+              {pick("عرض الشعار (بكسل)", "Logo width (px)")}
+              <input
+                type="number"
+                min={24}
+                max={640}
+                dir="ltr"
+                value={draft.brand.logoWidth}
+                onChange={(e) =>
+                  set("brand", { ...draft.brand, logoWidth: Number(e.target.value) || 0 })
+                }
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="block text-sm font-semibold">
+              {pick("ارتفاع الشعار (بكسل)", "Logo height (px)")}
+              <input
+                type="number"
+                min={16}
+                max={400}
+                dir="ltr"
+                value={draft.brand.logoHeight}
+                onChange={(e) =>
+                  set("brand", { ...draft.brand, logoHeight: Number(e.target.value) || 0 })
+                }
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+              />
+            </label>
+          </div>
+
           <label className="flex items-center gap-2 text-sm font-semibold">
             <input
               type="checkbox"

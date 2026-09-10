@@ -47,10 +47,61 @@ export const Route = createFileRoute("/_authenticated/kitchen")({
 
 const FLOW = ["RECEIVED", "PREPARING", "READY", "COMPLETED"] as const;
 
+/** Transitions the database guard accepts. Keep in sync with `order_status_guard`. */
+const ALLOWED: Record<string, string[]> = {
+  DRAFT: ["PENDING_PAYMENT", "RECEIVED", "CANCELLED"],
+  PENDING_PAYMENT: ["PAID", "PAYMENT_FAILED", "CANCELLED"],
+  PAYMENT_FAILED: ["PENDING_PAYMENT", "CANCELLED"],
+  PAID: ["RECEIVED", "CANCELLED", "REFUNDED"],
+  RECEIVED: ["ACCEPTED", "PREPARING", "CANCELLED"],
+  ACCEPTED: ["PREPARING", "CANCELLED"],
+  PREPARING: ["QUALITY_CHECK", "READY", "CANCELLED"],
+  QUALITY_CHECK: ["READY", "PREPARING", "CANCELLED"],
+  READY: ["ARRIVING", "PICKED_UP", "COMPLETED", "CANCELLED"],
+  ARRIVING: ["PICKED_UP", "COMPLETED", "CANCELLED"],
+  PICKED_UP: ["COMPLETED"],
+  COMPLETED: ["REFUNDED"],
+  CANCELLED: [],
+  REFUNDED: [],
+};
+
+/** Preferred one-tap next step for each live status. */
+const NEXT_STEP: Record<string, string> = {
+  PAID: "RECEIVED",
+  RECEIVED: "PREPARING",
+  ACCEPTED: "PREPARING",
+  PREPARING: "READY",
+  QUALITY_CHECK: "READY",
+  READY: "COMPLETED",
+  ARRIVING: "COMPLETED",
+  PICKED_UP: "COMPLETED",
+};
+
+function nextOf(status: string): string | null {
+  const next = NEXT_STEP[status];
+  if (!next) return null;
+  return (ALLOWED[status] ?? []).includes(next) ? next : null;
+}
+
 const COLUMNS = [
-  { status: "RECEIVED", next: "PREPARING", accent: "text-primary", dot: "bg-primary" },
-  { status: "PREPARING", next: "READY", accent: "text-warning", dot: "bg-warning" },
-  { status: "READY", next: "COMPLETED", accent: "text-success", dot: "bg-success" },
+  {
+    status: "RECEIVED",
+    match: ["RECEIVED", "PAID", "ACCEPTED"],
+    accent: "text-primary",
+    dot: "bg-primary",
+  },
+  {
+    status: "PREPARING",
+    match: ["PREPARING", "QUALITY_CHECK"],
+    accent: "text-warning",
+    dot: "bg-warning",
+  },
+  {
+    status: "READY",
+    match: ["READY", "ARRIVING", "PICKED_UP"],
+    accent: "text-success",
+    dot: "bg-success",
+  },
 ] as const;
 
 function en(n: number | string) {
@@ -84,12 +135,28 @@ function KitchenPage() {
   }, []);
 
   const advance = async (order: LiveOrder, next: string) => {
+    if (next === order.status) return;
+    if (!(ALLOWED[order.status] ?? []).includes(next)) {
+      toast.error(
+        pick(
+          `لا يمكن تحويل الطلب من ${statusText(order.status, t as never)} إلى ${statusText(next, t as never)}`,
+          `Cannot move this order from ${statusText(order.status, t as never)} to ${statusText(next, t as never)}`,
+        ),
+      );
+      return;
+    }
     try {
       await setOrderStatus(order.id, next);
       queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
       setDetail((d) => (d && d.id === order.id ? { ...d, status: next } : d));
+      toast.success(pick("تم تحديث حالة الطلب", "Order status updated"));
     } catch (e) {
-      toast.error(e instanceof Error && e.message ? e.message : t("somethingWrong"));
+      const msg = (e as { message?: string })?.message ?? "";
+      toast.error(
+        /transition/i.test(msg)
+          ? pick("لا يمكن تنفيذ هذا التغيير للحالة", "That status change is not allowed")
+          : msg || t("somethingWrong"),
+      );
     }
   };
 
@@ -269,7 +336,7 @@ function KitchenPage() {
       {/* Board */}
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {COLUMNS.map((col) => {
-          const items = active.filter((o) => o.status === col.status);
+          const items = active.filter((o) => (col.match as readonly string[]).includes(o.status));
           return (
             <section
               key={col.status}
@@ -301,9 +368,12 @@ function KitchenPage() {
                   <OrderCard
                     key={o.id}
                     order={o}
-                    next={col.next}
+                    next={nextOf(o.status)}
                     onDetails={() => setDetail(o)}
-                    onAdvance={() => advance(o, col.next)}
+                    onAdvance={() => {
+                      const n = nextOf(o.status);
+                      if (n) advance(o, n);
+                    }}
                     onStatus={(s) => advance(o, s)}
                   />
                 ))}
@@ -478,21 +548,27 @@ function KitchenPage() {
   );
 }
 
-function nextOf(status: string): string | null {
-  const i = FLOW.indexOf(status as (typeof FLOW)[number]);
-  if (i < 0 || i >= FLOW.length - 1) return null;
-  return FLOW[i + 1] ?? null;
-}
+
+const EXTRA_LABELS: Record<string, { ar: string; en: string }> = {
+  ACCEPTED: { ar: "تم القبول", en: "Accepted" },
+  QUALITY_CHECK: { ar: "فحص الجودة", en: "Quality check" },
+  ARRIVING: { ar: "العميل في الطريق", en: "Arriving" },
+  COMPLETED: { ar: "مكتمل", en: "Completed" },
+  CANCELLED: { ar: "ملغي", en: "Cancelled" },
+  PAID: { ar: "مدفوع", en: "Paid" },
+  REFUNDED: { ar: "مسترجع", en: "Refunded" },
+};
 
 function statusText(s: string, t: (k: never) => string) {
   const tt = t as unknown as (k: string) => string;
-  return s === "RECEIVED"
-    ? tt("received")
-    : s === "PREPARING"
-      ? tt("preparing")
-      : s === "READY"
-        ? tt("ready")
-        : tt("pickedUp");
+  if (s === "RECEIVED") return tt("received");
+  if (s === "PREPARING") return tt("preparing");
+  if (s === "READY") return tt("ready");
+  if (s === "PICKED_UP") return tt("pickedUp");
+  const extra = EXTRA_LABELS[s];
+  if (!extra) return s;
+  const en = typeof document !== "undefined" && document.documentElement.lang === "en";
+  return en ? extra.en : extra.ar;
 }
 
 function StatusFlow({ status, compact = false }: { status: string; compact?: boolean }) {
@@ -537,7 +613,7 @@ function OrderCard({
   onStatus,
 }: {
   order: LiveOrder;
-  next: string;
+  next: string | null;
   onDetails: () => void;
   onAdvance: () => void;
   onStatus: (s: string) => void;
@@ -632,19 +708,22 @@ function OrderCard({
         >
           {t("details")}
         </button>
-        <button
-          onClick={onAdvance}
-          className="flex-1 rounded-full bg-primary py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
-        >
-          {statusText(next, t as never)}
-        </button>
+        {next ? (
+          <button
+            onClick={onAdvance}
+            className="flex-1 rounded-full bg-primary py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+          >
+            {statusText(next, t as never)}
+          </button>
+        ) : null}
         <select
           aria-label={pick("تغيير حالة الطلب", "Change order status")}
           value={o.status}
           onChange={(e) => onStatus(e.target.value)}
           className="rounded-full border border-border bg-background px-2 py-2.5 text-xs font-bold outline-none"
         >
-          {FLOW.map((s) => (
+          <option value={o.status}>{statusText(o.status, t as never)}</option>
+          {(ALLOWED[o.status] ?? []).map((s) => (
             <option key={s} value={s}>
               {statusText(s, t as never)}
             </option>

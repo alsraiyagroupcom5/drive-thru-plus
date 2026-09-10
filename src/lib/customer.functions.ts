@@ -393,6 +393,7 @@ export const placeOrder = createServerFn({ method: "POST" })
     return {
       orderId: order.id,
       orderNumber: order.order_number,
+      shortCode: (order.short_code as string | null) ?? null,
       distanceKm,
       etaMinutes,
     };

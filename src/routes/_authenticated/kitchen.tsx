@@ -204,7 +204,7 @@ function KitchenPage() {
         open={!!detail}
         onClose={() => setDetail(null)}
         title={detail ? `${t("orderDetails")} · ${detail.order_number}` : t("orderDetails")}
-        subtitle={detail?.customer_name ?? undefined}
+        {...(detail?.customer_name ? { subtitle: detail.customer_name } : {})}
       >
         {detail ? (
           <div className="space-y-4">

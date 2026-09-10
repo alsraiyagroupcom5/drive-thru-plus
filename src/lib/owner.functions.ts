@@ -687,7 +687,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     if (data.status === "READY") patch["ready_at"] = new Date().toISOString();
     if (data.status === "COMPLETED") patch["completed_at"] = new Date().toISOString();
 
-    const { error } = await db.from("orders").update(patch).eq("id", order.id);
+    const { error } = await db.from("orders").update(patch as never).eq("id", order.id);
     if (error) throw new Error(error.message);
 
     await db.from("audit_logs").insert({

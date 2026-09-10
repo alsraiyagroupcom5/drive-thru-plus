@@ -87,7 +87,7 @@ function StaffAuth() {
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             dir="ltr"
-            placeholder="staff@example.com"
+            placeholder="staff@qrspring.qa"
             aria-label="Email"
             className="h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2"
           />

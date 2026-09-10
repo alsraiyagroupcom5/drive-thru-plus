@@ -15,6 +15,7 @@ import {
   createClientAccount,
   listClients,
   listRestaurants,
+  listClientCards,
   listSignupRequests,
   removeClientAccount,
   saveRestaurant,
@@ -69,6 +70,11 @@ function AdminConsole() {
   const restaurants = useQuery({
     queryKey: ["admin-restaurants"],
     queryFn: () => listRestaurants(),
+    enabled: enabled && tab === "restaurants",
+  });
+  const clientCards = useQuery({
+    queryKey: ["admin-client-cards"],
+    queryFn: () => listClientCards(),
     enabled: enabled && tab === "restaurants",
   });
   const requests = useQuery({
@@ -485,39 +491,65 @@ function AdminConsole() {
             </div>
           </div>
 
-          <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">{pick("المطاعم", "Restaurants")}</h2>
-            <div className="mt-3 divide-y divide-border">
-              {(restaurants.data?.restaurants ?? []).map((r) => (
-                <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold">{pick(r.name_ar, r.name_en)}</p>
-                    <p className="text-xs text-muted-foreground" dir="ltr">
-                      {r.slug} · {r.currency} · {r.branches.length} {pick("فرع", "branches")}
-                    </p>
+          <div>
+            <h2 className="font-display text-lg font-bold">{pick("العملاء", "Clients")}</h2>
+            <p className="text-xs text-muted-foreground">
+              {pick("اضغط على العميل لإدارة منيوه وفروعه وفريقه.", "Open a client to manage its menu, branches and staff.")}
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {(clientCards.data ?? []).map((c) => (
+                <Link
+                  key={c.id}
+                  to="/admin/client/$clientId"
+                  params={{ clientId: c.id }}
+                  className="group rounded-3xl border border-border bg-card p-5 transition hover:shadow-lift"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[image:var(--gradient-brass)] font-display text-base font-black text-primary-foreground">
+                      {pick(c.name_ar, c.name_en).trim().charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-display font-bold">{pick(c.name_ar, c.name_en)}</p>
+                      <p className="truncate text-[11px] text-muted-foreground" dir="ltr">
+                        {c.slug} · {c.currency}
+                      </p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() =>
-                      setRest({
-                        id: r.id,
-                        slug: r.slug,
-                        name_en: r.name_en,
-                        name_ar: r.name_ar,
-                        currency: r.currency,
-                        org_en: "",
-                        org_ar: "",
-                        organizationId: r.organization_id,
-                      })
-                    }
-                    className="rounded-full border border-border px-4 py-1.5 text-xs"
-                  >
-                    {pick("تعديل", "Edit")}
-                  </button>
-                </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-center">
+                    {[
+                      { ar: "فروع", en: "Branches", v: c.branches },
+                      { ar: "أصناف", en: "Items", v: c.products },
+                      { ar: "الفريق", en: "Staff", v: c.team },
+                      { ar: "طلبات ٢٤س", en: "Orders 24h", v: c.orders24h },
+                    ].map((k) => (
+                      <div key={k.en} className="rounded-2xl bg-elevated py-2">
+                        <p className="font-display text-lg font-bold" dir="ltr">
+                          {k.v}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">{pick(k.ar, k.en)}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">{money(Number(c.revenue24h), lang)}</span>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-1 text-[10px] font-bold",
+                        c.openBranches ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {c.openBranches
+                        ? pick("مفتوح الآن", "Open now")
+                        : pick("مغلق", "Closed")}
+                    </span>
+                  </div>
+                </Link>
               ))}
-              {restaurants.isLoading && (
+              {clientCards.isLoading ? (
                 <p className="py-4 text-sm text-muted-foreground">{pick("جارٍ التحميل…", "Loading…")}</p>
-              )}
+              ) : null}
             </div>
           </div>
         </section>

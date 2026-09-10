@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/admin_/client/$clientId")(
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: ClientWorkspace;
+  component: ClientWorkspace,
 });
 
 const input =

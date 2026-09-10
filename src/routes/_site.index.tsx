@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Clock } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, siteIcon, useSite } from "@/lib/site-content";

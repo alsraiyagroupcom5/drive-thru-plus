@@ -585,6 +585,11 @@ function KitchenPage() {
                   {formatKm(Number(detail.distance_km), lang === "ar" ? "ar" : "en")} ·{" "}
                   {detail.eta_minutes ?? "—"} {t("minutes")} {t("away")}
                 </p>
+              ) : detail.location_denied ? (
+                <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-warning-foreground">
+                  <MapPinOff className="h-4 w-4" aria-hidden />
+                  {t("customerLocationOff")}
+                </p>
               ) : (
                 <p className="mt-1 text-sm text-muted-foreground">{t("noLocation")}</p>
               )}

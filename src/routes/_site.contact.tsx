@@ -33,11 +33,6 @@ export const Route = createFileRoute("/_site/contact")({
             url: "https://drive-thru-plus.lovable.app/",
             email: site.contact.email,
             areaServed: "QA",
-            contactPoint: site.contact.branches.map((b) => ({
-              "@type": "ContactPoint",
-              telephone: `+974${b.phone}`,
-              contactType: "customer service",
-            })),
           }),
         },
       ],

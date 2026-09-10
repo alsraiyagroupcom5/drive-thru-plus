@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#ffffff" },
-      { title: "QR-Spring — Specialty Coffee, Ice Cream & Desserts" },
+      { title: "QR-Spring — Smart drive-thru ordering" },
       { name: "description", content: "Order ahead and collect in minutes from Duhail, Aspire or Lusail." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -1,65 +1,60 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { FEATURES, ROLES } from "@/lib/marketing";
-import { SectionTitle } from "@/components/marketing/SiteChrome";
-
-const OG_IMAGE =
-  "https://drive-thru-plus.lovable.app/__l5e/assets-v1/0cec0fac-0bcd-4383-8e30-8462ae4a84b5/qr-spring-og.jpg";
+import { DEFAULT_SITE_CONTENT, siteContentQuery, siteIcon, useSite } from "@/lib/site-content";
+import { SectionTitle, SiteLink } from "@/components/marketing/SiteChrome";
 
 export const Route = createFileRoute("/_site/features")({
-  head: () => ({
-    meta: [
-      { title: "Features — ordering, kitchen screen, branch control | QR-Spring" },
-      {
-        name: "description",
-        content:
-          "Every feature of the QR-Spring ordering platform: customer app, live kitchen display, branch and menu control, discounts, staff privileges and reporting.",
-      },
-      { property: "og:title", content: "Platform features — QR-Spring" },
-      {
-        property: "og:description",
-        content: "Customer app, kitchen display, branch and menu control, discounts and reporting.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://drive-thru-plus.lovable.app/features" },
-      { property: "og:image", content: OG_IMAGE },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: OG_IMAGE },
-    ],
-    links: [{ rel: "canonical", href: "https://drive-thru-plus.lovable.app/features" }],
-  }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
+  head: ({ loaderData }) => {
+    const seo = loaderData?.seo ?? DEFAULT_SITE_CONTENT.seo;
+    return {
+      meta: [
+        { title: seo.features.title },
+        { name: "description", content: seo.features.description },
+        { property: "og:title", content: seo.features.title },
+        { property: "og:description", content: seo.features.description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: "https://drive-thru-plus.lovable.app/features" },
+        { property: "og:image", content: seo.ogImage },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: seo.ogImage },
+      ],
+      links: [{ rel: "canonical", href: "https://drive-thru-plus.lovable.app/features" }],
+    };
+  },
   component: FeaturesPage,
 });
 
 function FeaturesPage() {
-  const { pick, dir } = useI18n();
+  const { pick } = useI18n();
+  const site = useSite();
 
   return (
     <>
       <section className="mx-auto max-w-6xl px-5 py-14">
         <SectionTitle
-          eyebrow={pick("المزايا", "Features")}
-          title={pick("منصة واحدة تدير الطلب من السيارة حتى المطبخ", "One platform from the car to the kitchen")}
-          subtitle={pick(
-            "كل أداة مصممة لثلاثة أهداف: تجربة عميل ممتازة، سرعة في الطلب، ووضوح تشغيلي كامل.",
-            "Every tool is built for three goals: a great customer experience, order speed and complete operational visibility.",
-          )}
+          eyebrow={pick(site.features.eyebrow.ar, site.features.eyebrow.en)}
+          title={pick(site.features.title.ar, site.features.title.en)}
+          subtitle={pick(site.features.subtitle.ar, site.features.subtitle.en)}
         />
         <div className="mt-10 grid gap-4 md:grid-cols-2">
-          {FEATURES.map((f) => (
-            <div key={f.en} className="surface rounded-3xl p-6">
-              <div className="flex items-start gap-4">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10">
-                  <f.icon className="h-5 w-5 text-primary" aria-hidden />
-                </span>
-                <div>
-                  <h3 className="font-display text-base font-bold">{pick(f.ar, f.en)}</h3>
-                  <p className="mt-1.5 text-sm text-muted-foreground">{pick(f.descAr, f.descEn)}</p>
+          {site.features.items.map((f) => {
+            const Icon = siteIcon(f.icon);
+            return (
+              <div key={f.title.en} className="surface rounded-3xl p-6">
+                <div className="flex items-start gap-4">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10">
+                    <Icon className="h-5 w-5 text-primary" aria-hidden />
+                  </span>
+                  <div>
+                    <h3 className="font-display text-base font-bold">{pick(f.title.ar, f.title.en)}</h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground">{pick(f.desc.ar, f.desc.en)}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -67,30 +62,32 @@ function FeaturesPage() {
         <div className="mx-auto max-w-6xl px-5">
           <SectionTitle
             eyebrow={pick("الصلاحيات", "Permissions")}
-            title={pick("ماذا يستطيع كل دور أن يفعل", "What each role can do")}
+            title={pick(site.roles.title.ar, site.roles.title.en)}
           />
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {ROLES.map((r) => (
-              <div key={r.titleEn} className="surface flex flex-col rounded-3xl p-6">
-                <r.icon className="h-6 w-6 text-primary" aria-hidden />
-                <h3 className="mt-3 font-display text-lg font-bold">{pick(r.titleAr, r.titleEn)}</h3>
-                <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
-                  {(dir === "rtl" ? r.pointsAr : r.pointsEn).map((p) => (
-                    <li key={p} className="flex items-start gap-2">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to={r.to}
-                  {...(r.to === "/app" ? { search: { branch: undefined } } : {})}
-                  className="mt-6 rounded-full border border-primary px-5 py-2.5 text-center text-sm font-bold text-primary"
-                >
-                  {pick(r.linkLabelAr, r.linkLabelEn)}
-                </Link>
-              </div>
-            ))}
+            {site.roles.items.map((r) => {
+              const Icon = siteIcon(r.icon);
+              return (
+                <div key={r.title.en} className="surface flex flex-col rounded-3xl p-6">
+                  <Icon className="h-6 w-6 text-primary" aria-hidden />
+                  <h3 className="mt-3 font-display text-lg font-bold">{pick(r.title.ar, r.title.en)}</h3>
+                  <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
+                    {r.points.map((p) => (
+                      <li key={p.en} className="flex items-start gap-2">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                        {pick(p.ar, p.en)}
+                      </li>
+                    ))}
+                  </ul>
+                  <SiteLink
+                    to={r.to}
+                    className="mt-6 rounded-full border border-primary px-5 py-2.5 text-center text-sm font-bold text-primary"
+                  >
+                    {pick(r.linkLabel.ar, r.linkLabel.en)}
+                  </SiteLink>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

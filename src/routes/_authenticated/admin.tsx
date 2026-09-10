@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { OrderOverrideCard } from "@/components/console/OrderOverrideCard";
+import { SiteEditor } from "@/components/console/SiteEditor";
 import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { cn } from "@/lib/utils";
 
@@ -314,6 +315,7 @@ function AdminConsole() {
       {tab === "settings" && (
         <section className="space-y-5">
           <OrderOverrideCard scope="admin" />
+          <SiteEditor />
         </section>
       )}
 

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Check, Car, ChefHat, PackageCheck, Receipt, MapPin, Navigation } from "lucide-react";
 import { useArrivalTracker } from "@/components/customer/useArrivalTracker";
 import {
@@ -9,6 +9,7 @@ import {
   useReadyAlert,
 } from "@/components/customer/ReadyAlert";
 import { formatKm } from "@/lib/geo";
+import { chimeStatus, vibrateTick } from "@/lib/chime";
 
 import { toast } from "sonner";
 import { AppShell } from "@/components/customer/AppShell";
@@ -86,8 +87,30 @@ function TrackPage() {
 
   const readyAlert = useReadyAlert(orderId, orderStatus);
 
+  const statusLabel = (status: string) => {
+    if (["RECEIVED", "PAID", "ACCEPTED"].includes(status)) return t("received");
+    if (["PREPARING", "QUALITY_CHECK"].includes(status)) return t("preparing");
+    if (status === "READY" || status === "ARRIVING") return t("ready");
+    if (status === "PICKED_UP" || status === "COMPLETED") return t("pickedUp");
+    return null;
+  };
+
+  // Announce every status change live (the READY overlay plays its own chime).
+  const prevStatus = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (orderStatus === "READY") toast.success(t("readyToast"));
+    if (!orderStatus) return;
+    const before = prevStatus.current;
+    prevStatus.current = orderStatus;
+    if (!before || before === orderStatus) return;
+    if (orderStatus === "READY") {
+      toast.success(t("readyToast"));
+      return;
+    }
+    const label = statusLabel(orderStatus);
+    if (!label) return;
+    toast.success(label);
+    vibrateTick();
+    if (readyAlert.soundOn) chimeStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderStatus]);
 

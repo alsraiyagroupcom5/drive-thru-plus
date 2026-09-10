@@ -59,6 +59,15 @@ export function ConsoleShell({
   const { pick } = useI18n();
   const [open, setOpen] = useState(false);
   const current = items.find((i) => i.id === active);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const handleSignOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
 
   const rail = (
     <div className="flex h-full flex-col items-stretch gap-6 px-3 py-6 text-console-rail-foreground">

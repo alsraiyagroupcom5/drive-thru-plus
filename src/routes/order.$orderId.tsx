@@ -189,6 +189,18 @@ function TrackPage() {
         )}
       </section>
 
+      {!cancelled && o.status !== "COMPLETED" ? (
+        <div className="mt-3 flex justify-center px-5">
+          <ReadySoundToggle
+            soundOn={readyAlert.soundOn}
+            setSound={readyAlert.setSound}
+            needsGesture={readyAlert.needsGesture}
+            enableSound={readyAlert.enableSound}
+          />
+        </div>
+      ) : null}
+
+
       <section className="mx-5 mt-5">
         <ol className="space-y-3">
           {STEPS.map((step, i) => {

@@ -103,6 +103,7 @@ export type Database = {
           lat: number | null
           lng: number | null
           location_ping_seconds: number
+          logo_url: string | null
           maps_url: string | null
           name_ar: string
           name_en: string
@@ -130,6 +131,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           location_ping_seconds?: number
+          logo_url?: string | null
           maps_url?: string | null
           name_ar: string
           name_en: string
@@ -157,6 +159,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           location_ping_seconds?: number
+          logo_url?: string | null
           maps_url?: string | null
           name_ar?: string
           name_en?: string

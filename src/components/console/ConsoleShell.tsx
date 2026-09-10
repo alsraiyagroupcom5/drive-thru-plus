@@ -127,7 +127,7 @@ export function ConsoleShell({
       ) : null}
 
       <button
-        onClick={() => supabase.auth.signOut()}
+        onClick={() => void handleSignOut()}
         title={pick("تسجيل الخروج", "Sign out")}
         className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-console-rail-foreground/12 text-console-rail-foreground transition hover:bg-console-rail-foreground/25"
       >

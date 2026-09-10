@@ -645,7 +645,7 @@ export function LatestOrdersGrid({
                   >
                     {pick("التفاصيل", "Details")}
                   </button>
-                  <CustomerPageActions orderId={order["id"] as string} />
+                  <CustomerPageActions orderId={order["id"] as string} shortCode={order["short_code"] as string | undefined} />
                 </div>
                 <span className="font-display text-lg font-bold text-primary" dir="ltr">{money(Number(order["total"]), lang)}</span>
               </div>
@@ -1009,7 +1009,7 @@ export function BranchOrdersTab({
                     >
                       {pick("التفاصيل", "Details")}
                     </button>
-                    <CustomerPageActions orderId={o["id"] as string} />
+                    <CustomerPageActions orderId={o["id"] as string} shortCode={o["short_code"] as string | undefined} />
                   </div>
                   <span className="font-display text-lg font-bold text-primary" dir="ltr">
                     {money(Number(o["total"]), lang)}

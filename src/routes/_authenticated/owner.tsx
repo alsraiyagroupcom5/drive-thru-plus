@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Clock3, Coffee, Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users, Radar } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock3, Coffee, Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users, Radar, ExternalLink } from "lucide-react";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
@@ -249,8 +249,29 @@ function MenuTab({
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
                     <Store className="h-5 w-5" aria-hidden />
                   </span>
-                  <span className={cn("rounded-full px-3 py-1 text-[11px] font-bold", branch["is_open"] ? "bg-success/15 text-success" : "bg-destructive/12 text-destructive")}>
-                    {branch["is_open"] ? pick("مفتوح", "Open") : pick("مغلق", "Closed")}
+                  <span className="flex items-center gap-2">
+                    <span
+                      role="link"
+                      tabIndex={0}
+                      title={pick("معاينة المنيو كزائر", "Preview menu as guest")}
+                      aria-label={pick("معاينة المنيو كزائر", "Preview menu as guest")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}`, "_blank", "noopener");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation();
+                          window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}`, "_blank", "noopener");
+                        }
+                      }}
+                      className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                    </span>
+                    <span className={cn("rounded-full px-3 py-1 text-[11px] font-bold", branch["is_open"] ? "bg-success/15 text-success" : "bg-destructive/12 text-destructive")}>
+                      {branch["is_open"] ? pick("مفتوح", "Open") : pick("مغلق", "Closed")}
+                    </span>
                   </span>
                 </div>
                 <div className="p-5">
@@ -300,7 +321,18 @@ function MenuTab({
           </button>
           <div className="min-w-0"><h2 className="truncate font-display text-xl font-bold">{pick(selectedBranch["name_ar"] as string, selectedBranch["name_en"] as string)}</h2><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock3 className="h-3.5 w-3.5 shrink-0" aria-hidden /><span dir="ltr">{String(selectedBranch["opens_at"] ?? "").slice(0, 5)}–{String(selectedBranch["closes_at"] ?? "").slice(0, 5)}</span></p></div>
         </div>
-        <button onClick={() => { setEditing(null); setCreating(true); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[image:var(--gradient-brass)] px-4 py-2.5 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" aria-hidden />{pick("صنف جديد", "New item")}</button>
+        <div className="flex shrink-0 items-center gap-2">
+          <a
+            href={`/app?branch=${encodeURIComponent(String(selectedBranch["code"] ?? ""))}`}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+          >
+            <ExternalLink className="h-4 w-4" aria-hidden />
+            {pick("معاينة كزائر", "Preview as guest")}
+          </a>
+          <button onClick={() => { setEditing(null); setCreating(true); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[image:var(--gradient-brass)] px-4 py-2.5 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" aria-hidden />{pick("صنف جديد", "New item")}</button>
+        </div>
       </div>
 
       <Modal

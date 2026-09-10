@@ -10,6 +10,7 @@
 - Admin client menu: branch cards opening a dedicated menu for each branch
 - Owner and admin menus: branch-first box view with menu-item card grids
 - Orders: current details and controls preserved in branch and order card grids
+- Client overview: latest orders displayed as detailed clickable cards
 - Admin client menu layout: category cards opening a category submenu with product layout controls
 
 ## Open

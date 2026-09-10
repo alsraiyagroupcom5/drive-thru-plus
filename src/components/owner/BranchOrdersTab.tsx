@@ -230,6 +230,19 @@ function OrderStatusControl({ order }: { order: Row }) {
   });
 
 
+  const resetMutation = useMutation({
+    mutationFn: () => resetOrder({ data: { orderId: order["id"] as string } }),
+    onSuccess: () => {
+      setCurrent("RECEIVED");
+      refreshAll();
+      toast.success(pick("تمت إعادة ضبط الطلب كطلب جديد", "Order reset as a new order"));
+    },
+    onError: () => {
+      refreshAll();
+      toast.error(pick("تعذّر إعادة ضبط الطلب", "Could not reset the order"));
+    },
+  });
+
   const canReset = settings.data?.isSuperAdmin === true;
   if (!settings.data?.canChangeStatus && !canReset) return null;
   const options = settings.data?.canChangeStatus ? (NEXT_STATUSES[current] ?? []) : [];

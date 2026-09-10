@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -171,6 +171,12 @@ function OrderStatusControl({ order }: { order: Row }) {
   const qc = useQueryClient();
   const rid = (order["restaurant_id"] as string) ?? null;
   const status = order["status"] as string;
+  // Live status for the dropdown: follows fresh data (realtime refetch) and
+  // moves optimistically when the user picks a new status.
+  const [current, setCurrent] = useState(status);
+  useEffect(() => {
+    setCurrent(status);
+  }, [status, order["id"]]);
 
   const settings = useQuery({
     queryKey: ["order-control", rid],
@@ -194,6 +200,10 @@ function OrderStatusControl({ order }: { order: Row }) {
   const mutation = useMutation({
     mutationFn: (next: string) =>
       updateOrderStatus({ data: { orderId: order["id"] as string, status: next, restaurantId: rid } }),
+    onMutate: (next: string) => {
+      // Move the dropdown instantly; the server confirms or we roll back.
+      setCurrent(next);
+    },
     onSuccess: () => {
       refreshAll();
       toast.success(pick("تم تحديث حالة الطلب", "Order status updated"));

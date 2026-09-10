@@ -7,6 +7,7 @@ import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
 import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
+import { OrdersTicker } from "@/components/console/OrdersTicker";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { Modal } from "@/components/console/Modal";
@@ -807,10 +808,15 @@ function OrdersTab({ branches }: { branches: Row[]; lang: "ar" | "en" }) {
   });
 
   return (
-    <BranchOrdersTab
-      branches={branches}
-      orders={(orders.data ?? []) as Row[]}
-      loading={orders.isLoading}
-    />
+    <div className="space-y-5">
+      <OrdersTicker orders={(orders.data ?? []) as Row[]} branches={branches} />
+      <div className="surface rounded-3xl p-5">
+        <BranchOrdersTab
+          branches={branches}
+          orders={(orders.data ?? []) as Row[]}
+          loading={orders.isLoading}
+        />
+      </div>
+    </div>
   );
 }

@@ -199,3 +199,26 @@
 @utility pulse-ring {
   animation: pulse-ring 1.8s ease-out infinite;
 }
+
+@keyframes orders-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-orders-marquee {
+  animation: orders-marquee var(--marquee-duration, 45s) linear infinite;
+}
+
+.orders-marquee:hover .animate-orders-marquee {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-orders-marquee {
+    animation: none;
+  }
+}

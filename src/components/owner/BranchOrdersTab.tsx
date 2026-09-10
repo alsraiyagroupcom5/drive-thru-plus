@@ -152,7 +152,7 @@ function TimingLine({ order }: { order: Row }) {
 }
 
 /** Full order detail popup: branch, timings, process steps, items and payment. */
-function OrderDetail({
+export function OrderDetail({
   order,
   branchName,
   onClose,

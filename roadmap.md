@@ -8,9 +8,9 @@
 - [x] Admin/owner can open customer tracking link without customer phone login
 - [x] Admin Settings: full control of the public front page (menu, buttons, content, sections, banner/slides, footer, SEO)
 - [x] Slide from the uploaded Spring mascot image — professional, modern, luxury, clean
-- [ ] Admin still asked to sign in when opening an order tracking link — fix staff detection
-- [ ] Full sweep: pages, forms, links, menus — fix bugs found
-- [ ] Completed/picked-up orders move to a "done" table at the bottom with date filters (today / yesterday / last 7 days / this month / specific date)
+- [x] Admin still asked to sign in when opening an order tracking link — fix staff detection
+- [x] Full sweep: pages, forms, links, menus — fix bugs found
+- [x] Completed/picked-up orders move to a "done" table at the bottom with date filters (today / yesterday / last 7 days / this month / specific date)
 
 - [x] Completed/picked-up orders moved to a bottom dated table with today/yesterday/7 days/month/exact-day filters
 - [x] Security hardening: five-attempt lockout, admin alerts, tenant/branch isolation, and privilege audit

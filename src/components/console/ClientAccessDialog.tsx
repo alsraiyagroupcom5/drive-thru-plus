@@ -147,9 +147,7 @@ export function ClientAccessDialog({
               const branchUrl = `${origin}/${access.data?.restaurant.slug}/${encodeURIComponent(b.code)}`;
               return (
                 <div key={b.id} className="rounded-2xl border border-border p-3">
-                   {access.data?.restaurant.menu_link_mode === "separate_branches" ? (
-                     <LinkRow url={branchUrl} title={pick(b.name_ar, b.name_en)} />
-                   ) : null}
+                   <LinkRow url={branchUrl} title={pick(b.name_ar, b.name_en)} />
                   <div className="mt-3 space-y-2">
                     {b.accounts.length === 0 ? (
                       <p className="text-[11px] text-muted-foreground">

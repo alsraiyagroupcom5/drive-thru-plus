@@ -278,6 +278,7 @@ function AdminConsole() {
           ? ((securityAlerts.data ?? []).filter((alert) => !alert.read_at).length || null)
           : null,
   }));
+  const unreadSecurityAlerts = (securityAlerts.data ?? []).filter((alert) => !alert.read_at).length;
 
   return (
     <ConsoleShell
@@ -289,6 +290,8 @@ function AdminConsole() {
       items={navItems}
       active={tab}
       onSelect={(id) => setTab(id as (typeof TABS)[number]["id"])}
+      notificationCount={unreadSecurityAlerts}
+      onNotificationsClick={() => setTab("security")}
       {...(tab === "restaurants"
         ? {
             secondaryTitle: pick("المطاعم", "Restaurants"),

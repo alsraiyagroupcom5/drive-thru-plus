@@ -285,6 +285,8 @@ export function OrderDetail({
       subtitle={`${branchName} · ${statusLabel(status, pick)}`}
     >
       <div className="space-y-5">
+        <OrderStatusControl order={order} />
+
         {/* process */}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">

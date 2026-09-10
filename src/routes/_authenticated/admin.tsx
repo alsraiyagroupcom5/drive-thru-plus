@@ -314,6 +314,7 @@ function AdminConsole() {
       {tab === "settings" && (
         <section className="space-y-5">
           <OrderOverrideCard scope="admin" />
+          <SiteEditor />
         </section>
       )}
 

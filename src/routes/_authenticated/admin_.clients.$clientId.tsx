@@ -18,11 +18,13 @@ import {
   Store,
   UtensilsCrossed,
   Users,
+  Radar,
 } from "lucide-react";
 import { ConsoleShell, StatusChip } from "@/components/console/ConsoleShell";
 import { Modal } from "@/components/console/Modal";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
+import { TrackingTab } from "@/components/owner/TrackingTab";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { effectivePrice, hasDiscount, todayISO } from "@/lib/pricing";
@@ -56,7 +58,7 @@ const input =
   "h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2";
 
 type Row = Record<string, unknown>;
-type Tab = "overview" | "menu" | "design" | "branches" | "team" | "contact" | "orders";
+type Tab = "overview" | "menu" | "design" | "branches" | "team" | "contact" | "orders" | "settings";
 
 const TABS = [
   { id: "overview", ar: "نظرة عامة", en: "Overview", hintAr: "المؤشرات", hintEn: "Key numbers", icon: LayoutDashboard },
@@ -65,6 +67,7 @@ const TABS = [
   { id: "branches", ar: "الفروع", en: "Branches", hintAr: "المواقع والأوقات", hintEn: "Locations & hours", icon: MapPin },
   { id: "team", ar: "الفريق", en: "Staff", hintAr: "الحسابات والصلاحيات", hintEn: "Accounts & access", icon: Users },
   { id: "contact", ar: "بيانات التواصل", en: "Contact", hintAr: "اسم المطعم والهواتف", hintEn: "Name & phones", icon: Phone },
+  { id: "settings", ar: "الإعدادات", en: "Settings", hintAr: "التتبع والمواقع", hintEn: "Tracking & locations", icon: Radar },
   { id: "orders", ar: "الطلبات", en: "Orders", hintAr: "آخر الطلبات", hintEn: "Latest orders", icon: ClipboardList },
 ] as const;
 
@@ -244,6 +247,10 @@ function ClientWorkspace() {
           branches={branches}
           onChanged={refresh}
         />
+      ) : null}
+
+      {tab === "settings" ? (
+        <TrackingTab branches={branches} restaurantId={clientId} onChanged={refresh} />
       ) : null}
 
       {tab === "orders" ? (

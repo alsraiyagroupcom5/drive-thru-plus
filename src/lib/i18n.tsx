@@ -169,7 +169,22 @@ type Ctx = {
   toggle: () => void;
 };
 
-const LangContext = createContext<Ctx | null>(null);
+const fallbackCtx: Ctx = {
+  lang: "ar",
+  dir: "rtl",
+  t: (key) => dict[key]["ar"],
+  pick: (ar, en) => ar ?? en ?? "",
+  toggle: () => {},
+};
+
+// Keep a single context instance across HMR reloads so components rendered by a
+// stale module copy still resolve the provider value.
+const globalStore = globalThis as unknown as {
+  __origamiLangContext?: React.Context<Ctx>;
+};
+const LangContext: React.Context<Ctx> =
+  globalStore.__origamiLangContext ?? createContext<Ctx>(fallbackCtx);
+globalStore.__origamiLangContext = LangContext;
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>("ar");

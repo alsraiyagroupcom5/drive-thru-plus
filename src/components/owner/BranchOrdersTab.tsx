@@ -16,6 +16,8 @@ import {
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { Modal } from "@/components/console/Modal";
 import { cn } from "@/lib/utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { NEXT_STATUSES, orderControlSettings, updateOrderStatus } from "@/lib/owner.functions";
 
 type Row = Record<string, unknown>;
 
@@ -151,6 +153,63 @@ function TimingLine({ order }: { order: Row }) {
   );
 }
 
+/**
+ * Status override control. Visible only when the platform (admin) or the
+ * restaurant (owner) has the feature enabled; the server re-checks it too.
+ */
+function OrderStatusControl({ order }: { order: Row }) {
+  const { pick } = useI18n();
+  const qc = useQueryClient();
+  const rid = (order["restaurant_id"] as string) ?? null;
+  const status = order["status"] as string;
+
+  const settings = useQuery({
+    queryKey: ["order-control", rid],
+    queryFn: () => orderControlSettings({ data: { restaurantId: rid } }),
+    staleTime: 60_000,
+  });
+
+  const mutation = useMutation({
+    mutationFn: (next: string) =>
+      updateOrderStatus({ data: { orderId: order["id"] as string, status: next, restaurantId: rid } }),
+    onSuccess: () => {
+      for (const k of ["owner-orders", "admin-orders", "client-orders", "live-orders", "client-summary"]) {
+        qc.invalidateQueries({ queryKey: [k] });
+      }
+    },
+  });
+
+  if (!settings.data?.canChangeStatus) return null;
+  const options = NEXT_STATUSES[status] ?? [];
+  if (!options.length) return null;
+
+  return (
+    <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+        {pick("تغيير حالة الطلب", "Change order status")}
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {options.map((s) => (
+          <button
+            key={s}
+            type="button"
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate(s)}
+            className="rounded-full bg-primary px-4 py-2 text-[11px] font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+          >
+            {statusLabel(s, pick)}
+          </button>
+        ))}
+      </div>
+      {mutation.isError ? (
+        <p className="mt-2 text-[11px] font-semibold text-destructive">
+          {pick("تعذر تحديث الحالة", "Could not update the status")}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 /** Full order detail popup: branch, timings, process steps, items and payment. */
 export function OrderDetail({
   order,
@@ -226,6 +285,8 @@ export function OrderDetail({
       subtitle={`${branchName} · ${statusLabel(status, pick)}`}
     >
       <div className="space-y-5">
+        <OrderStatusControl order={order} />
+
         {/* process */}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">

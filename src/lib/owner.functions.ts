@@ -570,3 +570,133 @@ export const saveTrackingSettings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ------------------ order status override (admin / owner) ------------------ */
+
+/** Allowed next statuses, mirroring the database transition guard. */
+export const NEXT_STATUSES: Record<string, string[]> = {
+  DRAFT: ["PENDING_PAYMENT", "RECEIVED", "CANCELLED"],
+  PENDING_PAYMENT: ["PAID", "PAYMENT_FAILED", "CANCELLED"],
+  PAYMENT_FAILED: ["PENDING_PAYMENT", "CANCELLED"],
+  PAID: ["RECEIVED", "CANCELLED", "REFUNDED"],
+  RECEIVED: ["ACCEPTED", "PREPARING", "CANCELLED"],
+  ACCEPTED: ["PREPARING", "CANCELLED"],
+  PREPARING: ["QUALITY_CHECK", "READY", "CANCELLED"],
+  QUALITY_CHECK: ["READY", "PREPARING", "CANCELLED"],
+  READY: ["ARRIVING", "PICKED_UP", "COMPLETED", "CANCELLED"],
+  ARRIVING: ["PICKED_UP", "COMPLETED", "CANCELLED"],
+  PICKED_UP: ["COMPLETED"],
+  COMPLETED: ["REFUNDED"],
+  CANCELLED: [],
+  REFUNDED: [],
+};
+
+async function isSuperAdmin(supabase: unknown, userId: string) {
+  const { data } = await (supabase as RoleClient).rpc("has_role", {
+    _user_id: userId,
+    _role: "super_admin",
+  });
+  return data === true;
+}
+
+/** Reads whether status override is enabled for the platform and the restaurant. */
+export const orderControlSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d?: Scoped) => d ?? {})
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    const superAdmin = await isSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const [platform, restaurant] = await Promise.all([
+      db.from("platform_settings").select("admin_order_override").eq("id", true).maybeSingle(),
+      db.from("restaurants").select("owner_order_override").eq("id", rid).maybeSingle(),
+    ]);
+    const adminOverride = platform.data?.admin_order_override ?? true;
+    const ownerOverride = restaurant.data?.owner_order_override ?? true;
+    return {
+      restaurantId: rid,
+      isSuperAdmin: superAdmin,
+      adminOverride,
+      ownerOverride,
+      canChangeStatus: superAdmin ? adminOverride : ownerOverride,
+    };
+  });
+
+/** Turns the override feature on/off (admin scope = platform, owner scope = restaurant). */
+export const setOrderOverride = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Scoped & { scope: "admin" | "owner"; enabled: boolean }) => d)
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    const superAdmin = await isSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+
+    if (data.scope === "admin") {
+      if (!superAdmin) throw new Error("FORBIDDEN");
+      const { error } = await db
+        .from("platform_settings")
+        .update({ admin_order_override: !!data.enabled, updated_at: new Date().toISOString() })
+        .eq("id", true);
+      if (error) throw new Error(error.message);
+      return { ok: true };
+    }
+
+    const { error } = await db
+      .from("restaurants")
+      .update({ owner_order_override: !!data.enabled })
+      .eq("id", rid);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Admin/owner status change for any order inside the scoped restaurant. */
+export const updateOrderStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Scoped & { orderId: string; status: string }) => {
+    if (!d?.orderId || !d?.status) throw new Error("INVALID_INPUT");
+    if (!(d.status in NEXT_STATUSES)) throw new Error("INVALID_STATUS");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    const superAdmin = await isSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+
+    const [platform, restaurant] = await Promise.all([
+      db.from("platform_settings").select("admin_order_override").eq("id", true).maybeSingle(),
+      db.from("restaurants").select("owner_order_override").eq("id", rid).maybeSingle(),
+    ]);
+    const enabled = superAdmin
+      ? (platform.data?.admin_order_override ?? true)
+      : (restaurant.data?.owner_order_override ?? true);
+    if (!enabled) throw new Error("OVERRIDE_DISABLED");
+
+    const { data: order } = await db
+      .from("orders")
+      .select("id, status, restaurant_id, order_number")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!order) throw new Error("ORDER_NOT_FOUND");
+    if (!superAdmin && order.restaurant_id !== rid) throw new Error("FORBIDDEN");
+
+    if (order.status === data.status) return { ok: true, status: data.status };
+    const allowed = NEXT_STATUSES[order.status] ?? [];
+    if (!allowed.includes(data.status)) throw new Error("INVALID_TRANSITION");
+
+    const patch: Record<string, unknown> = { status: data.status };
+    if (data.status === "READY") patch["ready_at"] = new Date().toISOString();
+    if (data.status === "COMPLETED") patch["completed_at"] = new Date().toISOString();
+
+    const { error } = await db.from("orders").update(patch as never).eq("id", order.id);
+    if (error) throw new Error(error.message);
+
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "ORDER_STATUS_OVERRIDE",
+      entity: "orders",
+      entity_id: order.id,
+      details: { from: order.status, to: data.status, order_number: order.order_number },
+    });
+
+    return { ok: true, status: data.status };
+  });

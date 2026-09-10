@@ -692,6 +692,24 @@ export type Database = {
           },
         ]
       }
+      platform_settings: {
+        Row: {
+          admin_order_override: boolean
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          admin_order_override?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          admin_order_override?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_modifiers: {
         Row: {
           id: string
@@ -858,6 +876,7 @@ export type Database = {
           name_ar: string
           name_en: string
           organization_id: string
+          owner_order_override: boolean
           slug: string
           tax_rate: number
         }
@@ -869,6 +888,7 @@ export type Database = {
           name_ar: string
           name_en: string
           organization_id: string
+          owner_order_override?: boolean
           slug: string
           tax_rate?: number
         }
@@ -880,6 +900,7 @@ export type Database = {
           name_ar?: string
           name_en?: string
           organization_id?: string
+          owner_order_override?: boolean
           slug?: string
           tax_rate?: number
         }

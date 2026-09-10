@@ -491,7 +491,21 @@ export const setTeamMemberAccess = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!branch) throw new Error("BRANCH_NOT_FOUND");
 
-    await db.from("user_roles").delete().eq("user_id", data.userId).in("role", TEAM_ROLES);
+    const { data: currentAccess } = await db
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", data.userId)
+      .eq("restaurant_id", rid)
+      .in("role", TEAM_ROLES)
+      .maybeSingle();
+    if (!currentAccess) throw new Error("FORBIDDEN");
+
+    await db
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("restaurant_id", rid)
+      .in("role", TEAM_ROLES);
     const { error } = await db
       .from("user_roles")
       .insert({ user_id: data.userId, role: data.role, branch_id: data.branchId, restaurant_id: rid });
@@ -534,9 +548,20 @@ export const removeTeamMember = createServerFn({ method: "POST" })
     const onlyTeam = (roles ?? []).every((r) => TEAM_ROLES.includes(r.role as TeamRole));
     const belongsHere = (roles ?? []).some((r) => r.restaurant_id === rid);
     if (!onlyTeam || !belongsHere) throw new Error("FORBIDDEN");
-    await db.from("user_roles").delete().eq("user_id", data.userId);
-    const { error } = await db.auth.admin.deleteUser(data.userId);
-    if (error) throw new Error(error.message);
+    await db
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("restaurant_id", rid)
+      .in("role", TEAM_ROLES);
+    const { count } = await db
+      .from("user_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", data.userId);
+    if ((count ?? 0) === 0) {
+      const { error } = await db.auth.admin.deleteUser(data.userId);
+      if (error) throw new Error(error.message);
+    }
     return { ok: true };
   });
 

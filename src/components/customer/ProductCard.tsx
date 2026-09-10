@@ -9,9 +9,12 @@ import { effectivePrice } from "@/lib/pricing";
 export function ProductCard({
   product,
   soldOutToday = false,
+  onSelect,
 }: {
   product: Product;
   soldOutToday?: boolean;
+  /** When provided, tapping the card opens the customiser popup instead of navigating. */
+  onSelect?: (product: Product) => void;
 }) {
   const { pick, lang, t } = useI18n();
   const name = pick(product.name_ar, product.name_en);
@@ -19,16 +22,13 @@ export function ProductCard({
   const price = effectivePrice(product.price, discount);
   const available = product.is_available && !soldOutToday;
 
-  return (
-    <Link
-      to="/product/$productId"
-      params={{ productId: product.id }}
-      disabled={!available}
-      className={cn(
-        "group surface flex gap-3 overflow-hidden rounded-2xl p-3 transition-transform duration-300",
-        available ? "hover:-translate-y-0.5" : "opacity-55",
-      )}
-    >
+  const className = cn(
+    "group surface flex w-full gap-3 overflow-hidden rounded-2xl p-3 text-start transition-transform duration-300",
+    available ? "hover:-translate-y-0.5" : "opacity-55",
+  );
+
+  const body = (
+    <>
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-elevated">
         <img
           src={foodImage(product.image_url)}
@@ -77,6 +77,31 @@ export function ProductCard({
           </span>
         )}
       </div>
+    </>
+  );
+
+  if (onSelect) {
+    return (
+      <button
+        type="button"
+        onClick={() => available && onSelect(product)}
+        disabled={!available}
+        aria-label={name}
+        className={className}
+      >
+        {body}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      to="/product/$productId"
+      params={{ productId: product.id }}
+      disabled={!available}
+      className={className}
+    >
+      {body}
     </Link>
   );
 }

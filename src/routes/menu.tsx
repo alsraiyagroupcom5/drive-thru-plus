@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Search, ShoppingBag } from "lucide-react";
 import { AppShell, LanguageToggle } from "@/components/customer/AppShell";
 import { ProductCard } from "@/components/customer/ProductCard";
+import { ProductCustomizer } from "@/components/customer/ProductCustomizer";
+import type { Product } from "@/lib/menu-data";
 import { branchAvailabilityQuery, categoriesQuery, productsQuery } from "@/lib/menu-data";
 import { todayISO } from "@/lib/pricing";
 import { useI18n, money } from "@/lib/i18n";
@@ -31,6 +33,7 @@ function MenuPage() {
   const { count, subtotal, branchId } = useCart();
   const [active, setActive] = useState<string>("all");
   const [term, setTerm] = useState("");
+  const [selected, setSelected] = useState<Product | null>(null);
 
   const categories = useQuery(categoriesQuery);
   const products = useQuery(productsQuery);
@@ -102,7 +105,12 @@ function MenuPage() {
           ? [0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)
           : filtered.length
             ? filtered.map((p) => (
-                <ProductCard key={p.id} product={p} soldOutToday={soldOut.has(p.id)} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  soldOutToday={soldOut.has(p.id)}
+                  onSelect={setSelected}
+                />
               ))
             : (
                 <div className="py-20 text-center">
@@ -126,6 +134,8 @@ function MenuPage() {
           </Link>
         </div>
       )}
+
+      <ProductCustomizer productId={selected?.id ?? null} onClose={() => setSelected(null)} />
     </AppShell>
   );
 }

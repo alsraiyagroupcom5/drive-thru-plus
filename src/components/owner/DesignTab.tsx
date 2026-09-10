@@ -16,12 +16,15 @@ export function DesignTab({
   categories,
   products,
   onChanged,
+  restaurantId,
 }: {
   categories: Row[];
   products: Row[];
   onChanged: () => void;
+  restaurantId?: string | null;
 }) {
   const { pick } = useI18n();
+  const rid = restaurantId ?? null;
   const [adding, setAdding] = useState(false);
   const [newCat, setNewCat] = useState({ name_ar: "", name_en: "" });
 
@@ -37,7 +40,7 @@ export function DesignTab({
       name_ar: string;
       sort_order?: number;
       is_active?: boolean;
-    }) => saveCategory({ data: v }),
+    }) => saveCategory({ data: { ...v, restaurantId: rid } }),
     onSuccess: () => {
       toast.success(pick("تم الحفظ", "Saved"));
       onChanged();
@@ -47,7 +50,7 @@ export function DesignTab({
 
   const layout = useMutation({
     mutationFn: (v: { productId: string; sortOrder?: number; isPopular?: boolean; isNew?: boolean }) =>
-      setProductLayout({ data: v }),
+      setProductLayout({ data: { ...v, restaurantId: rid } }),
     onSuccess: onChanged,
     onError: (e: Error) => toast.error(e.message),
   });

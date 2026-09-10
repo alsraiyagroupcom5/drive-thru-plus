@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Inbox, LayoutDashboard, Store, Users } from "lucide-react";
+import { ChevronRight, Inbox, LayoutDashboard, Plus, Store, Users } from "lucide-react";
+import { Modal } from "@/components/console/Modal";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
@@ -15,6 +16,7 @@ import {
   createClientAccount,
   listClients,
   listRestaurants,
+  listClientCards,
   listSignupRequests,
   removeClientAccount,
   saveRestaurant,
@@ -60,6 +62,8 @@ function AdminConsole() {
   const { pick, lang } = useI18n();
   const qc = useQueryClient();
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("overview");
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [restOpen, setRestOpen] = useState(false);
 
   const status = useQuery({ queryKey: ["admin-status"], queryFn: () => adminStatus() });
   const enabled = !!status.data?.isSuperAdmin;
@@ -69,6 +73,11 @@ function AdminConsole() {
   const restaurants = useQuery({
     queryKey: ["admin-restaurants"],
     queryFn: () => listRestaurants(),
+    enabled: enabled && tab === "restaurants",
+  });
+  const clientCards = useQuery({
+    queryKey: ["admin-client-cards"],
+    queryFn: () => listClientCards(),
     enabled: enabled && tab === "restaurants",
   });
   const requests = useQuery({
@@ -119,6 +128,7 @@ function AdminConsole() {
       }),
     onSuccess: () => {
       toast.success(pick("تم إنشاء الحساب", "Account created"));
+      setAccountOpen(false);
       setEmail("");
       setPassword("");
       setFullName("");
@@ -169,6 +179,7 @@ function AdminConsole() {
       }),
     onSuccess: () => {
       toast.success(pick("تم الحفظ", "Saved"));
+      setRestOpen(false);
       setRest({ id: "", slug: "", name_en: "", name_ar: "", currency: "QAR", org_en: "", org_ar: "", organizationId: "" });
       qc.invalidateQueries({ queryKey: ["admin-restaurants"] });
     },
@@ -238,6 +249,32 @@ function AdminConsole() {
       items={navItems}
       active={tab}
       onSelect={(id) => setTab(id as (typeof TABS)[number]["id"])}
+      {...(tab === "restaurants"
+        ? {
+            secondaryTitle: pick("المطاعم", "Restaurants"),
+            secondary: (
+              <nav className="flex gap-2 overflow-x-auto xl:flex-col xl:gap-1 xl:overflow-visible">
+                {(clientCards.data ?? []).map((c) => (
+                  <Link
+                    key={c.id}
+                    to="/admin/clients/$clientId"
+                    params={{ clientId: c.id }}
+                    className="flex shrink-0 items-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-semibold text-muted-foreground transition hover:bg-accent hover:text-foreground xl:shrink"
+                  >
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-[image:var(--gradient-brass)] text-[11px] font-black text-primary-foreground">
+                      {pick(c.name_ar, c.name_en).trim().charAt(0)}
+                    </span>
+                    <span className="truncate">{pick(c.name_ar, c.name_en)}</span>
+                    <ChevronRight className="ms-auto hidden h-3.5 w-3.5 rtl:rotate-180 xl:block" aria-hidden />
+                  </Link>
+                ))}
+                {clientCards.data && clientCards.data.length === 0 ? (
+                  <p className="px-2 text-xs text-muted-foreground">{pick("لا يوجد عملاء بعد.", "No clients yet.")}</p>
+                ) : null}
+              </nav>
+            ),
+          }
+        : {})}
       quickLinks={[
         { to: "/owner", label: pick("المنيو والفروع", "Menu & branches") },
         { to: "/live", label: pick("الطلبات المباشرة", "Live orders") },
@@ -298,9 +335,38 @@ function AdminConsole() {
 
       {tab === "accounts" && (
         <section className="space-y-5">
-          <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">{pick("حساب جديد", "New account")}</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-bold">{pick("الحسابات", "Accounts")}</h2>
+              <p className="text-xs text-muted-foreground">
+                {pick("الفريق والصلاحيات على مستوى المنصة.", "Team members and access across the platform.")}
+              </p>
+            </div>
+            <button
+              onClick={() => setAccountOpen(true)}
+              className="inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient-brass)] px-5 py-3 font-display text-sm font-bold text-primary-foreground shadow-lift"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              {pick("حساب جديد", "New account")}
+            </button>
+          </div>
+
+          <Modal
+            open={accountOpen}
+            onClose={() => setAccountOpen(false)}
+            title={pick("حساب جديد", "New account")}
+            subtitle={pick("أنشئ حساب فريق واربطه بفرع.", "Create a team account and link it to a branch.")}
+            footer={
+              <button
+                onClick={() => create.mutate()}
+                disabled={create.isPending || !email || password.length < 8 || (branchMode === "existing" && !branchId)}
+                className="w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
+              >
+                {pick("إنشاء الحساب", "Create account")}
+              </button>
+            }
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
               <input className={input} placeholder={pick("الاسم", "Full name")} value={fullName} onChange={(e) => setFullName(e.target.value)} />
               <input className={input} dir="ltr" type="email" placeholder="team@origami.qa" value={email} onChange={(e) => setEmail(e.target.value)} />
               <input className={input} dir="ltr" type="password" placeholder={pick("كلمة المرور (8+ أحرف)", "Password (8+ chars)")} value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -352,18 +418,10 @@ function AdminConsole() {
               </select>
             )}
 
-            <button
-              onClick={() => create.mutate()}
-              disabled={create.isPending || !email || password.length < 8 || (branchMode === "existing" && !branchId)}
-              className="mt-5 w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
-            >
-              {pick("إنشاء الحساب", "Create account")}
-            </button>
-          </div>
+          </Modal>
 
           <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">{pick("الحسابات", "Accounts")}</h2>
-            <div className="mt-3 divide-y divide-border">
+            <div className="divide-y divide-border">
               {(data.data?.accounts ?? []).map((a) => (
                 <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
@@ -438,11 +496,41 @@ function AdminConsole() {
 
       {tab === "restaurants" && (
         <section className="space-y-5">
-          <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">
-              {rest.id ? pick("تعديل مطعم", "Edit restaurant") : pick("مطعم جديد", "New restaurant")}
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-bold">{pick("العملاء", "Clients")}</h2>
+              <p className="text-xs text-muted-foreground">
+                {pick("اضغط على العميل لإدارة منيوه وفروعه وفريقه.", "Open a client to manage its menu, branches and staff.")}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setRest({ id: "", slug: "", name_en: "", name_ar: "", currency: "QAR", org_en: "", org_ar: "", organizationId: "" });
+                setRestOpen(true);
+              }}
+              className="inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient-brass)] px-5 py-3 font-display text-sm font-bold text-primary-foreground shadow-lift"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              {pick("مطعم جديد", "New restaurant")}
+            </button>
+          </div>
+
+          <Modal
+            open={restOpen}
+            onClose={() => setRestOpen(false)}
+            title={rest.id ? pick("تعديل مطعم", "Edit restaurant") : pick("مطعم جديد", "New restaurant")}
+            subtitle={pick("بيانات المطعم والمجموعة والعملة.", "Restaurant, group and currency details.")}
+            footer={
+              <button
+                onClick={() => saveRest.mutate()}
+                disabled={saveRest.isPending || !rest.slug || !rest.name_en || !rest.name_ar}
+                className="w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
+              >
+                {pick("حفظ", "Save")}
+              </button>
+            }
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
               <input className={input} placeholder={pick("اسم المطعم (عربي)", "Name (Arabic)")} value={rest.name_ar} onChange={(e) => setRest({ ...rest, name_ar: e.target.value })} />
               <input className={input} dir="ltr" placeholder="Name (English)" value={rest.name_en} onChange={(e) => setRest({ ...rest, name_en: e.target.value })} />
               <input className={input} dir="ltr" placeholder={pick("المعرّف (slug)", "Slug")} value={rest.slug} onChange={(e) => setRest({ ...rest, slug: e.target.value })} />
@@ -466,58 +554,63 @@ function AdminConsole() {
                 </>
               )}
             </div>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => saveRest.mutate()}
-                disabled={saveRest.isPending || !rest.slug || !rest.name_en || !rest.name_ar}
-                className="rounded-full bg-[image:var(--gradient-brass)] px-6 py-3 font-display text-sm font-bold text-primary-foreground disabled:opacity-50"
-              >
-                {pick("حفظ", "Save")}
-              </button>
-              {rest.id && (
-                <button
-                  onClick={() => setRest({ id: "", slug: "", name_en: "", name_ar: "", currency: "QAR", org_en: "", org_ar: "", organizationId: "" })}
-                  className="rounded-full border border-border px-6 py-3 text-sm"
-                >
-                  {pick("إلغاء", "Cancel")}
-                </button>
-              )}
-            </div>
-          </div>
+          </Modal>
 
-          <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">{pick("المطاعم", "Restaurants")}</h2>
-            <div className="mt-3 divide-y divide-border">
-              {(restaurants.data?.restaurants ?? []).map((r) => (
-                <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold">{pick(r.name_ar, r.name_en)}</p>
-                    <p className="text-xs text-muted-foreground" dir="ltr">
-                      {r.slug} · {r.currency} · {r.branches.length} {pick("فرع", "branches")}
-                    </p>
+          <div>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {(clientCards.data ?? []).map((c) => (
+                <Link
+                  key={c.id}
+                  to="/admin/clients/$clientId"
+                  params={{ clientId: c.id }}
+                  className="group rounded-3xl border border-border bg-card p-5 transition hover:shadow-lift"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[image:var(--gradient-brass)] font-display text-base font-black text-primary-foreground">
+                      {pick(c.name_ar, c.name_en).trim().charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-display font-bold">{pick(c.name_ar, c.name_en)}</p>
+                      <p className="truncate text-[11px] text-muted-foreground" dir="ltr">
+                        {c.slug} · {c.currency}
+                      </p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() =>
-                      setRest({
-                        id: r.id,
-                        slug: r.slug,
-                        name_en: r.name_en,
-                        name_ar: r.name_ar,
-                        currency: r.currency,
-                        org_en: "",
-                        org_ar: "",
-                        organizationId: r.organization_id,
-                      })
-                    }
-                    className="rounded-full border border-border px-4 py-1.5 text-xs"
-                  >
-                    {pick("تعديل", "Edit")}
-                  </button>
-                </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-center">
+                    {[
+                      { ar: "فروع", en: "Branches", v: c.branches },
+                      { ar: "أصناف", en: "Items", v: c.products },
+                      { ar: "الفريق", en: "Staff", v: c.team },
+                      { ar: "طلبات ٢٤س", en: "Orders 24h", v: c.orders24h },
+                    ].map((k) => (
+                      <div key={k.en} className="rounded-2xl bg-elevated py-2">
+                        <p className="font-display text-lg font-bold" dir="ltr">
+                          {k.v}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">{pick(k.ar, k.en)}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">{money(Number(c.revenue24h), lang)}</span>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-1 text-[10px] font-bold",
+                        c.openBranches ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {c.openBranches
+                        ? pick("مفتوح الآن", "Open now")
+                        : pick("مغلق", "Closed")}
+                    </span>
+                  </div>
+                </Link>
               ))}
-              {restaurants.isLoading && (
+              {clientCards.isLoading ? (
                 <p className="py-4 text-sm text-muted-foreground">{pick("جارٍ التحميل…", "Loading…")}</p>
-              )}
+              ) : null}
             </div>
           </div>
         </section>

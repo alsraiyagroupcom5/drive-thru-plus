@@ -8,20 +8,50 @@ async function admin() {
   return supabaseAdmin;
 }
 
+type RoleClient = {
+  rpc: (
+    fn: "has_role",
+    args: { _user_id: string; _role: "super_admin" | "general_manager" },
+  ) => PromiseLike<{ data: unknown }>;
+};
+
 /** Owner (general_manager) or platform admin (super_admin) may manage the restaurant. */
 async function assertOwner(supabase: unknown, userId: string) {
-  const client = supabase as {
-    rpc: (
-      fn: "has_role",
-      args: { _user_id: string; _role: "super_admin" | "general_manager" },
-    ) => PromiseLike<{ data: unknown }>;
-  };
+  const client = supabase as RoleClient;
   const [{ data: isAdmin }, { data: isOwner }] = await Promise.all([
     client.rpc("has_role", { _user_id: userId, _role: "super_admin" }),
     client.rpc("has_role", { _user_id: userId, _role: "general_manager" }),
   ]);
   if (isAdmin !== true && isOwner !== true) throw new Error("FORBIDDEN");
 }
+
+/**
+ * Resolve which restaurant the caller is acting on.
+ * Owners always act on their own restaurant; only the platform admin may
+ * target another restaurant by passing `restaurantId`.
+ */
+async function resolveRestaurant(
+  context: { supabase: unknown; userId: string },
+  requested?: string | null,
+) {
+  await assertOwner(context.supabase, context.userId);
+  if (!requested || requested === RESTAURANT_ID) return RESTAURANT_ID;
+  const { data: isAdmin } = await (context.supabase as RoleClient).rpc("has_role", {
+    _user_id: context.userId,
+    _role: "super_admin",
+  });
+  if (isAdmin !== true) throw new Error("FORBIDDEN");
+  const db = await admin();
+  const { data: exists } = await db
+    .from("restaurants")
+    .select("id")
+    .eq("id", requested)
+    .maybeSingle();
+  if (!exists) throw new Error("RESTAURANT_NOT_FOUND");
+  return requested;
+}
+
+type Scoped = { restaurantId?: string | null };
 
 function clamp(n: number, min: number, max: number) {
   return Math.min(Math.max(n, min), max);
@@ -31,30 +61,22 @@ function clamp(n: number, min: number, max: number) {
 
 export const ownerMenu = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await assertOwner(context.supabase, context.userId);
+  .inputValidator((d?: Scoped) => d ?? {})
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
     const db = await admin();
 
-    const [branches, categories, products, availability] = await Promise.all([
-      db
-        .from("branches")
-        .select("*")
-        .eq("restaurant_id", RESTAURANT_ID)
-        .order("name_en"),
-      db
-        .from("categories")
-        .select("*")
-        .eq("restaurant_id", RESTAURANT_ID)
-        .order("sort_order"),
-      db
-        .from("products")
-        .select("*")
-        .eq("restaurant_id", RESTAURANT_ID)
-        .order("sort_order"),
+    const [restaurant, branches, categories, products, availability] = await Promise.all([
+      db.from("restaurants").select("*").eq("id", rid).maybeSingle(),
+      db.from("branches").select("*").eq("restaurant_id", rid).order("name_en"),
+      db.from("categories").select("*").eq("restaurant_id", rid).order("sort_order"),
+      db.from("products").select("*").eq("restaurant_id", rid).order("sort_order"),
       db.from("branch_product_availability").select("*"),
     ]);
 
     return {
+      restaurantId: rid,
+      restaurant: restaurant.data ?? null,
       branches: branches.data ?? [],
       categories: categories.data ?? [],
       products: products.data ?? [],
@@ -64,16 +86,16 @@ export const ownerMenu = createServerFn({ method: "POST" })
 
 export const ownerOrders = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { branchId?: string | null }) => d)
+  .inputValidator((d: { branchId?: string | null } & Scoped) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     const db = await admin();
     let q = db
       .from("orders")
       .select(
         "id, order_number, status, payment_status, payment_method, total, created_at, ready_at, completed_at, customer_name, customer_phone, customer_arrived, branch_id, branches(name_en, name_ar), order_items(id, name_en, name_ar, quantity)",
       )
-      .eq("restaurant_id", RESTAURANT_ID)
+      .eq("restaurant_id", rid)
       .order("created_at", { ascending: false })
       .limit(120);
     if (data.branchId) q = q.eq("branch_id", data.branchId);
@@ -84,7 +106,7 @@ export const ownerOrders = createServerFn({ method: "POST" })
 
 /* ---------------------------- branches ---------------------------- */
 
-type BranchInput = {
+type BranchInput = Scoped & {
   id?: string | null;
   name_en: string;
   name_ar: string;
@@ -107,13 +129,13 @@ export const saveBranch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: BranchInput) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     if (!data.name_en.trim() || !data.name_ar.trim() || !data.code.trim())
       throw new Error("MISSING_FIELDS");
     const db = await admin();
 
     const row = {
-      restaurant_id: RESTAURANT_ID,
+      restaurant_id: rid,
       code: data.code.trim().toUpperCase().slice(0, 20),
       name_en: data.name_en.trim().slice(0, 80),
       name_ar: data.name_ar.trim().slice(0, 80),
@@ -136,23 +158,19 @@ export const saveBranch = createServerFn({ method: "POST" })
         .from("branches")
         .update(row)
         .eq("id", data.id)
-        .eq("restaurant_id", RESTAURANT_ID);
+        .eq("restaurant_id", rid);
       if (error) throw new Error(error.message);
       return { id: data.id };
     }
 
-    const { data: created, error } = await db
-      .from("branches")
-      .insert(row)
-      .select("id")
-      .single();
+    const { data: created, error } = await db.from("branches").insert(row).select("id").single();
     if (error || !created) throw new Error(error?.message ?? "BRANCH_CREATE_FAILED");
     return { id: created.id };
   });
 
 /* ----------------------------- menu ------------------------------ */
 
-type ProductInput = {
+type ProductInput = Scoped & {
   id?: string | null;
   category_id: string;
   name_en: string;
@@ -174,14 +192,14 @@ export const saveProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: ProductInput) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     if (!data.name_en.trim() || !data.name_ar.trim()) throw new Error("MISSING_FIELDS");
     if (!data.category_id) throw new Error("CATEGORY_REQUIRED");
     if (!(Number(data.price) > 0)) throw new Error("INVALID_PRICE");
     const db = await admin();
 
     const row = {
-      restaurant_id: RESTAURANT_ID,
+      restaurant_id: rid,
       category_id: data.category_id,
       name_en: data.name_en.trim().slice(0, 80),
       name_ar: data.name_ar.trim().slice(0, 80),
@@ -203,14 +221,10 @@ export const saveProduct = createServerFn({ method: "POST" })
         .from("products")
         .update(row)
         .eq("id", productId)
-        .eq("restaurant_id", RESTAURANT_ID);
+        .eq("restaurant_id", rid);
       if (error) throw new Error(error.message);
     } else {
-      const { data: created, error } = await db
-        .from("products")
-        .insert(row)
-        .select("id")
-        .single();
+      const { data: created, error } = await db.from("products").insert(row).select("id").single();
       if (error || !created) throw new Error(error?.message ?? "PRODUCT_CREATE_FAILED");
       productId = created.id;
     }
@@ -245,24 +259,24 @@ async function syncBranches(productId: string, branchIds: string[]) {
 
 export const setProductBranches = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { productId: string; branchIds: string[] }) => d)
+  .inputValidator((d: { productId: string; branchIds: string[] } & Scoped) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    await resolveRestaurant(context, data.restaurantId);
     await syncBranches(data.productId, data.branchIds);
     return { ok: true };
   });
 
 export const setProductDiscount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { productId: string; discountPercent: number }) => d)
+  .inputValidator((d: { productId: string; discountPercent: number } & Scoped) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     const db = await admin();
     const { error } = await db
       .from("products")
       .update({ discount_percent: clamp(Math.round(Number(data.discountPercent)), 0, 90) })
       .eq("id", data.productId)
-      .eq("restaurant_id", RESTAURANT_ID);
+      .eq("restaurant_id", rid);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -270,9 +284,9 @@ export const setProductDiscount = createServerFn({ method: "POST" })
 /** Mark an item out of stock for today at one branch (auto-clears tomorrow). */
 export const setOutOfStockToday = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { productId: string; branchId: string; outOfStock: boolean }) => d)
+  .inputValidator((d: { productId: string; branchId: string; outOfStock: boolean } & Scoped) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    await resolveRestaurant(context, data.restaurantId);
     const { todayISO } = await import("@/lib/pricing");
     const db = await admin();
     const { error } = await db.from("branch_product_availability").upsert(
@@ -290,15 +304,15 @@ export const setOutOfStockToday = createServerFn({ method: "POST" })
 
 export const setProductAvailable = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { productId: string; isAvailable: boolean }) => d)
+  .inputValidator((d: { productId: string; isAvailable: boolean } & Scoped) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     const db = await admin();
     const { error } = await db
       .from("products")
       .update({ is_available: data.isAvailable })
       .eq("id", data.productId)
-      .eq("restaurant_id", RESTAURANT_ID);
+      .eq("restaurant_id", rid);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -308,7 +322,7 @@ export const setProductAvailable = createServerFn({ method: "POST" })
 export const saveCategory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (d: {
+    (d: Scoped & {
       id?: string | null;
       name_en: string;
       name_ar: string;
@@ -318,7 +332,7 @@ export const saveCategory = createServerFn({ method: "POST" })
     }) => d,
   )
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     if (!data.name_en.trim() || !data.name_ar.trim()) throw new Error("MISSING_FIELDS");
     const db = await admin();
     const slug =
@@ -326,7 +340,7 @@ export const saveCategory = createServerFn({ method: "POST" })
         .replace(/^-|-$/g, "")
         .slice(0, 40) || "category";
     const row = {
-      restaurant_id: RESTAURANT_ID,
+      restaurant_id: rid,
       name_en: data.name_en.trim().slice(0, 60),
       name_ar: data.name_ar.trim().slice(0, 60),
       slug,
@@ -338,15 +352,11 @@ export const saveCategory = createServerFn({ method: "POST" })
         .from("categories")
         .update(row)
         .eq("id", data.id)
-        .eq("restaurant_id", RESTAURANT_ID);
+        .eq("restaurant_id", rid);
       if (error) throw new Error(error.message);
       return { id: data.id };
     }
-    const { data: created, error } = await db
-      .from("categories")
-      .insert(row)
-      .select("id")
-      .single();
+    const { data: created, error } = await db.from("categories").insert(row).select("id").single();
     if (error || !created) throw new Error(error?.message ?? "CATEGORY_CREATE_FAILED");
     return { id: created.id };
   });
@@ -354,10 +364,10 @@ export const saveCategory = createServerFn({ method: "POST" })
 export const setProductLayout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (d: { productId: string; sortOrder?: number; isPopular?: boolean; isNew?: boolean }) => d,
+    (d: Scoped & { productId: string; sortOrder?: number; isPopular?: boolean; isNew?: boolean }) => d,
   )
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     const db = await admin();
     const patch: { sort_order?: number; is_popular?: boolean; is_new?: boolean } = {};
     if (data.sortOrder !== undefined) patch["sort_order"] = clamp(Math.round(Number(data.sortOrder)), 0, 999);
@@ -368,7 +378,7 @@ export const setProductLayout = createServerFn({ method: "POST" })
       .from("products")
       .update(patch)
       .eq("id", data.productId)
-      .eq("restaurant_id", RESTAURANT_ID);
+      .eq("restaurant_id", rid);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -380,24 +390,21 @@ const TEAM_ROLES: TeamRole[] = ["branch_manager", "cashier", "kitchen"];
 
 export const ownerTeam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await assertOwner(context.supabase, context.userId);
+  .inputValidator((d?: Scoped) => d ?? {})
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
     const db = await admin();
     const { data: branches } = await db
       .from("branches")
       .select("id, name_en, name_ar")
-      .eq("restaurant_id", RESTAURANT_ID);
+      .eq("restaurant_id", rid);
     const branchIds = new Set((branches ?? []).map((b) => b.id));
 
-    const { data: roles } = await db
-      .from("user_roles")
-      .select("id, user_id, role, branch_id");
+    const { data: roles } = await db.from("user_roles").select("id, user_id, role, branch_id");
     const mine = (roles ?? []).filter(
       (r) => TEAM_ROLES.includes(r.role as TeamRole) && r.branch_id && branchIds.has(r.branch_id),
     );
-    const { data: profiles } = await db
-      .from("profiles")
-      .select("id, full_name, email, branch_id");
+    const { data: profiles } = await db.from("profiles").select("id, full_name, email, branch_id");
     const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
 
     return mine.map((r) => ({
@@ -412,10 +419,16 @@ export const ownerTeam = createServerFn({ method: "POST" })
 export const createTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (d: { email: string; password: string; fullName: string; role: TeamRole; branchId: string }) => d,
+    (d: Scoped & {
+      email: string;
+      password: string;
+      fullName: string;
+      role: TeamRole;
+      branchId: string;
+    }) => d,
   )
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     if (!TEAM_ROLES.includes(data.role)) throw new Error("INVALID_ROLE");
     const email = data.email.trim().toLowerCase();
     if (!email.includes("@")) throw new Error("INVALID_EMAIL");
@@ -426,7 +439,7 @@ export const createTeamMember = createServerFn({ method: "POST" })
       .from("branches")
       .select("id")
       .eq("id", data.branchId)
-      .eq("restaurant_id", RESTAURANT_ID)
+      .eq("restaurant_id", rid)
       .maybeSingle();
     if (!branch) throw new Error("BRANCH_NOT_FOUND");
 
@@ -462,16 +475,16 @@ export const createTeamMember = createServerFn({ method: "POST" })
 
 export const setTeamMemberAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { userId: string; role: TeamRole; branchId: string }) => d)
+  .inputValidator((d: Scoped & { userId: string; role: TeamRole; branchId: string }) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     if (!TEAM_ROLES.includes(data.role)) throw new Error("INVALID_ROLE");
     const db = await admin();
     const { data: branch } = await db
       .from("branches")
       .select("id")
       .eq("id", data.branchId)
-      .eq("restaurant_id", RESTAURANT_ID)
+      .eq("restaurant_id", rid)
       .maybeSingle();
     if (!branch) throw new Error("BRANCH_NOT_FOUND");
 
@@ -486,9 +499,9 @@ export const setTeamMemberAccess = createServerFn({ method: "POST" })
 
 export const setTeamMemberPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { userId: string; password: string }) => d)
+  .inputValidator((d: Scoped & { userId: string; password: string }) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    await resolveRestaurant(context, data.restaurantId);
     if (data.password.length < 8) throw new Error("WEAK_PASSWORD");
     const db = await admin();
     const { error } = await db.auth.admin.updateUserById(data.userId, { password: data.password });
@@ -498,9 +511,9 @@ export const setTeamMemberPassword = createServerFn({ method: "POST" })
 
 export const removeTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { userId: string }) => d)
+  .inputValidator((d: Scoped & { userId: string }) => d)
   .handler(async ({ data, context }) => {
-    await assertOwner(context.supabase, context.userId);
+    await resolveRestaurant(context, data.restaurantId);
     if (data.userId === context.userId) throw new Error("CANNOT_REMOVE_SELF");
     const db = await admin();
     const { data: roles } = await db.from("user_roles").select("role").eq("user_id", data.userId);

@@ -29,6 +29,7 @@ import { Route as SitePricingRouteImport } from './routes/_site.pricing'
 import { Route as BusinessSplatRouteImport } from './routes/business.$'
 import { Route as OrderOrderIdRouteImport } from './routes/order.$orderId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
+import { Route as AuthenticatedAdminClientsClientIdRouteImport } from './routes/_authenticated/admin_.clients.$clientId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -128,6 +129,12 @@ const ProductProductIdRoute = ProductProductIdRouteImport.update({
   path: '/product/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminClientsClientIdRoute =
+  AuthenticatedAdminClientsClientIdRouteImport.update({
+    id: '/admin_/clients/$clientId',
+    path: '/admin/clients/$clientId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/business/$': typeof BusinessSplatRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/admin/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
@@ -168,6 +176,7 @@ export interface FileRoutesByTo {
   '/business/$': typeof BusinessSplatRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/admin/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -191,6 +200,7 @@ export interface FileRoutesById {
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/_site/': typeof SiteIndexRoute
+  '/_authenticated/admin_/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/business/$'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/admin/clients/$clientId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/business/$'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/admin/clients/$clientId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -255,6 +267,7 @@ export interface FileRouteTypes {
     | '/order/$orderId'
     | '/product/$productId'
     | '/_site/'
+    | '/_authenticated/admin_/clients/$clientId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -413,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin_/clients/$clientId': {
+      id: '/_authenticated/admin_/clients/$clientId'
+      path: '/admin/clients/$clientId'
+      fullPath: '/admin/clients/$clientId'
+      preLoaderRoute: typeof AuthenticatedAdminClientsClientIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -421,6 +441,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedKitchenRoute: typeof AuthenticatedKitchenRoute
   AuthenticatedLiveRoute: typeof AuthenticatedLiveRoute
   AuthenticatedOwnerRoute: typeof AuthenticatedOwnerRoute
+  AuthenticatedAdminClientsClientIdRoute: typeof AuthenticatedAdminClientsClientIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -428,6 +449,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedKitchenRoute: AuthenticatedKitchenRoute,
   AuthenticatedLiveRoute: AuthenticatedLiveRoute,
   AuthenticatedOwnerRoute: AuthenticatedOwnerRoute,
+  AuthenticatedAdminClientsClientIdRoute:
+    AuthenticatedAdminClientsClientIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

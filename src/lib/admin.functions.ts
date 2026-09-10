@@ -399,3 +399,68 @@ export const setAccountRole = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/** Cards for the admin "clients" grid: one box per restaurant with live counts. */
+export const listClientCards = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const since = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
+    const [{ data: restaurants }, { data: branches }, { data: products }, { data: roles }, { data: orders }] =
+      await Promise.all([
+        db.from("restaurants").select("id, slug, name_en, name_ar, currency, logo_url").order("name_en"),
+        db.from("branches").select("id, restaurant_id, is_open"),
+        db.from("products").select("id, restaurant_id"),
+        db.from("user_roles").select("user_id, role, branch_id"),
+        db.from("orders").select("id, restaurant_id, total, created_at").gte("created_at", since),
+      ]);
+
+    const branchList = branches ?? [];
+    const branchOwner = new Map(branchList.map((b) => [b.id, b.restaurant_id]));
+
+    return (restaurants ?? []).map((r) => {
+      const mine = branchList.filter((b) => b.restaurant_id === r.id);
+      const team = (roles ?? []).filter((x) => x.branch_id && branchOwner.get(x.branch_id) === r.id);
+      const day = (orders ?? []).filter((o) => o.restaurant_id === r.id);
+      return {
+        ...r,
+        branches: mine.length,
+        openBranches: mine.filter((b) => b.is_open).length,
+        products: (products ?? []).filter((p) => p.restaurant_id === r.id).length,
+        team: team.length,
+        orders24h: day.length,
+        revenue24h: day.reduce((s, o) => s + Number(o.total || 0), 0),
+      };
+    });
+  });
+
+/** Everything the admin needs on one client page header. */
+export const clientSummary = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { restaurantId: string }) => d)
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const since = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
+    const [{ data: restaurant }, { data: branches }, { data: orders }] = await Promise.all([
+      db.from("restaurants").select("*").eq("id", data.restaurantId).maybeSingle(),
+      db.from("branches").select("id, name_en, name_ar, phone, is_open").eq("restaurant_id", data.restaurantId),
+      db
+        .from("orders")
+        .select("id, total, status, created_at")
+        .eq("restaurant_id", data.restaurantId)
+        .gte("created_at", since),
+    ]);
+    if (!restaurant) throw new Error("RESTAURANT_NOT_FOUND");
+    const rows = orders ?? [];
+    return {
+      restaurant,
+      branches: branches ?? [],
+      orders24h: rows.length,
+      revenue24h: rows.reduce((s, o) => s + Number(o.total || 0), 0),
+      inProgress: rows.filter((o) =>
+        ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "READY"].includes(o.status as string),
+      ).length,
+    };
+  });

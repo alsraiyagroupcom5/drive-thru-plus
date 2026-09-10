@@ -14,7 +14,7 @@
 - Admin client menu layout: category cards opening a category submenu with product layout controls
 
 ## Open
-- (in progress) Sliding orders ticker: Details button on each box + RTL text
+- (done) Sliding orders ticker: Details button on each box + RTL text
 - (done) Admin: new account / new restaurant as pop-up buttons, restaurant sub-menu in dashboard side nav
 - (done) Admin: branch create/edit popups and redesigned restaurant client cards
 - (done) Admin: new account / new restaurant as pop-up buttons, restaurant sub-menu in dashboard side nav

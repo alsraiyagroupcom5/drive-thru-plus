@@ -4,10 +4,10 @@ import { chimeReady, unlockChime, vibrateReady } from "@/lib/chime";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-const SOUND_PREF_KEY = "origami:ready-sound";
+const SOUND_PREF_KEY = "qrspring:ready-sound";
 
 function alertedKey(orderId: string) {
-  return `origami:ready-alerted:${orderId}`;
+  return `qrspring:ready-alerted:${orderId}`;
 }
 
 export function useReadyAlert(orderId: string, status: string | undefined) {
@@ -64,7 +64,7 @@ export function useReadyAlert(orderId: string, status: string | undefined) {
     }
     try {
       if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("Origami Qatar", { body: "جاهز للاستلام — Ready for pickup" });
+        new Notification("QR-Spring", { body: "جاهز للاستلام — Ready for pickup" });
       }
     } catch {
       /* ignored */

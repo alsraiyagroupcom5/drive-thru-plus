@@ -30,9 +30,9 @@ import {
 export const Route = createFileRoute("/_authenticated/owner")({
   head: () => ({
     meta: [
-      { title: "Owner console — Origami Qatar" },
+      { title: "Owner console — QR-Spring" },
       { name: "description", content: "Manage branches, menu, discounts, stock and orders." },
-      { property: "og:title", content: "Owner console — Origami Qatar" },
+      { property: "og:title", content: "Owner console — QR-Spring" },
       { property: "og:description", content: "Branches, menu, discounts, stock and orders." },
       { name: "robots", content: "noindex" },
     ],

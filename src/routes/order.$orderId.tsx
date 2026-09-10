@@ -24,9 +24,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/order/$orderId")({
   head: () => ({
     meta: [
-      { title: "Track your order — Origami Qatar" },
+      { title: "Track your order — QR-Spring" },
       { name: "description", content: "Live status of your drive-thru order and pickup code." },
-      { property: "og:title", content: "Track your order — Origami Qatar" },
+      { property: "og:title", content: "Track your order — QR-Spring" },
       { property: "og:description", content: "Live status and pickup code for your order." },
     ],
   }),

@@ -19,13 +19,13 @@ export const Route = createFileRoute("/app")({
   }),
   head: () => ({
     meta: [
-      { title: "Origami Qatar — Specialty Coffee, Ice Cream & Desserts" },
+      { title: "QR-Spring — Specialty Coffee, Ice Cream & Desserts" },
       {
         name: "description",
         content:
           "Order specialty coffee, gelato and desserts ahead and collect in minutes at Duhail Night Market, Aspire Downtown or Lusail Marina. Open daily 7AM–12AM.",
       },
-      { property: "og:title", content: "Origami Qatar — Specialty Coffee & Ice Cream" },
+      { property: "og:title", content: "QR-Spring — Specialty Coffee & Ice Cream" },
       {
         property: "og:description",
         content: "Order ahead and collect in minutes across three Doha locations.",

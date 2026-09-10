@@ -2,9 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 
 /** Demo accounts exposed by the one-tap demo buttons. */
 const DEMO_ACCOUNTS = {
-  admin: "admin@origami.qa",
-  owner: "owner@origami.qa",
-  staff: "staff@origami.qa",
+  admin: "admin@qrspring.qa",
+  owner: "owner@qrspring.qa",
+  staff: "staff@example.com",
 } as const;
 
 export type DemoRole = keyof typeof DEMO_ACCOUNTS;

@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/$restaurant/$branch")({
   head: () => ({
-    meta: [{ title: "Origami Qatar — Branch" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "QR-Spring — Branch" }, { name: "robots", content: "noindex" }],
   }),
   component: BranchRedirect,
 });

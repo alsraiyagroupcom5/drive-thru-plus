@@ -23,9 +23,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — Origami Qatar" },
+      { title: "Checkout — QR-Spring" },
       { name: "description", content: "Confirm your car, payment method and place your order." },
-      { property: "og:title", content: "Checkout — Origami Qatar" },
+      { property: "og:title", content: "Checkout — QR-Spring" },
       { property: "og:description", content: "Confirm your car and place your drive-thru order." },
     ],
   }),

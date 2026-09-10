@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { chimeNewOrder, unlockChime, vibrateReady } from "@/lib/chime";
 
-const PREF_KEY = "origami:kitchen-sound";
+const PREF_KEY = "qrspring:kitchen-sound";
 
 type MinimalOrder = { id: string; order_number: string; created_at: string };
 

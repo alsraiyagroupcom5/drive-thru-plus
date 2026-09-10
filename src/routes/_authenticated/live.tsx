@@ -19,9 +19,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/live")({
   head: () => ({
     meta: [
-      { title: "Live orders — Origami Qatar" },
+      { title: "Live orders — QR-Spring" },
       { name: "description", content: "Branch live order board with wait times and arrivals." },
-      { property: "og:title", content: "Live orders — Origami Qatar" },
+      { property: "og:title", content: "Live orders — QR-Spring" },
       { property: "og:description", content: "Branch live order board with wait times." },
       { name: "robots", content: "noindex" },
     ],

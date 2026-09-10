@@ -13,7 +13,7 @@ export function BrandMark({ className }: { className?: string }) {
     <div className={cn("flex items-center gap-2.5", className)}>
       <img
         src={logo.url}
-        alt="Origami Qatar"
+        alt="QR-Spring"
         width={40}
         height={40}
         className="h-10 w-10 rounded-xl border border-border bg-white object-contain p-0.5"

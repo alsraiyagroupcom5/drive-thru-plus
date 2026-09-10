@@ -49,9 +49,9 @@ import {
 export const Route = createFileRoute("/_authenticated/admin_/clients/$clientId")({
   head: () => ({
     meta: [
-      { title: "Client workspace — Origami Platform" },
+      { title: "Client workspace — QR-Spring" },
       { name: "description", content: "Manage one restaurant: menu, categories, branches, staff and contact details." },
-      { property: "og:title", content: "Client workspace — Origami Platform" },
+      { property: "og:title", content: "Client workspace — QR-Spring" },
       { property: "og:description", content: "Menu, categories, branches, staff and contact details for one client." },
       { name: "robots", content: "noindex" },
     ],

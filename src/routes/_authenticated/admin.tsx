@@ -36,9 +36,9 @@ import { OrdersTicker } from "@/components/console/OrdersTicker";
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Admin console — Origami Platform" },
+      { title: "Admin console — QR-Spring" },
       { name: "description", content: "Manage restaurants, accounts, staff, orders and sign-up requests." },
-      { property: "og:title", content: "Admin console — Origami Platform" },
+      { property: "og:title", content: "Admin console — QR-Spring" },
       { property: "og:description", content: "Manage the whole platform from one console." },
       { name: "robots", content: "noindex" },
     ],
@@ -393,7 +393,7 @@ function AdminConsole() {
           >
             <div className="grid gap-3 sm:grid-cols-2">
               <input className={input} placeholder={pick("الاسم", "Full name")} value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              <input className={input} dir="ltr" type="email" placeholder="team@origami.qa" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className={input} dir="ltr" type="email" placeholder="team@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
               <input className={input} dir="ltr" type="password" placeholder={pick("كلمة المرور (8+ أحرف)", "Password (8+ chars)")} value={password} onChange={(e) => setPassword(e.target.value)} />
               <select className={input} value={role} onChange={(e) => setRole(e.target.value as StaffRole)}>
                 {ROLES.map((r) => (

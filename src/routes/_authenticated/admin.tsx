@@ -90,7 +90,8 @@ function AdminConsole() {
     queryKey: ["admin-orders-feed"],
     queryFn: () => adminOrdersFeed(),
     enabled: enabled && tab === "overview",
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: true,
   });
   const restaurants = useQuery({
     queryKey: ["admin-restaurants"],

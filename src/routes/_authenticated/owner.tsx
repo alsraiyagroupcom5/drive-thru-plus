@@ -804,7 +804,8 @@ function OrdersTab({ branches }: { branches: Row[]; lang: "ar" | "en" }) {
   const orders = useQuery({
     queryKey: ["owner-orders", "all"],
     queryFn: () => ownerOrders({ data: { branchId: null } }),
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: true,
   });
 
   return (

@@ -94,6 +94,8 @@ function ClientWorkspace() {
     queryKey: ["client-orders", clientId],
     queryFn: () => ownerOrders({ data: { restaurantId: clientId } }),
     enabled: tab === "orders" || tab === "overview",
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: true,
   });
 
   const refresh = () => {

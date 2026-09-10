@@ -20,3 +20,6 @@
 - (done) Admin: new account / new restaurant as pop-up buttons, restaurant sub-menu in dashboard side nav
 - (done) Admin: branch create/edit popups and redesigned restaurant client cards
 - Real contact email for the website (currently hello@origami.qa placeholder)
+
+- [ ] Admin can change order status for any order in any branch; toggle in admin settings
+- [ ] Owner can change order status for any order in his restaurant branches; toggle in owner settings

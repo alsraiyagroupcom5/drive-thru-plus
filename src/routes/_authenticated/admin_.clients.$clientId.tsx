@@ -96,7 +96,14 @@ function ClientWorkspace() {
     ? pick(summary.data.restaurant.name_ar, summary.data.restaurant.name_en)
     : pick("العميل", "Client");
 
-  const navItems = TABS.map((t) => ({
+  const navigate = Route.useNavigate();
+  const MAIN_NAV = [
+    { id: "overview", ar: "نظرة عامة", en: "Overview", hintAr: "المؤشرات", hintEn: "Key numbers", icon: LayoutDashboard },
+    { id: "accounts", ar: "الحسابات", en: "Accounts", hintAr: "الفريق والصلاحيات", hintEn: "People & access", icon: Users },
+    { id: "restaurants", ar: "المطاعم", en: "Restaurants", hintAr: "العملاء", hintEn: "Clients", icon: Store },
+    { id: "requests", ar: "طلبات الاشتراك", en: "Sign-up requests", hintAr: "عملاء محتملون", hintEn: "Leads", icon: Inbox },
+  ];
+  const navItems = MAIN_NAV.map((t) => ({
     id: t.id,
     label: pick(t.ar, t.en),
     hint: pick(t.hintAr, t.hintEn),

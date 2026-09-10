@@ -9,4 +9,5 @@
 - Product website at `/` with Features, Pricing, Contact; `/business` redirects to `/`
 
 ## Open
+- (done) Admin: new account / new restaurant as pop-up buttons, restaurant sub-menu in dashboard side nav
 - Real contact email for the website (currently hello@origami.qa placeholder)

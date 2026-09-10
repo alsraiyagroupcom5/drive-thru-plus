@@ -463,7 +463,9 @@ export const updateOrderLocation = createServerFn({ method: "POST" })
 
     const { data: order } = await db
       .from("orders")
-      .select("id, status, customer_arrived, branch_id, branches(lat, lng)")
+      .select(
+        "id, status, customer_arrived, branch_id, branches(lat, lng, tracking_enabled, auto_arrival, arrival_radius_m, avg_speed_kmh)",
+      )
       .eq("id", data.orderId)
       .eq("customer_id", customerId)
       .maybeSingle();

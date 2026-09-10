@@ -7,6 +7,7 @@
 - Owner console: branches, menu, discounts, daily stock, orders
 - Owner console: team accounts + privileges, branch address/map/coordinates, menu design (section order/visibility, item order, popular/new)
 - Product website at `/` with Features, Pricing, Contact; `/business` redirects to `/`
+- Admin client menu: branch cards opening a dedicated menu for each branch
 
 ## Open
 - (done) Admin: new account / new restaurant as pop-up buttons, restaurant sub-menu in dashboard side nav

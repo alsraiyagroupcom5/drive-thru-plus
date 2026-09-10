@@ -30,6 +30,7 @@ import { Route as BusinessSplatRouteImport } from './routes/business.$'
 import { Route as OrderOrderIdRouteImport } from './routes/order.$orderId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
 import { Route as AuthenticatedAdminClientsClientIdRouteImport } from './routes/_authenticated/admin_.clients.$clientId'
+import { Route as ApiPublicBrandLogoSplatRouteImport } from './routes/api/public/brand-logo.$'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -135,6 +136,11 @@ const AuthenticatedAdminClientsClientIdRoute =
     path: '/admin/clients/$clientId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicBrandLogoSplatRoute = ApiPublicBrandLogoSplatRouteImport.update({
+  id: '/api/public/brand-logo/$',
+  path: '/api/public/brand-logo/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/admin/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
+  '/api/public/brand-logo/$': typeof ApiPublicBrandLogoSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/admin/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
+  '/api/public/brand-logo/$': typeof ApiPublicBrandLogoSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/product/$productId': typeof ProductProductIdRoute
   '/_site/': typeof SiteIndexRoute
   '/_authenticated/admin_/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
+  '/api/public/brand-logo/$': typeof ApiPublicBrandLogoSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/order/$orderId'
     | '/product/$productId'
     | '/admin/clients/$clientId'
+    | '/api/public/brand-logo/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/order/$orderId'
     | '/product/$productId'
     | '/admin/clients/$clientId'
+    | '/api/public/brand-logo/$'
   id:
     | '__root__'
     | '/_authenticated'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/product/$productId'
     | '/_site/'
     | '/_authenticated/admin_/clients/$clientId'
+    | '/api/public/brand-logo/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -282,6 +294,7 @@ export interface RootRouteChildren {
   OrdersRoute: typeof OrdersRoute
   OrderOrderIdRoute: typeof OrderOrderIdRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
+  ApiPublicBrandLogoSplatRoute: typeof ApiPublicBrandLogoSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -433,6 +446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminClientsClientIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/brand-logo/$': {
+      id: '/api/public/brand-logo/$'
+      path: '/api/public/brand-logo/$'
+      fullPath: '/api/public/brand-logo/$'
+      preLoaderRoute: typeof ApiPublicBrandLogoSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -496,6 +516,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrdersRoute: OrdersRoute,
   OrderOrderIdRoute: OrderOrderIdRoute,
   ProductProductIdRoute: ProductProductIdRoute,
+  ApiPublicBrandLogoSplatRoute: ApiPublicBrandLogoSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

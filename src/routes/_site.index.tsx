@@ -118,7 +118,7 @@ function BusinessHome() {
                         className="h-56 w-full object-cover"
                       />
                     ) : (
-                      <div className="h-56 w-full bg-[image:var(--gradient-hero)]" />
+                      <div className="h-56 w-full bg-[image:var(--gradient-brass)]" />
                     )}
                     <div
                       className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent"

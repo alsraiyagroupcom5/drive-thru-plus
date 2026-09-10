@@ -196,6 +196,40 @@ function KitchenPage() {
     }
   };
 
+  const refreshBoards = () => {
+    queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
+    queryClient.invalidateQueries({ queryKey: ["owner-orders"] });
+    queryClient.invalidateQueries({ queryKey: ["client-orders"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-orders-feed"] });
+  };
+
+  /** Cancel an order — deliberately a separate action, never a dropdown pick. */
+  const cancel = async (order: LiveOrder) => {
+    try {
+      await cancelOrder({ data: { orderId: order.id } });
+      setDetail((d) => (d && d.id === order.id ? { ...d, status: "CANCELLED" } : d));
+      refreshBoards();
+      toast.success(pick("تم إلغاء الطلب", "Order cancelled"));
+    } catch {
+      refreshBoards();
+      toast.error(pick("تعذّر إلغاء الطلب", "Could not cancel the order"));
+    }
+  };
+
+  /** Bring a cancelled order back to life as a freshly received order. */
+  const reactivate = async (order: LiveOrder) => {
+    try {
+      await reactivateOrder({ data: { orderId: order.id } });
+      setDetail((d) => (d && d.id === order.id ? { ...d, status: "RECEIVED" } : d));
+      refreshBoards();
+      toast.success(pick("تم تفعيل الطلب من جديد", "Order re-enabled"));
+    } catch {
+      refreshBoards();
+      toast.error(pick("تعذّر تفعيل الطلب", "Could not re-enable the order"));
+    }
+  };
+
+
   const signOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();

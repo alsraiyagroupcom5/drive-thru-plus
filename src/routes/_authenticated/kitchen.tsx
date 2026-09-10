@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Car, Clock, LogOut, Navigation } from "lucide-react";
+import { Car, Clock, LogOut, Navigation, Phone, Wallet } from "lucide-react";
 import { formatKm } from "@/lib/geo";
+import { Modal } from "@/components/console/Modal";
 import { toast } from "sonner";
 import {
   useLiveOrders,
@@ -11,7 +12,7 @@ import {
   minutesSince,
   type LiveOrder,
 } from "@/components/staff/useLiveOrders";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, money } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,7 @@ function KitchenPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [, tick] = useState(0);
+  const [detail, setDetail] = useState<LiveOrder | null>(null);
 
   useEffect(() => {
     const id = window.setInterval(() => tick((n) => n + 1), 30_000);
@@ -121,8 +123,16 @@ function KitchenPage() {
                             : "border-transparent",
                       )}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-display text-lg font-bold">{o.order_number}</span>
+                      <div
+                        className="flex cursor-pointer items-center justify-between"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setDetail(o)}
+                        onKeyDown={(e) => e.key === "Enter" && setDetail(o)}
+                      >
+                        <span className="font-display text-lg font-bold underline-offset-4 hover:underline">
+                          {o.order_number}
+                        </span>
                         <span
                           className={cn(
                             "inline-flex items-center gap-1 text-xs font-bold",
@@ -189,6 +199,110 @@ function KitchenPage() {
           );
         })}
       </div>
+
+      <Modal
+        open={!!detail}
+        onClose={() => setDetail(null)}
+        title={detail ? `${t("orderDetails")} · ${detail.order_number}` : t("orderDetails")}
+        {...(detail?.customer_name ? { subtitle: detail.customer_name } : {})}
+      >
+        {detail ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-elevated/60 p-3">
+                <p className="text-[11px] font-bold text-muted-foreground">{t("timeSinceOrder")}</p>
+                <p className="mt-1 font-display text-lg font-bold">
+                  {minutesSince(detail.created_at)} {t("minutes")}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-elevated/60 p-3">
+                <p className="text-[11px] font-bold text-muted-foreground">{t("waitingAtBranch")}</p>
+                <p className="mt-1 font-display text-lg font-bold">
+                  {detail.arrived_at
+                    ? `${minutesSince(detail.arrived_at)} ${t("minutes")}`
+                    : t("notArrivedYet")}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-elevated/60 p-3">
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+                <Wallet className="h-3.5 w-3.5" aria-hidden />
+                {t("paymentDetails")}
+              </p>
+              <p className="mt-1 font-display text-lg font-bold">{money(detail.total, lang)}</p>
+              <p className="text-xs text-muted-foreground">
+                {detail.payment_method === "PAY_AT_PICKUP"
+                  ? t("payAtPickup")
+                  : detail.payment_method === "APPLE_PAY"
+                    ? t("applePay")
+                    : t("card")}{" "}
+                ·{" "}
+                {detail.payment_status === "PAID" ? t("paid") : t("pending")} ·{" "}
+                {t("subtotal")} {money(detail.subtotal, lang)} + {t("tax")} {money(detail.tax, lang)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-elevated/60 p-3">
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+                <Navigation className="h-3.5 w-3.5" aria-hidden />
+                {t("customerLocation")}
+              </p>
+              {detail.customer_arrived ? (
+                <p className="mt-1 inline-flex items-center gap-1 text-sm font-bold text-success">
+                  <Car className="h-4 w-4" aria-hidden />
+                  {t("customerArrived")}
+                </p>
+              ) : detail.distance_km != null ? (
+                <p dir="ltr" className="mt-1 text-sm font-bold text-primary">
+                  {formatKm(Number(detail.distance_km), lang === "ar" ? "ar" : "en")} ·{" "}
+                  {detail.eta_minutes ?? "—"} {t("minutes")} {t("away")}
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-muted-foreground">{t("noLocation")}</p>
+              )}
+            </div>
+
+            {detail.customer_phone ? (
+              <a
+                href={`tel:${detail.customer_phone}`}
+                className="flex items-center gap-2 rounded-2xl border border-border p-3 text-sm font-bold transition hover:bg-accent"
+              >
+                <Phone className="h-4 w-4 text-primary" aria-hidden />
+                <span dir="ltr">{detail.customer_phone}</span>
+              </a>
+            ) : null}
+
+            {detail.vehicle_snapshot ? (
+              <p className="rounded-2xl border border-border p-3 text-sm">
+                <Car className="me-1 inline h-4 w-4 text-primary" aria-hidden />
+                {[detail.vehicle_snapshot.make, detail.vehicle_snapshot.model]
+                  .filter(Boolean)
+                  .join(" ")}{" "}
+                · {detail.vehicle_snapshot.color} · {detail.vehicle_snapshot.plate}
+              </p>
+            ) : null}
+
+            <ul className="space-y-1.5 rounded-2xl bg-elevated/60 p-3 text-sm">
+              {detail.order_items.map((item) => (
+                <li key={item.id}>
+                  <span className="font-bold text-primary">{item.quantity}×</span>{" "}
+                  {pick(item.name_ar, item.name_en)}
+                  {item.order_item_modifiers.length ? (
+                    <span className="block text-[11px] text-muted-foreground">
+                      {item.order_item_modifiers.map((m) => pick(m.name_ar, m.name_en)).join(" • ")}
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+
+            {detail.notes ? (
+              <p className="rounded-xl bg-warning/10 p-2.5 text-xs text-warning">{detail.notes}</p>
+            ) : null}
+          </div>
+        ) : null}
+      </Modal>
     </div>
   );
 }

@@ -660,6 +660,14 @@ function AdminConsole() {
               ) : null}
             </div>
           </div>
+
+          <ClientAccessDialog
+            open={!!accessClient}
+            onClose={() => setAccessClient(null)}
+            restaurantId={accessClient?.id ?? ""}
+            title={accessClient?.title ?? ""}
+          />
+
         </section>
       )}
 

@@ -225,33 +225,90 @@ function TrackPage() {
       ) : null}
 
 
-      <section className="mx-5 mt-5">
-        <ol className="space-y-3">
+      <section className="mx-5 mt-6 overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-lift)]">
+        <div className="px-5 pt-5">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-base font-bold">{t("trackOrder")}</h2>
+            {!cancelled && (
+              <span dir="ltr" className="font-display text-xs font-bold text-primary">
+                {Math.round(((activeIndex + 1) / STEPS.length) * 100)}%
+              </span>
+            )}
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-elevated" dir="ltr">
+            <div
+              className="h-full rounded-full bg-[image:var(--gradient-brass)] transition-[width] duration-700 ease-out"
+              style={{
+                width: cancelled ? "0%" : `${((activeIndex + 1) / STEPS.length) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+
+        <ol className="relative px-5 py-5">
           {STEPS.map((step, i) => {
-            const done = !cancelled && i <= activeIndex;
+            const done = !cancelled && i < activeIndex;
+            const current = !cancelled && i === activeIndex;
+            const upcoming = cancelled || i > activeIndex;
+            const last = i === STEPS.length - 1;
             const Icon = [Receipt, ChefHat, PackageCheck, Check][i]!;
             const label = [t("received"), t("preparing"), t("ready"), t("pickedUp")][i]!;
             return (
-              <li key={step} className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "grid h-10 w-10 shrink-0 place-items-center rounded-full border transition-colors",
-                    done
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-elevated text-muted-foreground",
-                    i === activeIndex && !cancelled && "animate-pulse-glow",
+              <li key={step} className="relative flex items-center gap-4 pb-6 last:pb-0">
+                {!last && (
+                  <span
+                    aria-hidden
+                    className="absolute start-[21px] top-11 h-[calc(100%-2.25rem)] w-0.5 rounded-full bg-elevated"
+                  >
+                    <span
+                      className={cn(
+                        "block w-full rounded-full bg-[image:var(--gradient-brass)] transition-all duration-700 ease-out",
+                        done || current ? "h-full" : "h-0",
+                      )}
+                    />
+                  </span>
+                )}
+                <span className="relative grid shrink-0 place-items-center">
+                  {current && (
+                    <span
+                      aria-hidden
+                      className="absolute h-14 w-14 animate-ping rounded-full bg-primary/15 [animation-duration:2.2s]"
+                    />
                   )}
-                >
-                  <Icon className="h-4 w-4" aria-hidden />
+                  <span
+                    className={cn(
+                      "relative grid h-11 w-11 place-items-center rounded-2xl border transition-all duration-500",
+                      done &&
+                        "border-primary bg-primary text-primary-foreground shadow-[0_6px_18px_-6px_var(--primary)]",
+                      current &&
+                        "border-primary bg-[image:var(--gradient-brass)] text-primary-foreground shadow-[0_10px_26px_-6px_var(--primary)]",
+                      upcoming && "border-border bg-elevated text-muted-foreground/60",
+                    )}
+                  >
+                    {done ? <Check className="h-5 w-5" aria-hidden /> : <Icon className="h-5 w-5" aria-hidden />}
+                  </span>
                 </span>
-                <span
-                  className={cn(
-                    "text-sm font-semibold",
-                    done ? "text-foreground" : "text-muted-foreground",
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={cn(
+                      "font-display text-sm font-bold transition-colors",
+                      upcoming ? "text-muted-foreground/60" : "text-foreground",
+                    )}
+                  >
+                    {label}
+                  </p>
+                  {current && (
+                    <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" aria-hidden />
+                      {pick("الآن", "Now")}
+                    </span>
                   )}
-                >
-                  {label}
-                </span>
+                  {done && (
+                    <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">
+                      {pick("تم", "Done")}
+                    </p>
+                  )}
+                </div>
               </li>
             );
           })}

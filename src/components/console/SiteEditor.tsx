@@ -13,6 +13,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { Modal } from "@/components/console/Modal";
+import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -386,6 +387,17 @@ export function SiteEditor() {
         open={open === "theme"}
         onClose={() => setOpen(null)}
         title={pick("مظهر الموقع", "Website theme")}
+        footer={
+          <div className="flex items-center justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(null)} disabled={save.isPending}>
+              {pick("إلغاء", "Cancel")}
+            </Button>
+            <Button type="button" onClick={() => save.mutate()} disabled={save.isPending}>
+              <Save className="h-4 w-4" aria-hidden />
+              {save.isPending ? pick("جارٍ الحفظ…", "Saving…") : pick("حفظ المظهر", "Save theme")}
+            </Button>
+          </div>
+        }
       >
         <div className="grid gap-3 sm:grid-cols-2">
           {([

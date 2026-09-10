@@ -297,36 +297,8 @@ export function SiteEditor() {
   const set = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
 
-  // Logo aspect ratio (height / width) probed from the image, so height can
-  // auto-follow width changes without distorting the logo.
-  const [logoRatio, setLogoRatio] = useState<number | null>(null);
-  const [autoLogoHeight, setAutoLogoHeight] = useState(true);
-
-  useEffect(() => {
-    const url = draft.brand.logoUrl;
-    if (!url) {
-      setLogoRatio(null);
-      return;
-    }
-    let cancelled = false;
-    const img = new Image();
-    img.onload = () => {
-      if (!cancelled && img.naturalWidth > 0) {
-        setLogoRatio(img.naturalHeight / img.naturalWidth);
-      }
-    };
-    img.src = url;
-    return () => {
-      cancelled = true;
-    };
-  }, [draft.brand.logoUrl]);
-
   const setLogoWidth = (width: number) => {
-    const height =
-      autoLogoHeight && logoRatio && width > 0
-        ? Math.max(16, Math.round(width * logoRatio))
-        : draft.brand.logoHeight;
-    set("brand", { ...draft.brand, logoWidth: width, logoHeight: height });
+    set("brand", { ...draft.brand, logoWidth: width });
   };
 
   const save = useMutation({
@@ -446,37 +418,13 @@ export function SiteEditor() {
                 max={400}
                 dir="ltr"
                 value={draft.brand.logoHeight}
-                readOnly={autoLogoHeight}
                 onChange={(e) =>
                   set("brand", { ...draft.brand, logoHeight: Number(e.target.value) || 0 })
                 }
-                className={cn(
-                  "mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm",
-                  autoLogoHeight && "cursor-not-allowed opacity-60",
-                )}
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
               />
             </label>
           </div>
-          <label className="flex items-center gap-2 text-sm font-semibold">
-            <input
-              type="checkbox"
-              checked={autoLogoHeight}
-              onChange={(e) => {
-                const on = e.target.checked;
-                setAutoLogoHeight(on);
-                if (on && logoRatio && draft.brand.logoWidth > 0) {
-                  set("brand", {
-                    ...draft.brand,
-                    logoHeight: Math.max(16, Math.round(draft.brand.logoWidth * logoRatio)),
-                  });
-                }
-              }}
-            />
-            {pick(
-              "ارتفاع تلقائي حسب نسبة الشعار — غيّر العرض فقط",
-              "Auto height from the logo ratio — change the width only",
-            )}
-          </label>
 
           <label className="flex items-center gap-2 text-sm font-semibold">
             <input

@@ -715,10 +715,14 @@ export const resetOrder = createServerFn({ method: "POST" })
 
     const { data: order } = await db
       .from("orders")
-      .select("id, status, order_number")
+      .select("id, status, order_number, branch_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
+    const { data: allowed } = await (context.supabase as unknown as {
+      rpc: (fn: "has_branch_access", args: { _user_id: string; _branch_id: string }) => PromiseLike<{ data: unknown }>;
+    }).rpc("has_branch_access", { _user_id: context.userId, _branch_id: order.branch_id });
+    if (allowed !== true) throw new Error("FORBIDDEN");
 
     const { error } = await (db as unknown as {
       rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ error: { message: string } | null }>;
@@ -755,10 +759,14 @@ export const reactivateOrder = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: order } = await db
       .from("orders")
-      .select("id, status, order_number")
+      .select("id, status, order_number, branch_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
+    const { data: allowed } = await (context.supabase as unknown as {
+      rpc: (fn: "has_branch_access", args: { _user_id: string; _branch_id: string }) => PromiseLike<{ data: unknown }>;
+    }).rpc("has_branch_access", { _user_id: context.userId, _branch_id: order.branch_id });
+    if (allowed !== true) throw new Error("FORBIDDEN");
     if (order.status !== "CANCELLED" && order.status !== "REFUNDED")
       throw new Error("NOT_CANCELLED");
 

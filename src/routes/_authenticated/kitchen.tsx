@@ -13,10 +13,12 @@ import {
   Navigation,
   PackageCheck,
   Phone,
+  RefreshCcw,
   Timer,
   Wallet,
   Wifi,
   WifiOff,
+  XCircle,
 } from "lucide-react";
 import { formatKm } from "@/lib/geo";
 import { Modal } from "@/components/console/Modal";
@@ -33,7 +35,10 @@ import { useNewOrderAlert } from "@/components/staff/useNewOrderAlert";
 import { useI18n, money } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import { cancelOrder, reactivateOrder } from "@/lib/owner.functions";
+import { canCancel, isCancelled, nextStage, orderStatusLabel, stageOf } from "@/lib/order-status";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/kitchen")({
   head: () => ({

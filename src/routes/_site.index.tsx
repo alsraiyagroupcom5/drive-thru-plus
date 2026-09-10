@@ -3,7 +3,7 @@ import { ArrowRight, Check, Clock } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, siteIcon, useSite } from "@/lib/site-content";
-import { SectionTitle } from "@/components/marketing/SiteChrome";
+import { SectionTitle, SiteLink } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 import heroImage from "@/assets/business-hero.jpg";
 
@@ -67,19 +67,19 @@ function BusinessHome() {
             {pick(hero.subtitle.ar, hero.subtitle.en)}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link
+            <SiteLink
               to={hero.primary.to}
               className="inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient-brass)] px-6 py-3.5 font-display text-sm font-bold text-primary-foreground shadow-[var(--shadow-lift)]"
             >
               {pick(hero.primary.label.ar, hero.primary.label.en)}
               <ArrowRight className={cn("h-4 w-4", dir === "rtl" && "rotate-180")} aria-hidden />
-            </Link>
-            <Link
+            </SiteLink>
+            <SiteLink
               to={hero.secondary.to}
               className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3.5 text-sm font-semibold"
             >
               {pick(hero.secondary.label.ar, hero.secondary.label.en)}
-            </Link>
+            </SiteLink>
           </div>
           <dl className="mt-8 grid max-w-md grid-cols-3 gap-4">
             {hero.stats.map((s) => (
@@ -176,12 +176,12 @@ function BusinessHome() {
                     </li>
                   ))}
                 </ul>
-                <Link
+                <SiteLink
                   to={r.to}
                   className="mt-6 rounded-full border border-primary px-5 py-2.5 text-center text-sm font-bold text-primary"
                 >
                   {pick(r.linkLabel.ar, r.linkLabel.en)}
-                </Link>
+                </SiteLink>
               </div>
             );
           })}

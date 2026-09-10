@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { ChevronDown, Instagram, Mail, Menu, Moon, Phone, Sun, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -6,6 +7,21 @@ import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { useSite } from "@/lib/site-content";
 import logo from "@/assets/qr-spring-logo.png.asset.json";
+
+type SiteLinkProps = {
+  to: string;
+  className?: string;
+  children: ReactNode;
+  onClick?: () => void;
+  activeOptions?: { exact?: boolean };
+  activeProps?: { className?: string };
+};
+
+/** Link that accepts an admin-editable path string. */
+export function SiteLink(props: SiteLinkProps) {
+  const L = Link as unknown as (p: SiteLinkProps) => ReactNode;
+  return <L {...props} />;
+}
 
 export function SiteHeader() {
   const { pick, toggle } = useI18n();
@@ -35,7 +51,7 @@ export function SiteHeader() {
 
         <nav className="hidden items-center gap-1 md:flex">
           {site.nav.map((n) => (
-            <Link
+            <SiteLink
               key={n.to}
               to={n.to}
               activeOptions={{ exact: n.to === "/" }}
@@ -43,7 +59,7 @@ export function SiteHeader() {
               className="rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
             >
               {pick(n.label.ar, n.label.en)}
-            </Link>
+            </SiteLink>
           ))}
         </nav>
 
@@ -80,14 +96,14 @@ export function SiteHeader() {
                 onMouseLeave={() => setOpenAccess(false)}
               >
                 {site.access.map((a) => (
-                  <Link
+                  <SiteLink
                     key={a.to}
                     to={a.to}
                     onClick={() => setOpenAccess(false)}
                     className="block rounded-xl px-3 py-2 text-sm font-semibold hover:bg-accent"
                   >
                     {pick(a.label.ar, a.label.en)}
-                  </Link>
+                  </SiteLink>
                 ))}
               </div>
             ) : null}
@@ -107,14 +123,14 @@ export function SiteHeader() {
         <div className="border-t border-border px-5 py-3 md:hidden">
           <div className="grid gap-1">
             {site.nav.map((n) => (
-              <Link
+              <SiteLink
                 key={n.to}
                 to={n.to}
                 onClick={() => setOpenNav(false)}
                 className="rounded-xl px-3 py-2 text-sm font-semibold"
               >
                 {pick(n.label.ar, n.label.en)}
-              </Link>
+              </SiteLink>
             ))}
           </div>
           <p className="mt-3 px-3 text-[11px] font-bold uppercase text-muted-foreground">
@@ -122,14 +138,14 @@ export function SiteHeader() {
           </p>
           <div className="grid gap-1">
             {site.access.map((a) => (
-              <Link
+              <SiteLink
                 key={a.to}
                 to={a.to}
                 onClick={() => setOpenNav(false)}
                 className="rounded-xl px-3 py-2 text-sm text-muted-foreground"
               >
                 {pick(a.label.ar, a.label.en)}
-              </Link>
+              </SiteLink>
             ))}
           </div>
         </div>
@@ -171,7 +187,7 @@ export function SiteFooter() {
             {site.nav.map((n) => (
               <Link key={n.to} to={n.to} className="hover:text-foreground">
                 {pick(n.label.ar, n.label.en)}
-              </Link>
+              </SiteLink>
             ))}
           </div>
         </div>

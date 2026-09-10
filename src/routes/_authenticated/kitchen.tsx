@@ -66,7 +66,7 @@ function KitchenPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-console-canvas">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
         <div>
           <h1 className="font-display text-2xl font-bold">{t("kitchen")}</h1>

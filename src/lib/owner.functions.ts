@@ -806,10 +806,14 @@ export const cancelOrder = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: order } = await db
       .from("orders")
-      .select("id, status, order_number")
+      .select("id, status, order_number, branch_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
+    const { data: allowed } = await (context.supabase as unknown as {
+      rpc: (fn: "has_branch_access", args: { _user_id: string; _branch_id: string }) => PromiseLike<{ data: unknown }>;
+    }).rpc("has_branch_access", { _user_id: context.userId, _branch_id: order.branch_id });
+    if (allowed !== true) throw new Error("FORBIDDEN");
     if (order.status === "CANCELLED") return { ok: true, status: "CANCELLED" };
     if (!(NEXT_STATUSES[order.status] ?? []).includes("CANCELLED"))
       throw new Error("INVALID_TRANSITION");

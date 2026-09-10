@@ -65,19 +65,26 @@ function TrackPage() {
   const hasStaff = !!staffUser;
   const isCustomer = !!session?.token;
   const canFetch = (customerReady && isCustomer) || (staffReady && hasStaff);
+  const [staffMode, setStaffMode] = useState(false);
 
   const order = useQuery({
     queryKey: ["order", orderId, hasStaff ? "staff" : "customer"],
     queryFn: async () => {
       if (isCustomer) {
         try {
-          return await getOrder({ data: { token: session.token, orderId } });
+          const own = await getOrder({ data: { token: session.token, orderId } });
+          setStaffMode(false);
+          return own;
         } catch (err) {
           // An admin/staff member may be browsing with a leftover customer session.
           if (!hasStaff) throw err;
         }
       }
-      if (hasStaff) return getOrderForStaff({ data: { orderId } });
+      if (hasStaff) {
+        const res = await getOrderForStaff({ data: { orderId } });
+        setStaffMode(true);
+        return res;
+      }
       throw new Error("NO_SESSION");
     },
     enabled: canFetch,
@@ -85,7 +92,8 @@ function TrackPage() {
     refetchInterval: 4_000,
     refetchOnWindowFocus: true,
   });
-  const isStaff = hasStaff && order.data?.customer_id !== undefined && !isCustomer;
+  const isStaff = staffMode;
+
 
 
   // Realtime by actual UUID so short codes work too.

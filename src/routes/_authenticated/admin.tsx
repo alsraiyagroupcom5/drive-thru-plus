@@ -35,6 +35,9 @@ export const Route = createFileRoute("/_authenticated/admin")({
       { name: "robots", content: "noindex" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    tab: typeof s["tab"] === "string" ? (s["tab"] as string) : undefined,
+  }),
   component: AdminConsole,
 });
 
@@ -61,7 +64,11 @@ const input =
 function AdminConsole() {
   const { pick, lang } = useI18n();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("overview");
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const tab = (TABS.some((t) => t.id === search.tab) ? search.tab : "overview") as (typeof TABS)[number]["id"];
+  const setTab = (id: (typeof TABS)[number]["id"]) =>
+    void navigate({ search: { tab: id }, replace: true });
   const [accountOpen, setAccountOpen] = useState(false);
   const [restOpen, setRestOpen] = useState(false);
 

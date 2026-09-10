@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, siteIcon, useSite } from "@/lib/site-content";
 import { SiteLink } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
+import { LuxuryHome } from "@/components/marketing/LuxuryHome";
 import heroImage from "@/assets/business-hero.jpg";
 import qrSpringLogoAsset from "@/assets/qr-spring-logo.png.asset.json";
 
@@ -220,6 +221,8 @@ function BusinessHome() {
   const { pick, dir } = useI18n();
   const site = useSite();
   const hero = site.hero;
+
+  if (site.theme === "luxury") return <LuxuryHome site={site} />;
 
   return (
     <>

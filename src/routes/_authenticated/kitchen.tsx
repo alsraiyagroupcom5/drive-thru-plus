@@ -529,11 +529,6 @@ function KitchenPage() {
   );
 }
 
-function nextOf(status: string): string | null {
-  const i = FLOW.indexOf(status as (typeof FLOW)[number]);
-  if (i < 0 || i >= FLOW.length - 1) return null;
-  return FLOW[i + 1] ?? null;
-}
 
 function statusText(s: string, t: (k: never) => string) {
   const tt = t as unknown as (k: string) => string;

@@ -18,6 +18,13 @@ import { Modal } from "@/components/console/Modal";
 import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NEXT_STATUSES, orderControlSettings, updateOrderStatus } from "@/lib/owner.functions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Row = Record<string, unknown>;
 

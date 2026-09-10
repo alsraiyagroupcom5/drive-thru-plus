@@ -222,9 +222,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 }
 
 export function useI18n() {
-  const ctx = useContext(LangContext);
-  if (!ctx) throw new Error("useI18n must be used inside LanguageProvider");
-  return ctx;
+  return useContext(LangContext);
 }
 
 export function money(amount: number, lang: Lang) {

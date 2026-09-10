@@ -418,37 +418,13 @@ export function SiteEditor() {
                 max={400}
                 dir="ltr"
                 value={draft.brand.logoHeight}
-                readOnly={autoLogoHeight}
                 onChange={(e) =>
                   set("brand", { ...draft.brand, logoHeight: Number(e.target.value) || 0 })
                 }
-                className={cn(
-                  "mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm",
-                  autoLogoHeight && "cursor-not-allowed opacity-60",
-                )}
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
               />
             </label>
           </div>
-          <label className="flex items-center gap-2 text-sm font-semibold">
-            <input
-              type="checkbox"
-              checked={autoLogoHeight}
-              onChange={(e) => {
-                const on = e.target.checked;
-                setAutoLogoHeight(on);
-                if (on && logoRatio && draft.brand.logoWidth > 0) {
-                  set("brand", {
-                    ...draft.brand,
-                    logoHeight: Math.max(16, Math.round(draft.brand.logoWidth * logoRatio)),
-                  });
-                }
-              }}
-            />
-            {pick(
-              "ارتفاع تلقائي حسب نسبة الشعار — غيّر العرض فقط",
-              "Auto height from the logo ratio — change the width only",
-            )}
-          </label>
 
           <label className="flex items-center gap-2 text-sm font-semibold">
             <input

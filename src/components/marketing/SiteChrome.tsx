@@ -155,9 +155,9 @@ export function SiteFooter() {
             <img
               src={logo.url}
               alt=""
-              width={52}
-              height={52}
-              className="h-13 w-13 rounded-2xl border border-border bg-white object-contain p-1"
+              width={56}
+              height={56}
+              className="h-14 w-14 rounded-2xl border border-border bg-white object-contain p-1"
             />
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">

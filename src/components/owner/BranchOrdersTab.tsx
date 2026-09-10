@@ -192,24 +192,47 @@ function OrderStatusControl({ order }: { order: Row }) {
 
   return (
     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
-        {pick("تغيير حالة الطلب", "Change order status")}
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {options.map((s) => (
-          <button
-            key={s}
-            type="button"
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate(s)}
-            className="rounded-full bg-primary px-4 py-2 text-[11px] font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+            {pick("تغيير حالة الطلب", "Change order status")}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {pick("اختر الحالة التالية للطلب", "Choose the next status for this order")}
+          </p>
+        </div>
+        <Select
+          value={status}
+          disabled={mutation.isPending}
+          onValueChange={(value) => mutation.mutate(value)}
+        >
+          <SelectTrigger
+            className={cn(
+              "h-10 w-full min-w-[11rem] rounded-full border-primary/30 bg-card px-4 text-xs font-bold text-primary shadow-none focus:ring-primary/30",
+              lang === "ar" && "text-right",
+            )}
           >
-            {statusLabel(s, pick)}
-          </button>
-        ))}
+            <SelectValue placeholder={statusLabel(status, pick)} />
+          </SelectTrigger>
+          <SelectContent
+            className="rounded-2xl border-primary/20 bg-card p-1.5 shadow-lift"
+            position="popper"
+            sideOffset={6}
+          >
+            {options.map((s) => (
+              <SelectItem
+                key={s}
+                value={s}
+                className="rounded-xl text-xs font-semibold focus:bg-primary/10 focus:text-primary"
+              >
+                {statusLabel(s, pick)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       {mutation.isError ? (
-        <p className="mt-2 text-[11px] font-semibold text-destructive">
+        <p className="mt-3 text-[11px] font-semibold text-destructive">
           {pick("تعذر تحديث الحالة", "Could not update the status")}
         </p>
       ) : null}

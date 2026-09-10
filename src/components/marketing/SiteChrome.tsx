@@ -38,9 +38,10 @@ export function SiteHeader() {
           <img
             src={logoUrl}
             alt={pick(site.brand.name.ar, site.brand.name.en)}
-            width={192}
-            height={64}
-            className="h-16 w-48 rounded-2xl border border-border bg-white object-contain p-0.5"
+            width={site.brand.logoWidth}
+            height={site.brand.logoHeight}
+            style={{ width: site.brand.logoWidth, height: site.brand.logoHeight }}
+            className="object-contain"
           />
           {site.brand.showName ? (
             <span className="font-display text-lg font-bold">
@@ -166,9 +167,10 @@ export function SiteFooter() {
             <img
               src={logoUrl}
               alt=""
-              width={192}
-              height={64}
-              className="h-16 w-48 rounded-2xl border border-border bg-white object-contain p-0.5"
+              width={site.brand.logoWidth}
+              height={site.brand.logoHeight}
+              style={{ width: site.brand.logoWidth, height: site.brand.logoHeight }}
+              className="object-contain"
             />
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">

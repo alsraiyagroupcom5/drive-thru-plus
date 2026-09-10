@@ -13,10 +13,12 @@ import {
   Navigation,
   PackageCheck,
   Phone,
+  RefreshCcw,
   Timer,
   Wallet,
   Wifi,
   WifiOff,
+  XCircle,
 } from "lucide-react";
 import { formatKm } from "@/lib/geo";
 import { Modal } from "@/components/console/Modal";
@@ -33,7 +35,10 @@ import { useNewOrderAlert } from "@/components/staff/useNewOrderAlert";
 import { useI18n, money } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import { cancelOrder, reactivateOrder } from "@/lib/owner.functions";
+import { canCancel, isCancelled, nextStage, orderStatusLabel, stageOf } from "@/lib/order-status";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/kitchen")({
   head: () => ({
@@ -190,6 +195,40 @@ function KitchenPage() {
       );
     }
   };
+
+  const refreshBoards = () => {
+    queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
+    queryClient.invalidateQueries({ queryKey: ["owner-orders"] });
+    queryClient.invalidateQueries({ queryKey: ["client-orders"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-orders-feed"] });
+  };
+
+  /** Cancel an order — deliberately a separate action, never a dropdown pick. */
+  const cancel = async (order: LiveOrder) => {
+    try {
+      await cancelOrder({ data: { orderId: order.id } });
+      setDetail((d) => (d && d.id === order.id ? { ...d, status: "CANCELLED" } : d));
+      refreshBoards();
+      toast.success(pick("تم إلغاء الطلب", "Order cancelled"));
+    } catch {
+      refreshBoards();
+      toast.error(pick("تعذّر إلغاء الطلب", "Could not cancel the order"));
+    }
+  };
+
+  /** Bring a cancelled order back to life as a freshly received order. */
+  const reactivate = async (order: LiveOrder) => {
+    try {
+      await reactivateOrder({ data: { orderId: order.id } });
+      setDetail((d) => (d && d.id === order.id ? { ...d, status: "RECEIVED" } : d));
+      refreshBoards();
+      toast.success(pick("تم تفعيل الطلب من جديد", "Order re-enabled"));
+    } catch {
+      refreshBoards();
+      toast.error(pick("تعذّر تفعيل الطلب", "Could not re-enable the order"));
+    }
+  };
+
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -429,6 +468,8 @@ function KitchenPage() {
                       if (n) advance(o, n);
                     }}
                     onStatus={(s) => advance(o, s)}
+                    onCancel={() => cancel(o)}
+
                   />
                 ))}
                 {!items.length && (
@@ -587,14 +628,36 @@ function KitchenPage() {
               <p className="rounded-xl bg-warning/10 p-2.5 text-xs text-warning">{detail.notes}</p>
             ) : null}
 
-            {nextOf(detail.status) ? (
+            {isCancelled(detail.status) ? (
               <button
-                onClick={() => advance(detail, nextOf(detail.status)!)}
-                className="w-full rounded-full bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+                onClick={() => reactivate(detail)}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
               >
-                {statusText(nextOf(detail.status)!, t)}
+                <RefreshCcw className="h-4 w-4" aria-hidden />
+                {pick("إعادة تفعيل الطلب", "Re-enable order")}
               </button>
-            ) : null}
+            ) : (
+              <div className="space-y-2">
+                {nextOf(detail.status) ? (
+                  <button
+                    onClick={() => advance(detail, nextOf(detail.status)!)}
+                    className="w-full rounded-full bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+                  >
+                    {statusText(nextOf(detail.status)!, t)}
+                  </button>
+                ) : null}
+                {canCancel(detail.status) ? (
+                  <button
+                    onClick={() => cancel(detail)}
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-destructive/40 py-3 text-sm font-bold text-destructive transition hover:bg-destructive/10"
+                  >
+                    <XCircle className="h-4 w-4" aria-hidden />
+                    {pick("إلغاء الطلب", "Cancel order")}
+                  </button>
+                ) : null}
+              </div>
+            )}
+
           </div>
         ) : null}
       </Modal>
@@ -603,31 +666,16 @@ function KitchenPage() {
 }
 
 
-const EXTRA_LABELS: Record<string, { ar: string; en: string }> = {
-  ACCEPTED: { ar: "تم القبول", en: "Accepted" },
-  QUALITY_CHECK: { ar: "فحص الجودة", en: "Quality check" },
-  ARRIVING: { ar: "العميل في الطريق", en: "Arriving" },
-  COMPLETED: { ar: "مكتمل", en: "Completed" },
-  CANCELLED: { ar: "ملغي", en: "Cancelled" },
-  PAID: { ar: "مدفوع", en: "Paid" },
-  REFUNDED: { ar: "مسترجع", en: "Refunded" },
-};
-
-function statusText(s: string, t: (k: never) => string) {
-  const tt = t as unknown as (k: string) => string;
-  if (s === "RECEIVED") return tt("received");
-  if (s === "PREPARING") return tt("preparing");
-  if (s === "READY") return tt("ready");
-  if (s === "PICKED_UP") return tt("pickedUp");
-  const extra = EXTRA_LABELS[s];
-  if (!extra) return s;
-  const en = typeof document !== "undefined" && document.documentElement.lang === "en";
-  return en ? extra.en : extra.ar;
+function statusText(s: string, _t?: unknown) {
+  void _t;
+  const isEn = typeof document !== "undefined" && document.documentElement.lang === "en";
+  return orderStatusLabel(s, (ar, en2) => (isEn ? en2 : ar));
 }
+
 
 function StatusFlow({ status, compact = false }: { status: string; compact?: boolean }) {
   const { t } = useI18n();
-  const idx = Math.max(0, FLOW.indexOf(status as (typeof FLOW)[number]));
+  const idx = Math.max(0, FLOW.indexOf((stageOf(status) ?? status) as (typeof FLOW)[number]));
   return (
     <ol className={cn("flex items-center gap-1.5", compact ? "" : "rounded-2xl bg-elevated/60 p-3")}>
       {FLOW.map((s, i) => {
@@ -665,17 +713,21 @@ function OrderCard({
   onDetails,
   onAdvance,
   onStatus,
+  onCancel,
 }: {
   order: LiveOrder;
   next: string | null;
   onDetails: () => void;
   onAdvance: () => void;
   onStatus: (s: string) => void;
+  onCancel: () => void;
 }) {
   const { t, pick, lang } = useI18n();
   const age = minutesSince(o.created_at);
   const target = o.target_prep_minutes ?? 8;
   const urgency = age >= target ? "late" : age >= target - 2 ? "soon" : "ok";
+  const stageNext = nextStage(o.status);
+
 
   return (
     <li
@@ -759,7 +811,7 @@ function OrderCard({
         <p className="mt-2 rounded-lg bg-warning/10 p-2 text-[11px] text-warning">{o.notes}</p>
       ) : null}
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           onClick={onDetails}
           className="rounded-full border border-border bg-background px-3 py-2.5 text-xs font-bold transition hover:bg-accent"
@@ -774,20 +826,30 @@ function OrderCard({
             {statusText(next, t as never)}
           </button>
         ) : null}
+        {/* The dropdown only offers the next customer-facing stage; cancelling
+            has its own button so it can never be picked by mistake. */}
         <select
-          aria-label={pick("تغيير حالة الطلب", "Change order status")}
+          aria-label={pick("حالة الطلب", "Order status")}
           value={o.status}
+          disabled={!stageNext}
           onChange={(e) => onStatus(e.target.value)}
-          className="rounded-full border border-border bg-background px-2 py-2.5 text-xs font-bold outline-none"
+          className="rounded-full border border-border bg-background px-2 py-2.5 text-xs font-bold outline-none disabled:opacity-60"
         >
           <option value={o.status}>{statusText(o.status, t as never)}</option>
-          {(ALLOWED[o.status] ?? []).map((s) => (
-            <option key={s} value={s}>
-              {statusText(s, t as never)}
-            </option>
-          ))}
+          {stageNext ? <option value={stageNext}>{statusText(stageNext, t as never)}</option> : null}
         </select>
+        {canCancel(o.status) ? (
+          <button
+            onClick={onCancel}
+            aria-label={pick("إلغاء الطلب", "Cancel order")}
+            className="inline-flex items-center gap-1.5 rounded-full border border-destructive/40 px-3 py-2.5 text-xs font-bold text-destructive transition hover:bg-destructive/10"
+          >
+            <XCircle className="h-3.5 w-3.5" aria-hidden />
+            {pick("إلغاء", "Cancel")}
+          </button>
+        ) : null}
       </div>
+
     </li>
   );
 }

@@ -736,7 +736,93 @@ export const resetOrder = createServerFn({ method: "POST" })
     return { ok: true, status: "RECEIVED" };
   });
 
+/**
+ * Re-open a cancelled order. Any signed-in staff member (kitchen, cashier,
+ * manager, owner or admin) may do it — the order returns to "just placed".
+ */
+export const reactivateOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { orderId: string }) => {
+    if (!d?.orderId) throw new Error("INVALID_INPUT");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: staff } = await (context.supabase as unknown as {
+      rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown }>;
+    }).rpc("is_staff", { _user_id: context.userId });
+    if (staff !== true) throw new Error("FORBIDDEN");
+
+    const db = await admin();
+    const { data: order } = await db
+      .from("orders")
+      .select("id, status, order_number")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!order) throw new Error("ORDER_NOT_FOUND");
+    if (order.status !== "CANCELLED") throw new Error("NOT_CANCELLED");
+
+    const { error } = await (db as unknown as {
+      rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ error: { message: string } | null }>;
+    }).rpc("admin_reset_order", { _order_id: order.id });
+    if (error) throw new Error(error.message);
+
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "ORDER_REACTIVATED",
+      entity: "orders",
+      entity_id: order.id,
+      details: { from: order.status, to: "RECEIVED", order_number: order.order_number },
+    });
+
+    return { ok: true, status: "RECEIVED" };
+  });
+
+/**
+ * Cancel an order. Separate from the status dropdown so it can never be
+ * chosen by accident, and available to any staff member.
+ */
+export const cancelOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { orderId: string }) => {
+    if (!d?.orderId) throw new Error("INVALID_INPUT");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: staff } = await (context.supabase as unknown as {
+      rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown }>;
+    }).rpc("is_staff", { _user_id: context.userId });
+    if (staff !== true) throw new Error("FORBIDDEN");
+
+    const db = await admin();
+    const { data: order } = await db
+      .from("orders")
+      .select("id, status, order_number")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!order) throw new Error("ORDER_NOT_FOUND");
+    if (order.status === "CANCELLED") return { ok: true, status: "CANCELLED" };
+    if (!(NEXT_STATUSES[order.status] ?? []).includes("CANCELLED"))
+      throw new Error("INVALID_TRANSITION");
+
+    const { error } = await db
+      .from("orders")
+      .update({ status: "CANCELLED" } as never)
+      .eq("id", order.id);
+    if (error) throw new Error(error.message);
+
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "ORDER_CANCELLED",
+      entity: "orders",
+      entity_id: order.id,
+      details: { from: order.status, to: "CANCELLED", order_number: order.order_number },
+    });
+
+    return { ok: true, status: "CANCELLED" };
+  });
+
 /* ------------------------------ branding ------------------------------ */
+
 
 const LOGO_TYPES: Record<string, string> = {
   "image/png": "png",

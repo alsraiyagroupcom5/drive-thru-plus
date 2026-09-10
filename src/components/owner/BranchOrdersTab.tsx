@@ -9,10 +9,12 @@ import {
   MapPin,
   Navigation,
   PackageCheck,
+  RefreshCcw,
   RotateCcw,
   Store,
   Timer,
   Wallet,
+  XCircle,
 } from "lucide-react";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { Modal } from "@/components/console/Modal";
@@ -20,7 +22,14 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NEXT_STATUSES, orderControlSettings, resetOrder, updateOrderStatus } from "@/lib/owner.functions";
+import {
+  cancelOrder,
+  orderControlSettings,
+  reactivateOrder,
+  resetOrder,
+  updateOrderStatus,
+} from "@/lib/owner.functions";
+import { canCancel, isCancelled, nextStage, orderStatusLabel } from "@/lib/order-status";
 import {
   Select,
   SelectContent,
@@ -28,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 
 type Row = Record<string, unknown>;
 
@@ -39,29 +49,9 @@ const IN_PROGRESS_STATUSES = ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHEC
 const FLOW = ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "READY", "COMPLETED"];
 
 function statusLabel(status: string, pick: (ar: string, en: string) => string): string {
-  switch (status) {
-    case "RECEIVED":
-      return pick("تم الاستلام", "Received");
-    case "ACCEPTED":
-      return pick("مقبول", "Accepted");
-    case "PREPARING":
-      return pick("قيد التحضير", "Preparing");
-    case "QUALITY_CHECK":
-      return pick("فحص الجودة", "Quality check");
-    case "READY":
-      return pick("جاهز", "Ready");
-    case "ARRIVING":
-      return pick("العميل في الطريق", "Arriving");
-    case "PICKED_UP":
-      return pick("تم الاستلام", "Picked up");
-    case "COMPLETED":
-      return pick("مكتمل", "Completed");
-    case "CANCELLED":
-      return pick("ملغي", "Cancelled");
-    default:
-      return status;
-  }
+  return orderStatusLabel(status, pick);
 }
+
 
 function filterLabel(f: Filter, pick: (ar: string, en: string) => string): string {
   switch (f) {
@@ -244,32 +234,63 @@ function OrderStatusControl({ order }: { order: Row }) {
     },
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: () => cancelOrder({ data: { orderId: order["id"] as string } }),
+    onSuccess: () => {
+      setCurrent("CANCELLED");
+      refreshAll();
+      toast.success(pick("تم إلغاء الطلب", "Order cancelled"));
+    },
+    onError: () => {
+      refreshAll();
+      toast.error(pick("تعذّر إلغاء الطلب", "Could not cancel the order"));
+    },
+  });
+
+  const reactivateMutation = useMutation({
+    mutationFn: () => reactivateOrder({ data: { orderId: order["id"] as string } }),
+    onSuccess: () => {
+      setCurrent("RECEIVED");
+      refreshAll();
+      toast.success(pick("تم تفعيل الطلب من جديد", "Order re-enabled"));
+    },
+    onError: () => {
+      refreshAll();
+      toast.error(pick("تعذّر تفعيل الطلب", "Could not re-enable the order"));
+    },
+  });
+
   const canReset = settings.data?.isSuperAdmin === true;
-  if (!settings.data?.canChangeStatus && !canReset) return null;
-  const options = settings.data?.canChangeStatus ? (NEXT_STATUSES[current] ?? []) : [];
-  if (!options.length && !canReset) return null;
+  const canChange = settings.data?.canChangeStatus === true;
+  if (!canChange && !canReset) return null;
+
+  const cancelled = isCancelled(current);
+  const next = canChange && !cancelled ? nextStage(current) : null;
+  const busy = mutation.isPending || cancelMutation.isPending || reactivateMutation.isPending;
 
   return (
     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
-            {pick("تغيير حالة الطلب", "Change order status")}
+            {pick("حالة الطلب", "Order status")}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {pick("اختر الحالة التالية للطلب", "Choose the next status for this order")}
+            {cancelled
+              ? pick("هذا الطلب ملغي", "This order is cancelled")
+              : pick("انقل الطلب إلى المرحلة التالية", "Move the order to the next stage")}
           </p>
         </div>
-        {options.length ? (
         <Select
           key={`${order["id"] as string}-${current}`}
           value={current}
-          disabled={mutation.isPending}
+          disabled={cancelled || !next || busy}
           onValueChange={(value) => mutation.mutate(value)}
         >
           <SelectTrigger
             className={cn(
-              "h-10 w-full min-w-[11rem] rounded-full border-primary/30 bg-card px-4 text-xs font-bold text-primary shadow-none focus:ring-primary/30",
+              "h-10 w-full min-w-[12rem] rounded-full border-primary/30 bg-card px-4 text-xs font-bold text-primary shadow-none focus:ring-primary/30 disabled:opacity-70",
+              cancelled && "border-destructive/30 text-destructive",
               lang === "ar" && "text-right",
             )}
           >
@@ -280,8 +301,8 @@ function OrderStatusControl({ order }: { order: Row }) {
             position="popper"
             sideOffset={6}
           >
-            {/* The actual current status is always shown (disabled) so the
-                dropdown value reflects the order's real state. */}
+            {/* The real status is always shown (disabled) so the dropdown
+                mirrors the order's live state. */}
             <SelectItem
               value={current}
               disabled
@@ -289,27 +310,41 @@ function OrderStatusControl({ order }: { order: Row }) {
             >
               {statusLabel(current, pick)} · {pick("الحالية", "Current")}
             </SelectItem>
-            {options.map((s) => (
+            {next ? (
               <SelectItem
-                key={s}
-                value={s}
+                value={next}
                 className="rounded-xl text-xs font-semibold focus:bg-primary/10 focus:text-primary"
               >
-                {statusLabel(s, pick)}
+                {statusLabel(next, pick)}
               </SelectItem>
-            ))}
+            ) : null}
           </SelectContent>
         </Select>
-        ) : null}
       </div>
-      {canReset ? (
-        <div className="mt-3 flex flex-col gap-2 border-t border-primary/15 pt-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            {pick(
-              "إعادة ضبط الطلب كأنه تم استلامه الآن",
-              "Reset this order as if it was just placed",
-            )}
-          </p>
+
+      <div className="mt-3 flex flex-col gap-2 border-t border-primary/15 pt-3 sm:flex-row sm:items-center sm:justify-end">
+        {cancelled ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => reactivateMutation.mutate()}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[image:var(--gradient-brass)] px-4 text-xs font-bold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
+          >
+            <RefreshCcw className="h-3.5 w-3.5" aria-hidden />
+            {pick("إعادة تفعيل الطلب", "Re-enable order")}
+          </button>
+        ) : canCancel(current) && canChange ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => cancelMutation.mutate()}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-destructive/40 bg-card px-4 text-xs font-bold text-destructive transition hover:bg-destructive/10 disabled:opacity-60"
+          >
+            <XCircle className="h-3.5 w-3.5" aria-hidden />
+            {pick("إلغاء الطلب", "Cancel order")}
+          </button>
+        ) : null}
+        {canReset && !cancelled ? (
           <button
             type="button"
             disabled={resetMutation.isPending}
@@ -319,16 +354,12 @@ function OrderStatusControl({ order }: { order: Row }) {
             <RotateCcw className="h-3.5 w-3.5" aria-hidden />
             {pick("إعادة ضبط الطلب", "Reset order")}
           </button>
-        </div>
-      ) : null}
-      {mutation.isError ? (
-        <p className="mt-3 text-[11px] font-semibold text-destructive">
-          {pick("تعذر تحديث الحالة", "Could not update the status")}
-        </p>
-      ) : null}
+        ) : null}
+      </div>
     </div>
   );
 }
+
 
 /** Full order detail popup: branch, timings, process steps, items and payment. */
 export function OrderDetail({

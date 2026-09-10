@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Clock3, Coffee, Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users, Radar } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock3, Coffee, Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users, Radar, ExternalLink } from "lucide-react";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";

@@ -3,6 +3,8 @@ import {
   ArrowLeft,
   ArrowRight,
   ClipboardList,
+  Copy,
+  ExternalLink,
   Clock,
   LayoutGrid,
   List,

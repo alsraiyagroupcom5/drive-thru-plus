@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowUpRight, ChevronRight, CircleDollarSign, Inbox, LayoutDashboard, MapPin, Package, Plus, QrCode, ShoppingBag, Store, Users } from "lucide-react";
+import { ArrowUpRight, ChevronRight, CircleDollarSign, Inbox, LayoutDashboard, MapPin, Package, Plus, QrCode, ShoppingBag, SlidersHorizontal, Store, Users } from "lucide-react";
 import { Modal } from "@/components/console/Modal";
 import { ClientAccessDialog } from "@/components/console/ClientAccessDialog";
 

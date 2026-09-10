@@ -524,3 +524,49 @@ export const removeTeamMember = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ------------------------ tracking settings ------------------------ */
+
+type TrackingInput = Scoped & {
+  branchId: string;
+  lat?: number | null;
+  lng?: number | null;
+  maps_url?: string | null;
+  tracking_enabled?: boolean;
+  auto_arrival?: boolean;
+  arrival_radius_m?: number;
+  approach_radius_m?: number;
+  avg_speed_kmh?: number;
+  location_ping_seconds?: number;
+};
+
+export const saveTrackingSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: TrackingInput) => d)
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    const db = await admin();
+    const num = (v: unknown) =>
+      v === null || v === undefined || Number.isNaN(Number(v)) ? null : Number(v);
+
+    const arrival = clamp(Math.round(data.arrival_radius_m ?? 200), 30, 5000);
+    const approach = clamp(Math.round(data.approach_radius_m ?? 1500), arrival, 50000);
+
+    const { error } = await db
+      .from("branches")
+      .update({
+        lat: num(data.lat),
+        lng: num(data.lng),
+        maps_url: data.maps_url?.trim().slice(0, 300) || null,
+        tracking_enabled: data.tracking_enabled ?? true,
+        auto_arrival: data.auto_arrival ?? true,
+        arrival_radius_m: arrival,
+        approach_radius_m: approach,
+        avg_speed_kmh: clamp(Math.round(data.avg_speed_kmh ?? 32), 5, 120),
+        location_ping_seconds: clamp(Math.round(data.location_ping_seconds ?? 15), 5, 180),
+      })
+      .eq("id", data.branchId)
+      .eq("restaurant_id", rid);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

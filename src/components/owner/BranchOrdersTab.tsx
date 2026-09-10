@@ -164,6 +164,40 @@ function TimingLine({ order }: { order: Row }) {
   );
 }
 
+/** Copy / open icons for the customer tracking page. */
+function CustomerPageActions({ orderId }: { orderId: string }) {
+  const { pick } = useI18n();
+  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/order/${orderId}`;
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => {
+          void navigator.clipboard
+            .writeText(url)
+            .then(() => toast.success(pick("تم نسخ رابط الطلب", "Order link copied")))
+            .catch(() => toast.error(pick("تعذّر النسخ", "Copy failed")));
+        }}
+        title={pick("نسخ رابط صفحة العميل", "Copy customer page link")}
+        aria-label={pick("نسخ رابط صفحة العميل", "Copy customer page link")}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/30 bg-card text-primary transition hover:bg-primary/10"
+      >
+        <Copy className="h-3.5 w-3.5" aria-hidden />
+      </button>
+      <a
+        href={`/order/${orderId}`}
+        target="_blank"
+        rel="noreferrer"
+        title={pick("فتح صفحة العميل", "Open customer page")}
+        aria-label={pick("فتح صفحة العميل في تبويب جديد", "Open customer page in a new tab")}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition hover:opacity-90"
+      >
+        <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+      </a>
+    </div>
+  );
+}
+
 /**
  * Status override control. Visible only when the platform (admin) or the
  * restaurant (owner) has the feature enabled; the server re-checks it too.

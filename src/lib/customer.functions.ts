@@ -437,7 +437,11 @@ export const announceArrival = createServerFn({ method: "POST" })
     if (!order) throw new Error("ORDER_NOT_FOUND");
     await db
       .from("orders")
-      .update({ customer_arrived: true, arrived_at: new Date().toISOString() })
+      .update({
+        customer_arrived: true,
+        arrived_at: new Date().toISOString(),
+        arrival_method: "MANUAL",
+      })
       .eq("id", order.id);
     return { ok: true };
   });

@@ -1,7 +1,7 @@
 import { useState, type ComponentType, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Bell, LogOut, Menu, Search, X } from "lucide-react";
+import { Bell, Globe, LogOut, Menu, Search, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
@@ -206,6 +206,16 @@ export function ConsoleShell({
 
               {actions}
 
+              <a
+                href="/"
+                target="_blank"
+                rel="noreferrer"
+                title={pick("معاينة الموقع", "Preview website")}
+                aria-label={pick("معاينة الموقع", "Preview website")}
+                className="grid h-10 w-10 place-items-center rounded-full border border-border text-muted-foreground transition hover:text-foreground"
+              >
+                <Globe className="h-4 w-4" aria-hidden />
+              </a>
               <button
                 className="grid h-10 w-10 place-items-center rounded-full border border-border text-muted-foreground"
                 aria-label={pick("التنبيهات", "Notifications")}

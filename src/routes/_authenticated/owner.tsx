@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users, Radar } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock3, Coffee, Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users, Radar } from "lucide-react";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
@@ -12,6 +12,7 @@ import { Modal } from "@/components/console/Modal";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
+import { foodImage } from "@/lib/food-images";
 import { cn } from "@/lib/utils";
 import { effectivePrice, hasDiscount, todayISO } from "@/lib/pricing";
 import {
@@ -157,6 +158,7 @@ function MenuTab({
   const { pick } = useI18n();
   const [editing, setEditing] = useState<Row | null>(null);
   const [creating, setCreating] = useState(false);
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const today = todayISO();
 
   const branchesOf = useMemo(() => {
@@ -199,18 +201,104 @@ function MenuTab({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const selectedBranch = branches.find((branch) => branch["id"] === selectedBranchId) ?? null;
+  const branchProducts = selectedBranchId
+    ? products.filter((product) =>
+        (branchesOf.get(product["id"] as string) ?? []).some((row) => row.branchId === selectedBranchId),
+      )
+    : [];
+
+  if (!selectedBranch) {
+    return (
+      <div className="space-y-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 border-b border-border pb-5 sm:flex sm:flex-wrap sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase text-primary">{pick("إدارة المنيو", "Menu management")}</p>
+            <h2 className="mt-1 truncate font-display text-2xl font-bold">{pick("اختر الفرع", "Choose a branch")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {pick("افتح أي فرع لإدارة أصنافه كما هي الآن.", "Open a branch to manage its existing menu.")}
+            </p>
+          </div>
+          <div className="shrink-0 rounded-2xl border border-border bg-elevated px-4 py-3 text-end">
+            <p className="text-[11px] text-muted-foreground">{pick("إجمالي الفروع", "Total branches")}</p>
+            <p className="font-display text-xl font-bold" dir="ltr">{branches.length}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {branches.map((branch) => {
+            const branchId = branch["id"] as string;
+            const assigned = products.filter((product) =>
+              (branchesOf.get(product["id"] as string) ?? []).some((row) => row.branchId === branchId),
+            );
+            const outCount = assigned.filter((product) =>
+              (branchesOf.get(product["id"] as string) ?? []).some(
+                (row) => row.branchId === branchId && row.outToday,
+              ),
+            ).length;
+            return (
+              <button
+                key={branchId}
+                onClick={() => setSelectedBranchId(branchId)}
+                className="group overflow-hidden rounded-2xl border border-border bg-card text-start shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lift"
+              >
+                <div className="flex items-start justify-between gap-3 border-b border-border bg-elevated p-5">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+                    <Store className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className={cn("rounded-full px-3 py-1 text-[11px] font-bold", branch["is_open"] ? "bg-success/15 text-success" : "bg-destructive/12 text-destructive")}>
+                    {branch["is_open"] ? pick("مفتوح", "Open") : pick("مغلق", "Closed")}
+                  </span>
+                </div>
+                <div className="p-5">
+                  <h3 className="truncate font-display text-lg font-bold">{pick(branch["name_ar"] as string, branch["name_en"] as string)}</h3>
+                  <p className="mt-1 truncate text-xs text-muted-foreground">
+                    {pick(branch["address_ar"] as string, branch["address_en"] as string) || pick("لم يضف عنوان", "No address added")}
+                  </p>
+                  <div className="mt-5 grid grid-cols-2 gap-2">
+                    <div className="rounded-xl bg-elevated p-3"><p className="text-[10px] text-muted-foreground">{pick("الأصناف", "Items")}</p><p className="mt-1 font-display text-lg font-bold" dir="ltr">{assigned.length}</p></div>
+                    <div className="rounded-xl bg-elevated p-3"><p className="text-[10px] text-muted-foreground">{pick("نفد اليوم", "Out today")}</p><p className="mt-1 font-display text-lg font-bold" dir="ltr">{outCount}</p></div>
+                  </div>
+                  <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs font-bold text-primary">
+                    <span>{pick("فتح منيو الفرع", "Open branch menu")}</span>
+                    {lang === "ar" ? <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-1" aria-hidden /> : <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <button
-        onClick={() => {
-          setEditing(null);
-          setCreating(true);
-        }}
-        className="inline-flex items-center gap-1.5 rounded-full bg-[image:var(--gradient-brass)] px-5 py-2.5 text-sm font-bold text-primary-foreground"
-      >
-        <Plus className="h-4 w-4" aria-hidden />
-        {pick("صنف جديد", "New item")}
-      </button>
+      <nav aria-label={pick("التنقل بين الفروع", "Branch navigation")} className="-mx-1 flex gap-2 overflow-x-auto border-b border-border px-1 pb-4">
+        {branches.map((branch) => {
+          const branchId = branch["id"] as string;
+          const active = branchId === selectedBranchId;
+          const itemCount = products.filter((product) =>
+            (branchesOf.get(product["id"] as string) ?? []).some((row) => row.branchId === branchId),
+          ).length;
+          return (
+            <button key={branchId} onClick={() => setSelectedBranchId(branchId)} aria-current={active ? "page" : undefined} className={cn("flex shrink-0 items-center gap-3 rounded-xl border px-4 py-2.5 text-start transition", active ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground")}>
+              <Store className="h-4 w-4 shrink-0" aria-hidden />
+              <span><span className="block max-w-40 truncate text-xs font-bold">{pick(branch["name_ar"] as string, branch["name_en"] as string)}</span><span className="block text-[10px]" dir="ltr">{itemCount} {pick("صنف", "items")}</span></span>
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border pb-5 sm:flex sm:flex-wrap sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <button onClick={() => setSelectedBranchId(null)} aria-label={pick("العودة إلى الفروع", "Back to branches")} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground">
+            {lang === "ar" ? <ArrowRight className="h-4 w-4" aria-hidden /> : <ArrowLeft className="h-4 w-4" aria-hidden />}
+          </button>
+          <div className="min-w-0"><h2 className="truncate font-display text-xl font-bold">{pick(selectedBranch["name_ar"] as string, selectedBranch["name_en"] as string)}</h2><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock3 className="h-3.5 w-3.5 shrink-0" aria-hidden /><span dir="ltr">{String(selectedBranch["opens_at"] ?? "").slice(0, 5)}–{String(selectedBranch["closes_at"] ?? "").slice(0, 5)}</span></p></div>
+        </div>
+        <button onClick={() => { setEditing(null); setCreating(true); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[image:var(--gradient-brass)] px-4 py-2.5 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" aria-hidden />{pick("صنف جديد", "New item")}</button>
+      </div>
 
       <Modal
         open={creating || editing !== null}
@@ -229,7 +317,7 @@ function MenuTab({
           selectedBranches={
             editing
               ? (branchesOf.get(editing["id"] as string) ?? []).map((b) => b.branchId)
-              : branches.map((b) => b["id"] as string)
+              : [selectedBranch["id"] as string]
           }
           onDone={() => {
             setEditing(null);
@@ -243,17 +331,22 @@ function MenuTab({
         />
       </Modal>
 
-      <div className="space-y-2">
-        {products.map((p) => {
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {branchProducts.map((p) => {
           const id = p["id"] as string;
           const price = Number(p["price"]);
           const disc = Number(p["discount_percent"] ?? 0);
           const rows = branchesOf.get(id) ?? [];
+          const selectedStock = rows.find((row) => row.branchId === selectedBranchId);
           return (
-            <div key={id} className="surface rounded-2xl p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-semibold">
+            <article key={id} className="surface overflow-hidden rounded-2xl">
+              <div className="relative aspect-[16/9] overflow-hidden bg-elevated">
+                <img src={foodImage(p["image_url"] as string)} alt={pick(p["name_ar"] as string, p["name_en"] as string)} className="h-full w-full object-cover" loading="lazy" />
+                <span className={cn("absolute end-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold backdrop-blur", p["is_available"] ? "bg-success/90 text-success-foreground" : "bg-destructive/90 text-destructive-foreground")}>{p["is_available"] ? pick("متاح", "Available") : pick("موقوف", "Hidden")}</span>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                  <div className="min-w-0"><p className="truncate font-semibold">
                     {pick(p["name_ar"] as string, p["name_en"] as string)}
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
@@ -268,9 +361,10 @@ function MenuTab({
                     ) : (
                       money(price, lang)
                     )}
-                  </p>
+                  </p></div>
+                  <button onClick={() => { setCreating(false); setEditing(p); }} aria-label={pick("تعديل الصنف", "Edit item")} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary/40 hover:text-primary"><Pencil className="h-3.5 w-3.5" aria-hidden /></button>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="mt-4 flex flex-wrap items-center gap-2">
                   <label className="flex items-center gap-1.5 text-xs">
                     {pick("خصم %", "Discount %")}
                     <input
@@ -301,57 +395,20 @@ function MenuTab({
                   >
                     {p["is_available"] ? pick("متاح", "Available") : pick("موقوف", "Hidden")}
                   </button>
-                  <button
-                    onClick={() => {
-                      setCreating(false);
-                      setEditing(p);
-                    }}
-                    className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs"
-                  >
-                    <Pencil className="h-3 w-3" aria-hidden />
-                    {pick("تعديل", "Edit")}
-                  </button>
                 </div>
-              </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                {branches.map((b) => {
-                  const bid = b["id"] as string;
-                  const row = rows.find((r) => r.branchId === bid);
-                  if (!row)
-                    return (
-                      <span
-                        key={bid}
-                        className="rounded-full border border-dashed border-border px-3 py-1 text-[11px] text-muted-foreground"
-                      >
-                        {pick(b["name_ar"] as string, b["name_en"] as string)} ·{" "}
-                        {pick("غير مضاف", "Not assigned")}
-                      </span>
-                    );
-                  return (
-                    <button
-                      key={bid}
-                      onClick={() =>
-                        stock.mutate({ productId: id, branchId: bid, outOfStock: !row.outToday })
-                      }
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-[11px] font-semibold",
-                        row.outToday
-                          ? "border-destructive/50 bg-destructive/10 text-destructive"
-                          : "border-border",
-                      )}
-                    >
-                      {pick(b["name_ar"] as string, b["name_en"] as string)} ·{" "}
-                      {row.outToday
-                        ? pick("نفد اليوم", "Out today")
-                        : pick("متوفر اليوم", "In stock")}
-                    </button>
-                  );
-                })}
+              <div className="mt-3 border-t border-border pt-3">
+                {selectedStock ? (
+                  <button onClick={() => stock.mutate({ productId: id, branchId: selectedStock.branchId, outOfStock: !selectedStock.outToday })} className={cn("w-full rounded-xl border px-3 py-2 text-xs font-semibold", selectedStock.outToday ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-border text-muted-foreground")}>
+                    {selectedStock.outToday ? pick("نفد اليوم", "Out today") : pick("متوفر اليوم", "In stock today")}
+                  </button>
+                ) : null}
               </div>
-            </div>
+              </div>
+            </article>
           );
         })}
+        {!branchProducts.length ? <div className="rounded-2xl border border-dashed border-border py-16 text-center sm:col-span-2 xl:col-span-3"><Coffee className="mx-auto h-7 w-7 text-muted-foreground" aria-hidden /><p className="mt-3 text-sm font-semibold">{pick("لا توجد أصناف في هذا الفرع", "No items in this branch")}</p></div> : null}
       </div>
     </div>
   );

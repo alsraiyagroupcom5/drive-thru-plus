@@ -126,8 +126,8 @@ export function BranchOrdersTab({
   if (!selectedBranch) {
     return (
       <div className="space-y-5">
-        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-5">
-          <div>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 border-b border-border pb-5 sm:flex sm:flex-wrap sm:justify-between">
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase text-primary">
               {pick("الطلبات", "Orders")}
             </p>
@@ -141,7 +141,7 @@ export function BranchOrdersTab({
               )}
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-elevated px-4 py-3 text-end">
+          <div className="shrink-0 rounded-2xl border border-border bg-elevated px-4 py-3 text-end">
             <p className="text-[11px] text-muted-foreground">
               {pick("إجمالي الطلبات", "Total orders")}
             </p>
@@ -349,39 +349,28 @@ export function BranchOrdersTab({
       </div>
 
       {/* orders */}
-      <div className="space-y-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {rows.map((o) => {
           const items = (o["order_items"] as Row[]) ?? [];
           const status = o["status"] as string;
           return (
-            <div
+            <article
               key={o["id"] as string}
-              className="surface flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4"
+              className="surface flex min-h-44 flex-col rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lift"
             >
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-display font-bold" dir="ltr">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border pb-3">
+                <div className="min-w-0">
+                  <p className="truncate font-display text-lg font-bold" dir="ltr">
                     {o["order_number"] as string}
                   </p>
-                  <TrackingBadge order={o} />
-                </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {(o["customer_name"] as string) || pick("عميل", "Customer")} ·{" "}
                   {formatDateTime(o["created_at"] as string, lang)}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {items
-                    .map(
-                      (i) =>
-                        `${i["quantity"]}× ${pick(i["name_ar"] as string, i["name_en"] as string)}`,
-                    )
-                    .join(" • ")}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
+                </div>
                 <span
                   className={cn(
-                    "rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                    "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold",
                     status === "READY"
                       ? "bg-success/15 text-success"
                       : status === "CANCELLED"
@@ -391,15 +380,31 @@ export function BranchOrdersTab({
                 >
                   {statusLabel(status, pick)}
                 </span>
-                <span className="font-display font-bold text-primary">
+              </div>
+
+              <div className="flex-1 py-3">
+                <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                  {items
+                    .map(
+                      (i) =>
+                        `${i["quantity"]}× ${pick(i["name_ar"] as string, i["name_en"] as string)}`,
+                    )
+                    .join(" • ")}
+                </p>
+                <div className="mt-3"><TrackingBadge order={o} /></div>
+              </div>
+
+              <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
+                <span className="text-[11px] text-muted-foreground">{pick("الإجمالي", "Total")}</span>
+                <span className="font-display text-lg font-bold text-primary" dir="ltr">
                   {money(Number(o["total"]), lang)}
                 </span>
               </div>
-            </div>
+            </article>
           );
         })}
         {!rows.length && (
-          <div className="rounded-2xl border border-dashed border-border py-16 text-center">
+          <div className="rounded-2xl border border-dashed border-border py-16 text-center md:col-span-2 xl:col-span-3">
             <ClipboardList className="mx-auto h-7 w-7 text-muted-foreground" aria-hidden />
             <p className="mt-3 text-sm font-semibold text-muted-foreground">
               {pick("لا توجد طلبات", "No orders")}

@@ -1022,7 +1022,10 @@ export function BranchOrdersTab({
             </p>
           </div>
         ) : null}
+
+        <CompletedOrdersTable orders={orders} branchName={branchName} onOpen={(o) => setDetail(o)} />
       </div>
+
     );
   }
 

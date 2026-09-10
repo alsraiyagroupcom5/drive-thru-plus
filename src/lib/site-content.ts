@@ -416,7 +416,16 @@ export function mergeSiteContent(raw: unknown): SiteContent {
 
 export const siteContentQuery = queryOptions({
   queryKey: ["site-content"],
-  queryFn: async () => mergeSiteContent(await getSiteContent()),
+  queryFn: async () => {
+    const res = await getSiteContent();
+    let parsed: unknown = {};
+    try {
+      parsed = JSON.parse(res.content) as unknown;
+    } catch {
+      parsed = {};
+    }
+    return mergeSiteContent(parsed);
+  },
   staleTime: 60_000,
 });
 

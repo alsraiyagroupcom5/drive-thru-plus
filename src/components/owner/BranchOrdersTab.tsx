@@ -553,6 +553,10 @@ export function BranchOrdersTab({
   const [filter, setFilter] = useState<Filter>("ALL");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [detail, setDetail] = useState<Row | null>(null);
+  // Live order for the open dialog: follows realtime refetches from any window.
+  const liveDetail = detail
+    ? (orders.find((o) => o["id"] === detail["id"]) ?? detail)
+    : null;
 
   const byBranch = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -939,8 +943,8 @@ export function BranchOrdersTab({
       )}
 
       <OrderDetail
-        order={detail}
-        branchName={detail ? branchName(detail) : ""}
+        order={liveDetail}
+        branchName={liveDetail ? branchName(liveDetail) : ""}
         onClose={() => setDetail(null)}
       />
     </div>

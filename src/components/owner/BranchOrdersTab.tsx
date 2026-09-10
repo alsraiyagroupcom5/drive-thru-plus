@@ -16,6 +16,8 @@ import {
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { Modal } from "@/components/console/Modal";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NEXT_STATUSES, orderControlSettings, updateOrderStatus } from "@/lib/owner.functions";
 import {
@@ -176,15 +178,46 @@ function OrderStatusControl({ order }: { order: Row }) {
     staleTime: 60_000,
   });
 
+  const refreshAll = () => {
+    for (const k of [
+      "owner-orders",
+      "admin-orders",
+      "admin-orders-feed",
+      "client-orders",
+      "live-orders",
+      "client-summary",
+    ]) {
+      qc.invalidateQueries({ queryKey: [k] });
+    }
+  };
+
   const mutation = useMutation({
     mutationFn: (next: string) =>
       updateOrderStatus({ data: { orderId: order["id"] as string, status: next, restaurantId: rid } }),
     onSuccess: () => {
-      for (const k of ["owner-orders", "admin-orders", "client-orders", "live-orders", "client-summary"]) {
-        qc.invalidateQueries({ queryKey: [k] });
-      }
+      refreshAll();
+      toast.success(pick("تم تحديث حالة الطلب", "Order status updated"));
+    },
+    onError: (e: unknown) => {
+      const msg = (e as { message?: string })?.message ?? "";
+      // The card may hold a stale status (another screen already moved the
+      // order), so refresh and explain instead of crashing.
+      refreshAll();
+      toast.error(
+        msg.includes("INVALID_TRANSITION")
+          ? pick(
+              "تم تغيير حالة الطلب من شاشة أخرى. تم تحديث البيانات، حاول مرة أخرى.",
+              "This order was already moved from another screen. Data refreshed — please try again.",
+            )
+          : msg.includes("OVERRIDE_DISABLED")
+            ? pick("تغيير الحالة معطّل من الإعدادات", "Status override is disabled in settings")
+            : msg.includes("FORBIDDEN")
+              ? pick("لا تملك صلاحية لهذا الطلب", "You are not allowed to change this order")
+              : pick("تعذّر تحديث حالة الطلب", "Could not update the order status"),
+      );
     },
   });
+
 
   if (!settings.data?.canChangeStatus) return null;
   const options = NEXT_STATUSES[status] ?? [];

@@ -3,6 +3,9 @@ import {
   ArrowLeft,
   ArrowRight,
   ClipboardList,
+  Clock,
+  LayoutGrid,
+  List,
   MapPin,
   Navigation,
   PackageCheck,
@@ -11,6 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
+import { Modal } from "@/components/console/Modal";
 import { cn } from "@/lib/utils";
 
 type Row = Record<string, unknown>;
@@ -19,6 +23,8 @@ const ORDER_FILTERS = ["ALL", "IN_PROGRESS", "READY", "COMPLETED", "CANCELLED"] 
 type Filter = (typeof ORDER_FILTERS)[number];
 
 const IN_PROGRESS_STATUSES = ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "ARRIVING"];
+
+const FLOW = ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "READY", "COMPLETED"];
 
 function statusLabel(status: string, pick: (ar: string, en: string) => string): string {
   switch (status) {
@@ -66,8 +72,24 @@ function matchesFilter(status: string, filter: Filter): boolean {
   return status === filter;
 }
 
+/** Whole minutes between two moments (never negative). */
+function minutesBetween(from?: unknown, to?: unknown): number | null {
+  if (!from) return null;
+  const start = new Date(String(from)).getTime();
+  const end = to ? new Date(String(to)).getTime() : Date.now();
+  if (Number.isNaN(start) || Number.isNaN(end)) return null;
+  return Math.max(0, Math.round((end - start) / 60000));
+}
+
+function statusTone(status: string): string {
+  if (status === "READY") return "bg-success/15 text-success";
+  if (status === "CANCELLED") return "bg-destructive/12 text-destructive";
+  if (status === "COMPLETED" || status === "PICKED_UP") return "bg-primary/12 text-primary";
+  return "bg-elevated";
+}
+
 function TrackingBadge({ order }: { order: Row }) {
-  const { pick, lang } = useI18n();
+  const { pick } = useI18n();
   const status = order["status"] as string;
   if (!IN_PROGRESS_STATUSES.includes(status) && status !== "READY") return null;
 
@@ -89,11 +111,187 @@ function TrackingBadge({ order }: { order: Row }) {
           {Number(dist).toFixed(1)} {pick("كم", "km")}
           {eta != null ? ` · ~${eta} ${pick("د", "min")}` : ""}
         </span>
-        {lang === "ar" ? "" : ""}
       </span>
     );
   }
   return null;
+}
+
+/** Compact timing line: minutes since placed and minutes taken to be ready. */
+function TimingLine({ order }: { order: Row }) {
+  const { pick } = useI18n();
+  const status = order["status"] as string;
+  const since = minutesBetween(order["created_at"]);
+  const prep = minutesBetween(order["created_at"], order["ready_at"]);
+  const done = status === "COMPLETED" || status === "PICKED_UP" || status === "CANCELLED";
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+      {!done && since != null ? (
+        <span className="inline-flex items-center gap-1">
+          <Clock className="h-3 w-3" aria-hidden />
+          {pick("منذ الطلب", "Since placed")} <span dir="ltr">{since} {pick("د", "min")}</span>
+        </span>
+      ) : null}
+      {prep != null ? (
+        <span className="inline-flex items-center gap-1">
+          <PackageCheck className="h-3 w-3" aria-hidden />
+          {pick("جاهز خلال", "Ready in")} <span dir="ltr">{prep} {pick("د", "min")}</span>
+        </span>
+      ) : null}
+      {order["eta_minutes"] != null && !order["customer_arrived"] ? (
+        <span className="inline-flex items-center gap-1">
+          <Navigation className="h-3 w-3" aria-hidden />
+          {pick("العميل يبعد", "Customer away")}{" "}
+          <span dir="ltr">
+            {String(order["eta_minutes"])} {pick("د", "min")}
+          </span>
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+/** Full order detail popup: branch, timings, process steps, items and payment. */
+function OrderDetail({
+  order,
+  branchName,
+  onClose,
+}: {
+  order: Row | null;
+  branchName: string;
+  onClose: () => void;
+}) {
+  const { pick, lang } = useI18n();
+  if (!order) return null;
+  const status = order["status"] as string;
+  const items = (order["order_items"] as Row[]) ?? [];
+  const since = minutesBetween(order["created_at"]);
+  const prep = minutesBetween(order["created_at"], order["ready_at"]);
+  const waitAtBranch = order["arrived_at"]
+    ? minutesBetween(order["arrived_at"], order["completed_at"] ?? undefined)
+    : null;
+  const stepIndex = FLOW.indexOf(status === "PICKED_UP" ? "COMPLETED" : status);
+
+  const facts: { ar: string; en: string; value: string }[] = [
+    { ar: "الفرع", en: "Branch", value: branchName },
+    {
+      ar: "وقت الطلب",
+      en: "Placed at",
+      value: formatDateTime(order["created_at"] as string, lang),
+    },
+    {
+      ar: "منذ الطلب",
+      en: "Since placed",
+      value: since != null ? `${since} ${pick("د", "min")}` : "—",
+    },
+    {
+      ar: "زمن التجهيز",
+      en: "Prep time",
+      value: prep != null ? `${prep} ${pick("د", "min")}` : pick("قيد التحضير", "In progress"),
+    },
+    {
+      ar: "المسافة",
+      en: "Distance",
+      value:
+        order["distance_km"] != null
+          ? `${Number(order["distance_km"]).toFixed(1)} ${pick("كم", "km")}`
+          : "—",
+    },
+    {
+      ar: "وصول العميل",
+      en: "Customer ETA",
+      value: order["customer_arrived"]
+        ? pick("وصل", "Arrived")
+        : order["eta_minutes"] != null
+          ? `${String(order["eta_minutes"])} ${pick("د", "min")}`
+          : "—",
+    },
+    {
+      ar: "انتظار بالموقع",
+      en: "Waiting at branch",
+      value: waitAtBranch != null ? `${waitAtBranch} ${pick("د", "min")}` : "—",
+    },
+    {
+      ar: "الدفع",
+      en: "Payment",
+      value: `${String(order["payment_status"] ?? "")} · ${String(order["payment_method"] ?? "")}`,
+    },
+  ];
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`${pick("طلب", "Order")} ${String(order["order_number"] ?? "")}`}
+      subtitle={`${branchName} · ${statusLabel(status, pick)}`}
+    >
+      <div className="space-y-5">
+        {/* process */}
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            {pick("مسار الطلب", "Order process")}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {FLOW.map((s, i) => (
+              <span
+                key={s}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[10px] font-bold",
+                  status === "CANCELLED"
+                    ? "bg-muted text-muted-foreground"
+                    : i <= stepIndex && stepIndex >= 0
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-elevated text-muted-foreground",
+                )}
+              >
+                {statusLabel(s, pick)}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {facts.map((f) => (
+            <div key={f.en} className="rounded-xl bg-elevated p-3">
+              <p className="text-[10px] text-muted-foreground">{pick(f.ar, f.en)}</p>
+              <p className="mt-1 text-sm font-bold" dir="ltr">
+                {f.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            {pick("الأصناف", "Items")}
+          </p>
+          <ul className="mt-2 divide-y divide-border rounded-xl border border-border">
+            {items.map((i) => (
+              <li key={i["id"] as string} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                <span className="truncate">
+                  <span dir="ltr">{String(i["quantity"])}×</span>{" "}
+                  {pick(i["name_ar"] as string, i["name_en"] as string)}
+                </span>
+                <span dir="ltr" className="font-semibold">
+                  {money(Number(i["line_total"] ?? i["unit_price"] ?? 0), lang)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-border pt-3">
+          <span className="text-xs text-muted-foreground">
+            {(order["customer_name"] as string) || pick("عميل", "Customer")}
+            {order["customer_phone"] ? ` · ${String(order["customer_phone"])}` : ""}
+          </span>
+          <span className="font-display text-lg font-bold text-primary" dir="ltr">
+            {money(Number(order["total"]), lang)}
+          </span>
+        </div>
+      </div>
+    </Modal>
+  );
 }
 
 export function BranchOrdersTab({
@@ -108,6 +306,8 @@ export function BranchOrdersTab({
   const { pick, lang } = useI18n();
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("ALL");
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [detail, setDetail] = useState<Row | null>(null);
 
   const byBranch = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -119,6 +319,14 @@ export function BranchOrdersTab({
     }
     return map;
   }, [orders]);
+
+  const branchName = (o: Row): string => {
+    const b = branches.find((x) => x["id"] === o["branch_id"]);
+    const joined = o["branches"] as Row | null;
+    if (b) return pick(b["name_ar"] as string, b["name_en"] as string);
+    if (joined) return pick(joined["name_ar"] as string, joined["name_en"] as string);
+    return pick("فرع", "Branch");
+  };
 
   const selectedBranch = branches.find((b) => b["id"] === selectedBranchId) ?? null;
 
@@ -327,8 +535,8 @@ export function BranchOrdersTab({
         })}
       </nav>
 
-      {/* status filters */}
-      <div className="flex flex-wrap gap-2">
+      {/* status filters + view switch */}
+      <div className="flex flex-wrap items-center gap-2">
         {ORDER_FILTERS.map((f) => (
           <button
             key={f}
@@ -346,72 +554,150 @@ export function BranchOrdersTab({
             </span>
           </button>
         ))}
+
+        <div className="ms-auto inline-flex rounded-full border border-border p-1">
+          {([
+            { id: "grid" as const, icon: LayoutGrid, ar: "مربعات", en: "Boxes" },
+            { id: "list" as const, icon: List, ar: "قائمة", en: "List" },
+          ]).map((v) => (
+            <button
+              key={v.id}
+              onClick={() => setView(v.id)}
+              aria-pressed={view === v.id}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition",
+                view === v.id ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+              )}
+            >
+              <v.icon className="h-3.5 w-3.5" aria-hidden />
+              {pick(v.ar, v.en)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* orders */}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {rows.map((o) => {
-          const items = (o["order_items"] as Row[]) ?? [];
-          const status = o["status"] as string;
-          return (
-            <article
-              key={o["id"] as string}
-              className="surface flex min-h-44 flex-col rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lift"
-            >
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border pb-3">
-                <div className="min-w-0">
-                  <p className="truncate font-display text-lg font-bold" dir="ltr">
-                    {o["order_number"] as string}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  {(o["customer_name"] as string) || pick("عميل", "Customer")} ·{" "}
-                  {formatDateTime(o["created_at"] as string, lang)}
-                </p>
+      {view === "grid" ? (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {rows.map((o) => {
+            const items = (o["order_items"] as Row[]) ?? [];
+            const status = o["status"] as string;
+            return (
+              <article
+                key={o["id"] as string}
+                className="surface flex min-h-44 flex-col rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+              >
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border pb-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-display text-lg font-bold" dir="ltr">
+                      {o["order_number"] as string}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {branchName(o)} · {(o["customer_name"] as string) || pick("عميل", "Customer")} ·{" "}
+                      {formatDateTime(o["created_at"] as string, lang)}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                      statusTone(status),
+                    )}
+                  >
+                    {statusLabel(status, pick)}
+                  </span>
                 </div>
+
+                <div className="flex-1 py-3">
+                  <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                    {items
+                      .map(
+                        (i) =>
+                          `${i["quantity"]}× ${pick(i["name_ar"] as string, i["name_en"] as string)}`,
+                      )
+                      .join(" • ")}
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    <TrackingBadge order={o} />
+                    <TimingLine order={o} />
+                  </div>
+                </div>
+
+                <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
+                  <button
+                    onClick={() => setDetail(o)}
+                    className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                  >
+                    {pick("التفاصيل", "Details")}
+                  </button>
+                  <span className="font-display text-lg font-bold text-primary" dir="ltr">
+                    {money(Number(o["total"]), lang)}
+                  </span>
+                </div>
+              </article>
+            );
+          })}
+          {!rows.length && (
+            <div className="rounded-2xl border border-dashed border-border py-16 text-center md:col-span-2 xl:col-span-3">
+              <ClipboardList className="mx-auto h-7 w-7 text-muted-foreground" aria-hidden />
+              <p className="mt-3 text-sm font-semibold text-muted-foreground">
+                {pick("لا توجد طلبات", "No orders")}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+          {rows.map((o) => {
+            const status = o["status"] as string;
+            const since = minutesBetween(o["created_at"]);
+            const prep = minutesBetween(o["created_at"], o["ready_at"]);
+            return (
+              <button
+                key={o["id"] as string}
+                onClick={() => setDetail(o)}
+                className="flex w-full flex-wrap items-center gap-3 px-4 py-3 text-start transition hover:bg-elevated"
+              >
+                <span className="w-24 shrink-0 font-display text-sm font-bold" dir="ltr">
+                  {o["order_number"] as string}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                  {branchName(o)} · {(o["customer_name"] as string) || pick("عميل", "Customer")} ·{" "}
+                  {formatDateTime(o["created_at"] as string, lang)}
+                </span>
+                <span className="text-[11px] text-muted-foreground" dir="ltr">
+                  {prep != null
+                    ? `${pick("جاهز", "ready")} ${prep} ${pick("د", "min")}`
+                    : since != null
+                      ? `${since} ${pick("د", "min")}`
+                      : ""}
+                </span>
                 <span
                   className={cn(
                     "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold",
-                    status === "READY"
-                      ? "bg-success/15 text-success"
-                      : status === "CANCELLED"
-                        ? "bg-destructive/12 text-destructive"
-                        : "bg-elevated",
+                    statusTone(status),
                   )}
                 >
                   {statusLabel(status, pick)}
                 </span>
-              </div>
-
-              <div className="flex-1 py-3">
-                <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                  {items
-                    .map(
-                      (i) =>
-                        `${i["quantity"]}× ${pick(i["name_ar"] as string, i["name_en"] as string)}`,
-                    )
-                    .join(" • ")}
-                </p>
-                <div className="mt-3"><TrackingBadge order={o} /></div>
-              </div>
-
-              <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
-                <span className="text-[11px] text-muted-foreground">{pick("الإجمالي", "Total")}</span>
-                <span className="font-display text-lg font-bold text-primary" dir="ltr">
+                <span className="w-20 shrink-0 text-end font-display text-sm font-bold text-primary" dir="ltr">
                   {money(Number(o["total"]), lang)}
                 </span>
-              </div>
-            </article>
-          );
-        })}
-        {!rows.length && (
-          <div className="rounded-2xl border border-dashed border-border py-16 text-center md:col-span-2 xl:col-span-3">
-            <ClipboardList className="mx-auto h-7 w-7 text-muted-foreground" aria-hidden />
-            <p className="mt-3 text-sm font-semibold text-muted-foreground">
+              </button>
+            );
+          })}
+          {!rows.length && (
+            <p className="py-14 text-center text-sm font-semibold text-muted-foreground">
               {pick("لا توجد طلبات", "No orders")}
             </p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
+
+      <OrderDetail
+        order={detail}
+        branchName={detail ? branchName(detail) : ""}
+        onClose={() => setDetail(null)}
+      />
     </div>
   );
 }

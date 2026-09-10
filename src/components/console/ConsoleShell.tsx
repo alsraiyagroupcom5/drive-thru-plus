@@ -1,5 +1,6 @@
 import { useState, type ComponentType, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell, LogOut, Menu, Search, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
@@ -58,6 +59,15 @@ export function ConsoleShell({
   const { pick } = useI18n();
   const [open, setOpen] = useState(false);
   const current = items.find((i) => i.id === active);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const handleSignOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
 
   const rail = (
     <div className="flex h-full flex-col items-stretch gap-6 px-3 py-6 text-console-rail-foreground">
@@ -117,7 +127,7 @@ export function ConsoleShell({
       ) : null}
 
       <button
-        onClick={() => supabase.auth.signOut()}
+        onClick={() => void handleSignOut()}
         title={pick("تسجيل الخروج", "Sign out")}
         className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-console-rail-foreground/12 text-console-rail-foreground transition hover:bg-console-rail-foreground/25"
       >

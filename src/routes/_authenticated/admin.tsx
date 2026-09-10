@@ -642,6 +642,28 @@ function AdminConsole() {
                     ))}
                   </div>
 
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {[
+                      { ar: "قيد التنفيذ", en: "In progress", v: c.activeOrders, cls: "bg-warning/15 text-warning" },
+                      { ar: "جاهز", en: "Ready", v: c.readyOrders, cls: "bg-success/15 text-success" },
+                      { ar: "مكتمل", en: "Completed", v: c.completedOrders, cls: "bg-primary/12 text-primary" },
+                      { ar: "ملغي", en: "Cancelled", v: c.cancelledOrders, cls: "bg-destructive/12 text-destructive" },
+                    ].map((s) => (
+                      <span
+                        key={s.en}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold",
+                          s.cls,
+                        )}
+                      >
+                        {pick(s.ar, s.en)}
+                        <span dir="ltr" className="rounded-full bg-card/70 px-1.5">
+                          {s.v}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <CircleDollarSign className="h-4 w-4" aria-hidden />

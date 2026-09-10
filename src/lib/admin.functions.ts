@@ -413,7 +413,10 @@ export const listClientCards = createServerFn({ method: "POST" })
         db.from("branches").select("id, restaurant_id, is_open"),
         db.from("products").select("id, restaurant_id"),
         db.from("user_roles").select("user_id, role, branch_id"),
-        db.from("orders").select("id, restaurant_id, total, created_at").gte("created_at", since),
+        db
+          .from("orders")
+          .select("id, restaurant_id, total, status, created_at")
+          .gte("created_at", since),
       ]);
 
     const branchList = branches ?? [];
@@ -431,6 +434,12 @@ export const listClientCards = createServerFn({ method: "POST" })
         team: team.length,
         orders24h: day.length,
         revenue24h: day.reduce((s, o) => s + Number(o.total || 0), 0),
+        activeOrders: day.filter((o) =>
+          ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "ARRIVING"].includes(o.status as string),
+        ).length,
+        readyOrders: day.filter((o) => o.status === "READY").length,
+        completedOrders: day.filter((o) => ["COMPLETED", "PICKED_UP"].includes(o.status as string)).length,
+        cancelledOrders: day.filter((o) => o.status === "CANCELLED").length,
       };
     });
   });

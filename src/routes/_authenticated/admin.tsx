@@ -29,6 +29,7 @@ import {
   setSignupStatus,
 } from "@/lib/admin.functions";
 import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
+import { OrdersTicker } from "@/components/console/OrdersTicker";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -327,6 +328,11 @@ function AdminConsole() {
               </div>
             ))}
           </div>
+
+          <OrdersTicker
+            orders={(ordersFeed.data?.orders ?? []) as Record<string, unknown>[]}
+            branches={(ordersFeed.data?.branches ?? []) as Record<string, unknown>[]}
+          />
 
           <div className="surface rounded-3xl p-5">
             <BranchOrdersTab

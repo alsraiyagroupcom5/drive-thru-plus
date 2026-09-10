@@ -320,7 +320,7 @@ function KitchenPage() {
       {/* Board */}
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {COLUMNS.map((col) => {
-          const items = active.filter((o) => o.status === col.status);
+          const items = active.filter((o) => (col.match as readonly string[]).includes(o.status));
           return (
             <section
               key={col.status}

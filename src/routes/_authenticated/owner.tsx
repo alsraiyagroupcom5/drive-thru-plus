@@ -249,8 +249,29 @@ function MenuTab({
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
                     <Store className="h-5 w-5" aria-hidden />
                   </span>
-                  <span className={cn("rounded-full px-3 py-1 text-[11px] font-bold", branch["is_open"] ? "bg-success/15 text-success" : "bg-destructive/12 text-destructive")}>
-                    {branch["is_open"] ? pick("مفتوح", "Open") : pick("مغلق", "Closed")}
+                  <span className="flex items-center gap-2">
+                    <span
+                      role="link"
+                      tabIndex={0}
+                      title={pick("معاينة المنيو كزائر", "Preview menu as guest")}
+                      aria-label={pick("معاينة المنيو كزائر", "Preview menu as guest")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}`, "_blank", "noopener");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation();
+                          window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}`, "_blank", "noopener");
+                        }
+                      }}
+                      className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                    </span>
+                    <span className={cn("rounded-full px-3 py-1 text-[11px] font-bold", branch["is_open"] ? "bg-success/15 text-success" : "bg-destructive/12 text-destructive")}>
+                      {branch["is_open"] ? pick("مفتوح", "Open") : pick("مغلق", "Closed")}
+                    </span>
                   </span>
                 </div>
                 <div className="p-5">

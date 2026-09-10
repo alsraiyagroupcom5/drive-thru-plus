@@ -105,7 +105,12 @@ function MenuPage() {
           ? [0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)
           : filtered.length
             ? filtered.map((p) => (
-                <ProductCard key={p.id} product={p} soldOutToday={soldOut.has(p.id)} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  soldOutToday={soldOut.has(p.id)}
+                  onSelect={setSelected}
+                />
               ))
             : (
                 <div className="py-20 text-center">
@@ -129,6 +134,8 @@ function MenuPage() {
           </Link>
         </div>
       )}
+
+      <ProductCustomizer productId={selected?.id ?? null} onClose={() => setSelected(null)} />
     </AppShell>
   );
 }

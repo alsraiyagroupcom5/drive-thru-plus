@@ -906,6 +906,7 @@ export type Database = {
           currency: string
           id: string
           logo_url: string | null
+          menu_link_mode: string
           name_ar: string
           name_en: string
           organization_id: string
@@ -918,6 +919,7 @@ export type Database = {
           currency?: string
           id?: string
           logo_url?: string | null
+          menu_link_mode?: string
           name_ar: string
           name_en: string
           organization_id: string
@@ -930,6 +932,7 @@ export type Database = {
           currency?: string
           id?: string
           logo_url?: string | null
+          menu_link_mode?: string
           name_ar?: string
           name_en?: string
           organization_id?: string

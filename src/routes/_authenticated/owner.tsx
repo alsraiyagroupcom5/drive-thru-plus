@@ -117,6 +117,7 @@ function OwnerConsole() {
     >
       {tab === "menu" && (
         <MenuTab
+          restaurant={data.restaurant}
           branches={data.branches}
           categories={data.categories}
           products={data.products}
@@ -144,6 +145,7 @@ function OwnerConsole() {
 type Row = Record<string, unknown>;
 
 function MenuTab({
+  restaurant,
   branches,
   categories,
   products,
@@ -151,6 +153,7 @@ function MenuTab({
   onChanged,
   lang,
 }: {
+  restaurant: Row | null;
   branches: Row[];
   categories: Row[];
   products: Row[];
@@ -257,13 +260,13 @@ function MenuTab({
                       aria-label={pick("معاينة المنيو كزائر", "Preview menu as guest")}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const locked = data.restaurant?.["menu_link_mode"] === "separate_branches";
+                        const locked = restaurant?.["menu_link_mode"] === "separate_branches";
                         window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}&locked=${locked}`, "_blank", "noopener");
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.stopPropagation();
-                          const locked = data.restaurant?.["menu_link_mode"] === "separate_branches";
+                          const locked = restaurant?.["menu_link_mode"] === "separate_branches";
                           window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}&locked=${locked}`, "_blank", "noopener");
                         }
                       }}
@@ -325,7 +328,7 @@ function MenuTab({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <a
-            href={`/app?branch=${encodeURIComponent(String(selectedBranch["code"] ?? ""))}&locked=${data.restaurant?.["menu_link_mode"] === "separate_branches"}`}
+            href={`/app?branch=${encodeURIComponent(String(selectedBranch["code"] ?? ""))}&locked=${restaurant?.["menu_link_mode"] === "separate_branches"}`}
             target="_blank"
             rel="noopener"
             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"

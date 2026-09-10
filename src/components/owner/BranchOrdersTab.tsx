@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -171,6 +171,12 @@ function OrderStatusControl({ order }: { order: Row }) {
   const qc = useQueryClient();
   const rid = (order["restaurant_id"] as string) ?? null;
   const status = order["status"] as string;
+  // Live status for the dropdown: follows fresh data (realtime refetch) and
+  // moves optimistically when the user picks a new status.
+  const [current, setCurrent] = useState(status);
+  useEffect(() => {
+    setCurrent(status);
+  }, [status, order["id"]]);
 
   const settings = useQuery({
     queryKey: ["order-control", rid],
@@ -194,14 +200,19 @@ function OrderStatusControl({ order }: { order: Row }) {
   const mutation = useMutation({
     mutationFn: (next: string) =>
       updateOrderStatus({ data: { orderId: order["id"] as string, status: next, restaurantId: rid } }),
+    onMutate: (next: string) => {
+      // Move the dropdown instantly; the server confirms or we roll back.
+      setCurrent(next);
+    },
     onSuccess: () => {
       refreshAll();
       toast.success(pick("تم تحديث حالة الطلب", "Order status updated"));
     },
     onError: (e: unknown) => {
       const msg = (e as { message?: string })?.message ?? "";
-      // The card may hold a stale status (another screen already moved the
-      // order), so refresh and explain instead of crashing.
+      // Roll back the optimistic move; the card may hold a stale status
+      // (another screen already moved the order), so refresh and explain.
+      setCurrent(status);
       refreshAll();
       toast.error(
         msg.includes("INVALID_TRANSITION")
@@ -220,7 +231,7 @@ function OrderStatusControl({ order }: { order: Row }) {
 
 
   if (!settings.data?.canChangeStatus) return null;
-  const options = NEXT_STATUSES[status] ?? [];
+  const options = NEXT_STATUSES[current] ?? [];
   if (!options.length) return null;
 
   return (
@@ -235,7 +246,8 @@ function OrderStatusControl({ order }: { order: Row }) {
           </p>
         </div>
         <Select
-          value={status}
+          key={`${order["id"] as string}-${current}`}
+          value={current}
           disabled={mutation.isPending}
           onValueChange={(value) => mutation.mutate(value)}
         >
@@ -245,13 +257,22 @@ function OrderStatusControl({ order }: { order: Row }) {
               lang === "ar" && "text-right",
             )}
           >
-            <SelectValue placeholder={statusLabel(status, pick)} />
+            <SelectValue placeholder={statusLabel(current, pick)} />
           </SelectTrigger>
           <SelectContent
             className="rounded-2xl border-primary/20 bg-card p-1.5 shadow-lift"
             position="popper"
             sideOffset={6}
           >
+            {/* The actual current status is always shown (disabled) so the
+                dropdown value reflects the order's real state. */}
+            <SelectItem
+              value={current}
+              disabled
+              className="rounded-xl text-xs font-bold text-primary opacity-100"
+            >
+              {statusLabel(current, pick)} · {pick("الحالية", "Current")}
+            </SelectItem>
             {options.map((s) => (
               <SelectItem
                 key={s}
@@ -430,6 +451,11 @@ export function LatestOrdersGrid({
   const { pick, lang } = useI18n();
   const [detail, setDetail] = useState<Row | null>(null);
   const rows = orders.slice(0, limit);
+  // Keep the open dialog on live data so status changes from any window
+  // (realtime refetch) update the dropdown immediately.
+  const liveDetail = detail
+    ? (orders.find((o) => o["id"] === detail["id"]) ?? detail)
+    : null;
 
   const branchName = (order: Row): string => {
     const branch = branches.find((item) => item["id"] === order["branch_id"]);
@@ -508,7 +534,7 @@ export function LatestOrdersGrid({
         </div>
       ) : null}
 
-      <OrderDetail order={detail} branchName={detail ? branchName(detail) : ""} onClose={() => setDetail(null)} />
+      <OrderDetail order={liveDetail} branchName={liveDetail ? branchName(liveDetail) : ""} onClose={() => setDetail(null)} />
     </section>
   );
 }
@@ -527,6 +553,10 @@ export function BranchOrdersTab({
   const [filter, setFilter] = useState<Filter>("ALL");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [detail, setDetail] = useState<Row | null>(null);
+  // Live order for the open dialog: follows realtime refetches from any window.
+  const liveDetail = detail
+    ? (orders.find((o) => o["id"] === detail["id"]) ?? detail)
+    : null;
 
   const byBranch = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -913,8 +943,8 @@ export function BranchOrdersTab({
       )}
 
       <OrderDetail
-        order={detail}
-        branchName={detail ? branchName(detail) : ""}
+        order={liveDetail}
+        branchName={liveDetail ? branchName(liveDetail) : ""}
         onClose={() => setDetail(null)}
       />
     </div>

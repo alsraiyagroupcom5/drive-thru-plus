@@ -207,16 +207,82 @@ function TrackPage() {
         </ol>
       </section>
 
-      {o.status === "READY" || o.status === "PREPARING" ? (
-        <section className="mx-5 mt-6">
-          <button
-            onClick={() => arrive.mutate()}
-            disabled={o.customer_arrived || arrive.isPending}
-            className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary py-4 font-display text-base font-bold text-primary disabled:opacity-60"
-          >
-            <Car className="h-5 w-5" aria-hidden />
-            {o.customer_arrived ? t("arrivalNotified") : t("imHere")}
-          </button>
+      {trackable ? (
+        <section className="mx-5 mt-6 overflow-hidden rounded-3xl border border-border bg-elevated shadow-[var(--shadow-lift)]">
+          <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+            <p className="inline-flex items-center gap-2 font-display text-sm font-bold">
+              <Navigation className="h-4 w-4 text-primary" aria-hidden />
+              {t("liveTracking")}
+            </p>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold",
+                o.customer_arrived || tracker.arrived
+                  ? "bg-success/15 text-success"
+                  : tracker.status === "tracking"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-muted text-muted-foreground",
+              )}
+            >
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  o.customer_arrived || tracker.arrived
+                    ? "bg-success"
+                    : tracker.status === "tracking"
+                      ? "animate-pulse bg-primary"
+                      : "bg-muted-foreground",
+                )}
+              />
+              {o.customer_arrived || tracker.arrived ? t("atTheBranch") : t("trackingOn")}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 divide-x divide-border rtl:divide-x-reverse">
+            <div className="px-5 py-4">
+              <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 text-primary" aria-hidden />
+                {t("distanceToBranch")}
+              </p>
+              <p dir="ltr" className="mt-1 font-display text-2xl font-bold">
+                {(tracker.distanceKm ?? (o.distance_km != null ? Number(o.distance_km) : null)) !=
+                null
+                  ? formatKm(
+                      tracker.distanceKm ?? Number(o.distance_km),
+                      lang === "ar" ? "ar" : "en",
+                    )
+                  : "—"}
+              </p>
+            </div>
+            <div className="px-5 py-4">
+              <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <Car className="h-3.5 w-3.5 text-primary" aria-hidden />
+                {t("arrivalEta")}
+              </p>
+              <p dir="ltr" className="mt-1 font-display text-2xl font-bold">
+                {(tracker.etaMinutes ?? o.eta_minutes) != null
+                  ? `${tracker.etaMinutes ?? o.eta_minutes} ${t("minutes")}`
+                  : "—"}
+              </p>
+            </div>
+          </div>
+
+          {tracker.status === "denied" || !tracker.supported ? (
+            <p className="border-t border-border bg-warning/10 px-5 py-3 text-[11px] font-semibold text-warning">
+              {t("locationDenied")}
+            </p>
+          ) : null}
+
+          <div className="px-5 pb-5 pt-1">
+            <button
+              onClick={() => arrive.mutate()}
+              disabled={o.customer_arrived || arrive.isPending}
+              className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary py-3.5 font-display text-base font-bold text-primary disabled:opacity-60"
+            >
+              <Car className="h-5 w-5" aria-hidden />
+              {o.customer_arrived ? t("arrivalNotified") : t("imHere")}
+            </button>
+          </div>
         </section>
       ) : null}
 

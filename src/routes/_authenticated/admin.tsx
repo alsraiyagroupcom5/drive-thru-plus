@@ -12,6 +12,7 @@ import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { cn } from "@/lib/utils";
 
 import {
+  adminOrdersFeed,
   adminOverview,
   adminStatus,
   claimSuperAdmin,
@@ -26,6 +27,7 @@ import {
   setClientPassword,
   setSignupStatus,
 } from "@/lib/admin.functions";
+import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({

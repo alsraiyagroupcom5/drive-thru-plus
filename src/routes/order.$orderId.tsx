@@ -3,7 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Check, Car, ChefHat, PackageCheck, Receipt, MapPin, Navigation } from "lucide-react";
 import { useArrivalTracker } from "@/components/customer/useArrivalTracker";
+import {
+  ReadyAlertOverlay,
+  ReadySoundToggle,
+  useReadyAlert,
+} from "@/components/customer/ReadyAlert";
 import { formatKm } from "@/lib/geo";
+
 import { toast } from "sonner";
 import { AppShell } from "@/components/customer/AppShell";
 import { useI18n, money } from "@/lib/i18n";
@@ -76,6 +82,15 @@ function TrackPage() {
       queryClient.invalidateQueries({ queryKey: ["order", orderId] });
     },
   });
+
+  const readyAlert = useReadyAlert(orderId, orderStatus);
+
+  useEffect(() => {
+    if (orderStatus === "READY") toast.success(t("readyToast"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderStatus]);
+
+
 
   const expired =
     order.isError &&
@@ -173,6 +188,18 @@ function TrackPage() {
           </p>
         )}
       </section>
+
+      {!cancelled && o.status !== "COMPLETED" ? (
+        <div className="mt-3 flex justify-center px-5">
+          <ReadySoundToggle
+            soundOn={readyAlert.soundOn}
+            setSound={readyAlert.setSound}
+            needsGesture={readyAlert.needsGesture}
+            enableSound={readyAlert.enableSound}
+          />
+        </div>
+      ) : null}
+
 
       <section className="mx-5 mt-5">
         <ol className="space-y-3">
@@ -315,6 +342,15 @@ function TrackPage() {
           </span>
         </div>
       </section>
+
+      <ReadyAlertOverlay
+        open={readyAlert.open}
+        onClose={readyAlert.close}
+        onReplay={readyAlert.replay}
+        pickupCode={o.pickup_code}
+        orderNumber={o.order_number}
+      />
     </AppShell>
+
   );
 }

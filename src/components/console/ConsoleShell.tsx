@@ -37,6 +37,8 @@ export function ConsoleShell({
   backLabel,
   secondary,
   secondaryTitle,
+  notificationCount = 0,
+  onNotificationsClick,
   children,
 }: {
   title: string;
@@ -54,6 +56,8 @@ export function ConsoleShell({
   backLabel?: string;
   secondary?: ReactNode;
   secondaryTitle?: string;
+  notificationCount?: number;
+  onNotificationsClick?: () => void;
   children: ReactNode;
 }) {
   const { pick } = useI18n();
@@ -217,10 +221,17 @@ export function ConsoleShell({
                 <Globe className="h-4 w-4" aria-hidden />
               </a>
               <button
-                className="grid h-10 w-10 place-items-center rounded-full border border-border text-muted-foreground"
+                onClick={onNotificationsClick}
+                disabled={!onNotificationsClick}
+                className="relative grid h-10 w-10 place-items-center rounded-full border border-border text-muted-foreground transition hover:text-foreground disabled:cursor-default"
                 aria-label={pick("التنبيهات", "Notifications")}
               >
                 <Bell className="h-4 w-4" aria-hidden />
+                {notificationCount > 0 ? (
+                  <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-destructive px-1 text-[9px] font-black leading-5 text-destructive-foreground" dir="ltr">
+                    {Math.min(notificationCount, 99)}
+                  </span>
+                ) : null}
               </button>
               <LanguageToggle />
             </header>

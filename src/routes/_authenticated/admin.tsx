@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowUpRight, ChevronRight, CircleDollarSign, Inbox, LayoutDashboard, MapPin, Package, Plus, QrCode, ShoppingBag, SlidersHorizontal, Store, Users } from "lucide-react";
+import { ArrowUpRight, ChevronRight, CircleDollarSign, Inbox, LayoutDashboard, MapPin, Package, Plus, QrCode, ShieldAlert, ShoppingBag, SlidersHorizontal, Store, Users } from "lucide-react";
 import { Modal } from "@/components/console/Modal";
 import { ClientAccessDialog } from "@/components/console/ClientAccessDialog";
 
@@ -11,6 +11,8 @@ import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { OrderOverrideCard } from "@/components/console/OrderOverrideCard";
 import { SiteEditor } from "@/components/console/SiteEditor";
+import { SecurityAlerts } from "@/components/console/SecurityAlerts";
+import { listSecurityAlerts } from "@/lib/security.functions";
 import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { cn } from "@/lib/utils";
 
@@ -63,6 +65,7 @@ const TABS = [
   { id: "accounts", ar: "الحسابات", en: "Accounts", hintAr: "الفريق والصلاحيات", hintEn: "People & access", icon: Users },
   { id: "restaurants", ar: "المطاعم", en: "Restaurants", hintAr: "العملاء", hintEn: "Clients", icon: Store },
   { id: "requests", ar: "طلبات الاشتراك", en: "Sign-up requests", hintAr: "عملاء محتملون", hintEn: "Leads", icon: Inbox },
+  { id: "security", ar: "الأمان", en: "Security", hintAr: "تنبيهات الدخول", hintEn: "Sign-in alerts", icon: ShieldAlert },
   { id: "settings", ar: "الإعدادات", en: "Settings", hintAr: "صلاحيات المنصة", hintEn: "Platform controls", icon: SlidersHorizontal },
 ] as const;
 
@@ -110,6 +113,12 @@ function AdminConsole() {
     queryKey: ["admin-requests"],
     queryFn: () => listSignupRequests(),
     enabled: enabled && tab === "requests",
+  });
+  const securityAlerts = useQuery({
+    queryKey: ["security-alerts"],
+    queryFn: () => listSecurityAlerts(),
+    enabled,
+    refetchInterval: 15_000,
   });
 
   const [email, setEmail] = useState("");
@@ -262,8 +271,14 @@ function AdminConsole() {
     label: pick(tb.ar, tb.en),
     hint: pick(tb.hintAr, tb.hintEn),
     icon: tb.icon,
-    badge: tb.id === "requests" ? (o?.newLeads ?? null) : null,
+    badge:
+      tb.id === "requests"
+        ? (o?.newLeads ?? null)
+        : tb.id === "security"
+          ? ((securityAlerts.data ?? []).filter((alert) => !alert.read_at).length || null)
+          : null,
   }));
+  const unreadSecurityAlerts = (securityAlerts.data ?? []).filter((alert) => !alert.read_at).length;
 
   return (
     <ConsoleShell
@@ -275,6 +290,8 @@ function AdminConsole() {
       items={navItems}
       active={tab}
       onSelect={(id) => setTab(id as (typeof TABS)[number]["id"])}
+      notificationCount={unreadSecurityAlerts}
+      onNotificationsClick={() => setTab("security")}
       {...(tab === "restaurants"
         ? {
             secondaryTitle: pick("المطاعم", "Restaurants"),
@@ -318,6 +335,8 @@ function AdminConsole() {
           <SiteEditor />
         </section>
       )}
+
+      {tab === "security" && <SecurityAlerts />}
 
       {tab === "overview" && (
         <section className="space-y-5">

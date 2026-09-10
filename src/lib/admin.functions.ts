@@ -11,19 +11,16 @@ async function admin() {
   return supabaseAdmin;
 }
 
-/** Admin (super_admin) or restaurant owner (general_manager) may manage accounts. */
+/** Platform-wide administration is restricted to super administrators. */
 async function assertSuperAdmin(supabase: unknown, userId: string) {
   const client = supabase as {
     rpc: (
       fn: "has_role",
-      args: { _user_id: string; _role: "super_admin" | "general_manager" },
+      args: { _user_id: string; _role: "super_admin" },
     ) => PromiseLike<{ data: unknown }>;
   };
-  const [{ data: isAdmin }, { data: isOwner }] = await Promise.all([
-    client.rpc("has_role", { _user_id: userId, _role: "super_admin" }),
-    client.rpc("has_role", { _user_id: userId, _role: "general_manager" }),
-  ]);
-  if (isAdmin !== true && isOwner !== true) throw new Error("FORBIDDEN");
+  const { data: isAdmin } = await client.rpc("has_role", { _user_id: userId, _role: "super_admin" });
+  if (isAdmin !== true) throw new Error("FORBIDDEN");
 }
 
 
@@ -41,7 +38,7 @@ export const adminStatus = createServerFn({ method: "POST" })
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId)
-      .in("role", ["super_admin", "general_manager"]);
+      .eq("role", "super_admin");
     return { isSuperAdmin: (mine ?? []).length > 0, superAdminExists: (count ?? 0) > 0 };
   });
 
@@ -164,9 +161,17 @@ export const createClientAccount = createServerFn({ method: "POST" })
         { onConflict: "id" },
       );
 
+    const { data: roleBranch } = await db
+      .from("branches")
+      .select("restaurant_id")
+      .eq("id", branchId)
+      .single();
     const { error: roleError } = await db
       .from("user_roles")
-      .upsert({ user_id: userId, role: data.role, branch_id: branchId }, { onConflict: "user_id,role" });
+      .upsert(
+        { user_id: userId, role: data.role, branch_id: branchId, restaurant_id: roleBranch?.restaurant_id ?? null },
+        { onConflict: "user_id,role" },
+      );
     if (roleError) {
       await db.auth.admin.deleteUser(userId);
       throw new Error(roleError.message);
@@ -392,9 +397,12 @@ export const setAccountRole = createServerFn({ method: "POST" })
     await assertSuperAdmin(context.supabase, context.userId);
     if (!STAFF_ROLES.includes(data.role)) throw new Error("INVALID_ROLE");
     const db = await admin();
+    const { data: branch } = data.branchId
+      ? await db.from("branches").select("restaurant_id").eq("id", data.branchId).maybeSingle()
+      : { data: null };
     const { error } = await db
       .from("user_roles")
-      .update({ role: data.role, branch_id: data.branchId })
+      .update({ role: data.role, branch_id: data.branchId, restaurant_id: branch?.restaurant_id ?? null })
       .eq("id", data.roleRowId);
     if (error) throw new Error(error.message);
     return { ok: true };

@@ -5,6 +5,7 @@ import { Smile } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { demoCredentials, type DemoRole } from "@/lib/demo.functions";
+import { secureStaffSignIn } from "@/lib/security.functions";
 import { BrandMark, LanguageToggle } from "@/components/customer/AppShell";
 
 
@@ -43,9 +44,19 @@ function StaffAuth() {
   const submit = async () => {
     setBusy(true);
     try {
-      const { data: signIn, error } = await supabase.auth.signInWithPassword({ email, password });
+      const result = await secureStaffSignIn({ data: { email, password } });
+      if (!result.ok) {
+        if (result.code === "LOCKED") {
+          throw new Error(pick("تم قفل تسجيل الدخول مؤقتاً. حاول بعد 30 دقيقة.", "Sign-in is temporarily locked. Try again in 30 minutes."));
+        }
+        throw new Error(pick("البريد الإلكتروني أو كلمة المرور غير صحيحة.", "Invalid email or password."));
+      }
+      const { data: signIn, error } = await supabase.auth.setSession({
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+      });
       if (error) throw error;
-      await routeByRole(signIn.user?.id);
+      await routeByRole(signIn.user?.id ?? result.userId);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("somethingWrong"));
     } finally {
@@ -57,9 +68,20 @@ function StaffAuth() {
     setBusy(true);
     try {
       const creds = await demoCredentials({ data: { role } });
-      const { data: signIn, error } = await supabase.auth.signInWithPassword(creds);
+      const result = await secureStaffSignIn({ data: creds });
+      if (!result.ok) {
+        throw new Error(
+          result.code === "LOCKED"
+            ? pick("تم قفل تسجيل الدخول مؤقتاً. حاول بعد 30 دقيقة.", "Sign-in is temporarily locked. Try again in 30 minutes.")
+            : pick("تعذر تسجيل الدخول التجريبي.", "Demo sign-in is unavailable."),
+        );
+      }
+      const { data: signIn, error } = await supabase.auth.setSession({
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+      });
       if (error) throw error;
-      await routeByRole(signIn.user?.id);
+      await routeByRole(signIn.user?.id ?? result.userId);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("somethingWrong"));
     } finally {

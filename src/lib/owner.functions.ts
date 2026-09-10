@@ -458,7 +458,10 @@ export const createTeamMember = createServerFn({ method: "POST" })
     );
     const { error: roleError } = await db
       .from("user_roles")
-      .upsert({ user_id: userId, role: data.role, branch_id: data.branchId }, { onConflict: "user_id,role" });
+      .upsert(
+        { user_id: userId, role: data.role, branch_id: data.branchId, restaurant_id: rid },
+        { onConflict: "user_id,role" },
+      );
     if (roleError) {
       await db.auth.admin.deleteUser(userId);
       throw new Error(roleError.message);
@@ -488,10 +491,24 @@ export const setTeamMemberAccess = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!branch) throw new Error("BRANCH_NOT_FOUND");
 
-    await db.from("user_roles").delete().eq("user_id", data.userId).in("role", TEAM_ROLES);
+    const { data: currentAccess } = await db
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", data.userId)
+      .eq("restaurant_id", rid)
+      .in("role", TEAM_ROLES)
+      .maybeSingle();
+    if (!currentAccess) throw new Error("FORBIDDEN");
+
+    await db
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("restaurant_id", rid)
+      .in("role", TEAM_ROLES);
     const { error } = await db
       .from("user_roles")
-      .insert({ user_id: data.userId, role: data.role, branch_id: data.branchId });
+      .insert({ user_id: data.userId, role: data.role, branch_id: data.branchId, restaurant_id: rid });
     if (error) throw new Error(error.message);
     await db.from("profiles").update({ branch_id: data.branchId }).eq("id", data.userId);
     return { ok: true };
@@ -501,9 +518,17 @@ export const setTeamMemberPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: Scoped & { userId: string; password: string }) => d)
   .handler(async ({ data, context }) => {
-    await resolveRestaurant(context, data.restaurantId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     if (data.password.length < 8) throw new Error("WEAK_PASSWORD");
     const db = await admin();
+    const { data: target } = await db
+      .from("user_roles")
+      .select("user_id")
+      .eq("user_id", data.userId)
+      .eq("restaurant_id", rid)
+      .in("role", TEAM_ROLES)
+      .maybeSingle();
+    if (!target) throw new Error("FORBIDDEN");
     const { error } = await db.auth.admin.updateUserById(data.userId, { password: data.password });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -513,15 +538,30 @@ export const removeTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: Scoped & { userId: string }) => d)
   .handler(async ({ data, context }) => {
-    await resolveRestaurant(context, data.restaurantId);
+    const rid = await resolveRestaurant(context, data.restaurantId);
     if (data.userId === context.userId) throw new Error("CANNOT_REMOVE_SELF");
     const db = await admin();
-    const { data: roles } = await db.from("user_roles").select("role").eq("user_id", data.userId);
+    const { data: roles } = await db
+      .from("user_roles")
+      .select("role, restaurant_id")
+      .eq("user_id", data.userId);
     const onlyTeam = (roles ?? []).every((r) => TEAM_ROLES.includes(r.role as TeamRole));
-    if (!onlyTeam) throw new Error("FORBIDDEN");
-    await db.from("user_roles").delete().eq("user_id", data.userId);
-    const { error } = await db.auth.admin.deleteUser(data.userId);
-    if (error) throw new Error(error.message);
+    const belongsHere = (roles ?? []).some((r) => r.restaurant_id === rid);
+    if (!onlyTeam || !belongsHere) throw new Error("FORBIDDEN");
+    await db
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("restaurant_id", rid)
+      .in("role", TEAM_ROLES);
+    const { count } = await db
+      .from("user_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", data.userId);
+    if ((count ?? 0) === 0) {
+      const { error } = await db.auth.admin.deleteUser(data.userId);
+      if (error) throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -715,10 +755,14 @@ export const resetOrder = createServerFn({ method: "POST" })
 
     const { data: order } = await db
       .from("orders")
-      .select("id, status, order_number")
+      .select("id, status, order_number, branch_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
+    const { data: allowed } = await (context.supabase as unknown as {
+      rpc: (fn: "has_branch_access", args: { _user_id: string; _branch_id: string }) => PromiseLike<{ data: unknown }>;
+    }).rpc("has_branch_access", { _user_id: context.userId, _branch_id: order.branch_id });
+    if (allowed !== true) throw new Error("FORBIDDEN");
 
     const { error } = await (db as unknown as {
       rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ error: { message: string } | null }>;
@@ -755,10 +799,14 @@ export const reactivateOrder = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: order } = await db
       .from("orders")
-      .select("id, status, order_number")
+      .select("id, status, order_number, branch_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
+    const { data: allowed } = await (context.supabase as unknown as {
+      rpc: (fn: "has_branch_access", args: { _user_id: string; _branch_id: string }) => PromiseLike<{ data: unknown }>;
+    }).rpc("has_branch_access", { _user_id: context.userId, _branch_id: order.branch_id });
+    if (allowed !== true) throw new Error("FORBIDDEN");
     if (order.status !== "CANCELLED" && order.status !== "REFUNDED")
       throw new Error("NOT_CANCELLED");
 
@@ -798,10 +846,14 @@ export const cancelOrder = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: order } = await db
       .from("orders")
-      .select("id, status, order_number")
+      .select("id, status, order_number, branch_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
+    const { data: allowed } = await (context.supabase as unknown as {
+      rpc: (fn: "has_branch_access", args: { _user_id: string; _branch_id: string }) => PromiseLike<{ data: unknown }>;
+    }).rpc("has_branch_access", { _user_id: context.userId, _branch_id: order.branch_id });
+    if (allowed !== true) throw new Error("FORBIDDEN");
     if (order.status === "CANCELLED") return { ok: true, status: "CANCELLED" };
     if (!(NEXT_STATUSES[order.status] ?? []).includes("CANCELLED"))
       throw new Error("INVALID_TRANSITION");

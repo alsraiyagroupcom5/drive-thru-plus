@@ -39,29 +39,9 @@ const IN_PROGRESS_STATUSES = ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHEC
 const FLOW = ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "READY", "COMPLETED"];
 
 function statusLabel(status: string, pick: (ar: string, en: string) => string): string {
-  switch (status) {
-    case "RECEIVED":
-      return pick("تم الاستلام", "Received");
-    case "ACCEPTED":
-      return pick("مقبول", "Accepted");
-    case "PREPARING":
-      return pick("قيد التحضير", "Preparing");
-    case "QUALITY_CHECK":
-      return pick("فحص الجودة", "Quality check");
-    case "READY":
-      return pick("جاهز", "Ready");
-    case "ARRIVING":
-      return pick("العميل في الطريق", "Arriving");
-    case "PICKED_UP":
-      return pick("تم الاستلام", "Picked up");
-    case "COMPLETED":
-      return pick("مكتمل", "Completed");
-    case "CANCELLED":
-      return pick("ملغي", "Cancelled");
-    default:
-      return status;
-  }
+  return orderStatusLabel(status, pick);
 }
+
 
 function filterLabel(f: Filter, pick: (ar: string, en: string) => string): string {
   switch (f) {

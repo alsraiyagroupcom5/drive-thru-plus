@@ -3,6 +3,8 @@ import {
   ArrowLeft,
   ArrowRight,
   ClipboardList,
+  Copy,
+  ExternalLink,
   Clock,
   LayoutGrid,
   List,
@@ -450,6 +452,45 @@ export function OrderDetail({
     >
       <div className="space-y-5">
         <OrderStatusControl order={order} />
+
+        {/* Customer live-tracking page: open in a new tab or copy the link. */}
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-elevated p-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              {pick("صفحة العميل", "Customer page")}
+            </p>
+            <p className="truncate text-xs font-semibold text-primary" dir="ltr">
+              /order/{String(order["id"])}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const url = `${window.location.origin}/order/${String(order["id"])}`;
+                void navigator.clipboard
+                  .writeText(url)
+                  .then(() => toast.success(pick("تم نسخ رابط الطلب", "Order link copied")))
+                  .catch(() => toast.error(pick("تعذّر النسخ", "Copy failed")));
+              }}
+              title={pick("نسخ الرابط", "Copy link")}
+              aria-label={pick("نسخ رابط صفحة العميل", "Copy customer page link")}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-card text-primary transition hover:bg-primary/10"
+            >
+              <Copy className="h-4 w-4" aria-hidden />
+            </button>
+            <a
+              href={`/order/${String(order["id"])}`}
+              target="_blank"
+              rel="noreferrer"
+              title={pick("فتح صفحة العميل", "Open customer page")}
+              aria-label={pick("فتح صفحة العميل في تبويب جديد", "Open customer page in a new tab")}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lift transition hover:opacity-90"
+            >
+              <ExternalLink className="h-4 w-4" aria-hidden />
+            </a>
+          </div>
+        </div>
 
         {/* process */}
         <div>

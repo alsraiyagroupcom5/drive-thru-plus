@@ -384,7 +384,12 @@ export const placeOrder = createServerFn({ method: "POST" })
       `Order ${order.order_number} received at ${branch.name_en}.`,
     );
 
-    return { orderId: order.id, orderNumber: order.order_number };
+    return {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      distanceKm,
+      etaMinutes,
+    };
   });
 
 export const getOrder = createServerFn({ method: "POST" })

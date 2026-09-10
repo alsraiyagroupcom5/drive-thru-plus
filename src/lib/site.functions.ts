@@ -18,7 +18,7 @@ async function assertSuperAdmin(supabase: unknown, userId: string) {
 export const getSiteContent = createServerFn({ method: "GET" }).handler(async () => {
   const db = await admin();
   const { data } = await db.from("site_content").select("content").eq("id", true).maybeSingle();
-  return (data?.content ?? {}) as unknown;
+  return { content: JSON.stringify(data?.content ?? {}) };
 });
 
 /** Admin only: replace the full website content document. */

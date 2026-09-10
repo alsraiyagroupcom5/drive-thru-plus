@@ -208,10 +208,10 @@ function KitchenPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-7">
           <div className="flex items-center gap-4">
             <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white/10">
-              {branch?.logo_url || rest?.logo_url ? (
+              {branch.data?.logo_url || rest?.logo_url ? (
                 <img
-                  src={(branch?.logo_url || rest?.logo_url) as string}
-                  alt={pick(rest.name_ar, rest.name_en)}
+                  src={(branch.data?.logo_url || rest?.logo_url) as string}
+                  alt={rest ? pick(rest.name_ar, rest.name_en) : "logo"}
                   className="h-full w-full object-cover"
                 />
               ) : (

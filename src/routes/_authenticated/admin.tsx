@@ -583,7 +583,12 @@ function AdminConsole() {
                   key={c.id}
                   to="/admin/clients/$clientId"
                   params={{ clientId: c.id }}
-                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lift"
+                  className={cn(
+                    "group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lift",
+                    // Red halo while the restaurant has brand-new orders; it
+                    // softens to orange once every order has moved forward.
+                    (c.newOrders ?? 0) > 0 ? "order-glow-new" : (c.activeOrders ?? 0) > 0 ? "order-glow-progress" : "",
+                  )}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3.5">

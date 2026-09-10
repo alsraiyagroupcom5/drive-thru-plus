@@ -71,6 +71,48 @@ export function chimeReady(): boolean {
   return true;
 }
 
+/** Generic tone sequence helper. */
+function playTones(seq: { freq: number; at: number; dur: number; gain?: number }[]): boolean {
+  const audio = getCtx();
+  if (!audio) return false;
+  if (audio.state === "suspended") void audio.resume();
+  if (audio.state !== "running") return false;
+  const now = audio.currentTime;
+  for (const n of seq) {
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = "sine";
+    osc.frequency.value = n.freq;
+    const start = now + n.at;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(n.gain ?? 0.3, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + n.dur);
+    osc.connect(gain);
+    gain.connect(audio.destination);
+    osc.start(start);
+    osc.stop(start + n.dur + 0.05);
+  }
+  return true;
+}
+
+/** Bright double-ping for a newly received order on the kitchen display. */
+export function chimeNewOrder(): boolean {
+  return playTones([
+    { freq: 880, at: 0, dur: 0.35 },
+    { freq: 1174.66, at: 0.18, dur: 0.45 },
+    { freq: 880, at: 0.6, dur: 0.35 },
+    { freq: 1174.66, at: 0.78, dur: 0.5 },
+  ]);
+}
+
+/** Soft two-note cue for any order status change. */
+export function chimeStatus(): boolean {
+  return playTones([
+    { freq: 587.33, at: 0, dur: 0.3, gain: 0.22 },
+    { freq: 880, at: 0.14, dur: 0.5, gain: 0.22 },
+  ]);
+}
+
 export function vibrateReady() {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {
     try {
@@ -80,3 +122,14 @@ export function vibrateReady() {
     }
   }
 }
+
+export function vibrateTick() {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    try {
+      navigator.vibrate([60, 50, 60]);
+    } catch {
+      /* ignored */
+    }
+  }
+}
+

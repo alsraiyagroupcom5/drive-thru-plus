@@ -592,15 +592,31 @@ function AdminConsole() {
                         </p>
                       </div>
                     </div>
-                    <span
-                      className={cn(
-                        "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold",
-                        c.openBranches ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      <span className={cn("h-1.5 w-1.5 rounded-full", c.openBranches ? "bg-success" : "bg-muted-foreground")} />
-                      {c.openBranches ? pick("مفتوح", "Open") : pick("مغلق", "Closed")}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span
+                        className={cn(
+                          "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold",
+                          c.openBranches ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        <span className={cn("h-1.5 w-1.5 rounded-full", c.openBranches ? "bg-success" : "bg-muted-foreground")} />
+                        {c.openBranches ? pick("مفتوح", "Open") : pick("مغلق", "Closed")}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={pick("روابط ودخول العميل", "Client links & access")}
+                        title={pick("روابط ودخول العميل", "Client links & access")}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setAccessClient({ id: c.id, title: pick(c.name_ar, c.name_en) });
+                        }}
+                        className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                      >
+                        <QrCode className="h-4 w-4" aria-hidden />
+                      </button>
+                    </div>
+
                   </div>
 
                   <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 border-y border-border py-4 sm:grid-cols-4">

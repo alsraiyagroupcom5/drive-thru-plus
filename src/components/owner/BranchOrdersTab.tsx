@@ -246,6 +246,7 @@ function OrderStatusControl({ order }: { order: Row }) {
             {pick("اختر الحالة التالية للطلب", "Choose the next status for this order")}
           </p>
         </div>
+        {options.length ? (
         <Select
           key={`${order["id"] as string}-${current}`}
           value={current}
@@ -285,7 +286,27 @@ function OrderStatusControl({ order }: { order: Row }) {
             ))}
           </SelectContent>
         </Select>
+        ) : null}
       </div>
+      {canReset ? (
+        <div className="mt-3 flex flex-col gap-2 border-t border-primary/15 pt-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            {pick(
+              "إعادة ضبط الطلب كأنه تم استلامه الآن",
+              "Reset this order as if it was just placed",
+            )}
+          </p>
+          <button
+            type="button"
+            disabled={resetMutation.isPending}
+            onClick={() => resetMutation.mutate()}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-primary/30 bg-card px-4 text-xs font-bold text-primary transition hover:bg-primary/10 disabled:opacity-60"
+          >
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+            {pick("إعادة ضبط الطلب", "Reset order")}
+          </button>
+        </div>
+      ) : null}
       {mutation.isError ? (
         <p className="mt-3 text-[11px] font-semibold text-destructive">
           {pick("تعذر تحديث الحالة", "Could not update the status")}

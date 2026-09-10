@@ -8,6 +8,7 @@ import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
 import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
+import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { Modal } from "@/components/console/Modal";
 
 import { supabase } from "@/integrations/supabase/client";

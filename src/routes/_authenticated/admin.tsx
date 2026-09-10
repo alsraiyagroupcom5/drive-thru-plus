@@ -9,6 +9,7 @@ import { ClientAccessDialog } from "@/components/console/ClientAccessDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
+import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { cn } from "@/lib/utils";
 
 import {

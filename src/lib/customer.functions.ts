@@ -200,6 +200,8 @@ export const placeOrder = createServerFn({ method: "POST" })
       paymentMethod: "CARD" | "APPLE_PAY" | "GOOGLE_PAY" | "PAY_AT_PICKUP";
       items: CartLine[];
       notes?: string;
+      lat?: number | null;
+      lng?: number | null;
     }) => d,
   )
   .handler(async ({ data }) => {
@@ -267,6 +269,18 @@ export const placeOrder = createServerFn({ method: "POST" })
         ).data
       : null;
 
+    const { haversineKm, driveMinutes, ARRIVAL_RADIUS_KM } = await import("@/lib/geo");
+    const hasFix =
+      typeof data.lat === "number" &&
+      typeof data.lng === "number" &&
+      branch.lat != null &&
+      branch.lng != null;
+    const distanceKm = hasFix
+      ? haversineKm(data.lat as number, data.lng as number, Number(branch.lat), Number(branch.lng))
+      : null;
+    const etaMinutes = distanceKm == null ? null : driveMinutes(distanceKm);
+    const arrivedNow = distanceKm != null && distanceKm <= ARRIVAL_RADIUS_KM;
+
     const { data: seq } = await db.rpc("next_order_number" as never).single();
     const orderNumber =
       (seq as unknown as string) ?? `A${Math.floor(1000 + Math.random() * 9000)}`;
@@ -294,6 +308,14 @@ export const placeOrder = createServerFn({ method: "POST" })
           : null,
         target_prep_minutes: maxPrep,
         notes: data.notes?.slice(0, 300) ?? null,
+        customer_lat: hasFix ? (data.lat as number) : null,
+        customer_lng: hasFix ? (data.lng as number) : null,
+        distance_km: distanceKm,
+        eta_minutes: etaMinutes,
+        location_updated_at: hasFix ? new Date().toISOString() : null,
+        customer_arrived: arrivedNow,
+        arrived_at: arrivedNow ? new Date().toISOString() : null,
+        arrival_method: arrivedNow ? "AUTO" : null,
       })
       .select("*")
       .single();
@@ -362,7 +384,12 @@ export const placeOrder = createServerFn({ method: "POST" })
       `Order ${order.order_number} received at ${branch.name_en}.`,
     );
 
-    return { orderId: order.id, orderNumber: order.order_number };
+    return {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      distanceKm,
+      etaMinutes,
+    };
   });
 
 export const getOrder = createServerFn({ method: "POST" })
@@ -410,7 +437,56 @@ export const announceArrival = createServerFn({ method: "POST" })
     if (!order) throw new Error("ORDER_NOT_FOUND");
     await db
       .from("orders")
-      .update({ customer_arrived: true, arrived_at: new Date().toISOString() })
+      .update({
+        customer_arrived: true,
+        arrived_at: new Date().toISOString(),
+        arrival_method: "MANUAL",
+      })
       .eq("id", order.id);
     return { ok: true };
+  });
+
+/* ----------------------- live location tracking ----------------------- */
+
+export const updateOrderLocation = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; orderId: string; lat: number; lng: number }) => d)
+  .handler(async ({ data }) => {
+    const customerId = await requireCustomer(data.token);
+    if (!Number.isFinite(data.lat) || !Number.isFinite(data.lng)) throw new Error("INVALID_FIX");
+    const db = await admin();
+
+    const { data: order } = await db
+      .from("orders")
+      .select("id, status, customer_arrived, branch_id, branches(lat, lng)")
+      .eq("id", data.orderId)
+      .eq("customer_id", customerId)
+      .maybeSingle();
+    if (!order) throw new Error("ORDER_NOT_FOUND");
+
+    const branch = order.branches as { lat: number | null; lng: number | null } | null;
+    if (branch?.lat == null || branch?.lng == null) {
+      return { distanceKm: null, etaMinutes: null, arrived: order.customer_arrived };
+    }
+
+    const { haversineKm, driveMinutes, ARRIVAL_RADIUS_KM } = await import("@/lib/geo");
+    const distanceKm = haversineKm(data.lat, data.lng, Number(branch.lat), Number(branch.lng));
+    const etaMinutes = driveMinutes(distanceKm);
+    const done = ["COMPLETED", "PICKED_UP", "CANCELLED", "REFUNDED"].includes(order.status);
+    const arrived = order.customer_arrived || (!done && distanceKm <= ARRIVAL_RADIUS_KM);
+
+    const patch: Record<string, unknown> = {
+      customer_lat: data.lat,
+      customer_lng: data.lng,
+      distance_km: distanceKm,
+      eta_minutes: etaMinutes,
+      location_updated_at: new Date().toISOString(),
+    };
+    if (arrived && !order.customer_arrived) {
+      patch["customer_arrived"] = true;
+      patch["arrived_at"] = new Date().toISOString();
+      patch["arrival_method"] = "AUTO";
+    }
+    await db.from("orders").update(patch as never).eq("id", order.id);
+
+    return { distanceKm, etaMinutes, arrived };
   });

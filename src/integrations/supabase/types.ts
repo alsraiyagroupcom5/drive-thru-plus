@@ -450,16 +450,22 @@ export type Database = {
       }
       orders: {
         Row: {
+          arrival_method: string | null
           arrived_at: string | null
           branch_id: string
           completed_at: string | null
           created_at: string
           customer_arrived: boolean
           customer_id: string | null
+          customer_lat: number | null
+          customer_lng: number | null
           customer_name: string | null
           customer_phone: string | null
           discount: number
+          distance_km: number | null
+          eta_minutes: number | null
           id: string
+          location_updated_at: string | null
           notes: string | null
           order_number: string
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -477,16 +483,22 @@ export type Database = {
           vehicle_snapshot: Json | null
         }
         Insert: {
+          arrival_method?: string | null
           arrived_at?: string | null
           branch_id: string
           completed_at?: string | null
           created_at?: string
           customer_arrived?: boolean
           customer_id?: string | null
+          customer_lat?: number | null
+          customer_lng?: number | null
           customer_name?: string | null
           customer_phone?: string | null
           discount?: number
+          distance_km?: number | null
+          eta_minutes?: number | null
           id?: string
+          location_updated_at?: string | null
           notes?: string | null
           order_number: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
@@ -504,16 +516,22 @@ export type Database = {
           vehicle_snapshot?: Json | null
         }
         Update: {
+          arrival_method?: string | null
           arrived_at?: string | null
           branch_id?: string
           completed_at?: string | null
           created_at?: string
           customer_arrived?: boolean
           customer_id?: string | null
+          customer_lat?: number | null
+          customer_lng?: number | null
           customer_name?: string | null
           customer_phone?: string | null
           discount?: number
+          distance_km?: number | null
+          eta_minutes?: number | null
           id?: string
+          location_updated_at?: string | null
           notes?: string | null
           order_number?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]

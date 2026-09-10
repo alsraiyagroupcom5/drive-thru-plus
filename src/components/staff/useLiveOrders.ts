@@ -12,6 +12,9 @@ export type LiveOrder = {
   created_at: string;
   ready_at: string | null;
   customer_arrived: boolean;
+  distance_km: number | null;
+  eta_minutes: number | null;
+  location_updated_at: string | null;
   customer_name: string | null;
   customer_phone: string | null;
   vehicle_snapshot: { plate?: string; make?: string; model?: string; color?: string } | null;
@@ -57,7 +60,7 @@ export function useLiveOrders(branchId: string | null | undefined) {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, order_number, status, payment_status, payment_method, total, created_at, ready_at, customer_arrived, customer_name, customer_phone, vehicle_snapshot, target_prep_minutes, notes, branch_id, order_items(id, name_en, name_ar, quantity, order_item_modifiers(id, name_en, name_ar))",
+          "id, order_number, status, payment_status, payment_method, total, created_at, ready_at, customer_arrived, distance_km, eta_minutes, location_updated_at, customer_name, customer_phone, vehicle_snapshot, target_prep_minutes, notes, branch_id, order_items(id, name_en, name_ar, quantity, order_item_modifiers(id, name_en, name_ar))",
         )
         .eq("branch_id", branchId!)
         .gte("created_at", since)

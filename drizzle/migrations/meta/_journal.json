@@ -85,6 +85,13 @@
       "when": 1789035239537,
       "tag": "0011_order_status_override_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789036890531,
+      "tag": "0012_branch_logo_url",
+      "breakpoints": true
     }
   ]
 }

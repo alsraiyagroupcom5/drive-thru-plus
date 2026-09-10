@@ -14,3 +14,4 @@
 
 - [x] Completed/picked-up orders moved to a bottom dated table with today/yesterday/7 days/month/exact-day filters
 - [x] Security hardening: five-attempt lockout, admin alerts, tenant/branch isolation, and privilege audit
+- [x] Customer order page: restaurant logo and branch details; Home keeps the selected branch

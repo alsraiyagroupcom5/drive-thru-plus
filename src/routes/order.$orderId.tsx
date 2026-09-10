@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { Check, Car, ChefHat, PackageCheck, Receipt, MapPin, Navigation, Shield } from "lucide-react";
+import { Check, Car, ChefHat, PackageCheck, Receipt, MapPin, Navigation, Shield, Clock, Phone } from "lucide-react";
 import { useArrivalTracker } from "@/components/customer/useArrivalTracker";
 import {
   ReadyAlertOverlay,
@@ -20,6 +20,7 @@ import { getOrderForStaff } from "@/lib/staff.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import fallbackLogo from "@/assets/qr-spring-logo.png.asset.json";
 
 export const Route = createFileRoute("/order/$orderId")({
   head: () => ({
@@ -231,6 +232,29 @@ function TrackPage() {
   }
 
   const o = order.data;
+  const branch = o.branches as {
+    name_en: string;
+    name_ar: string;
+    phone: string | null;
+    code: string;
+    address_en: string | null;
+    address_ar: string | null;
+    city_en: string | null;
+    city_ar: string | null;
+    opens_at: string;
+    closes_at: string;
+    logo_url: string | null;
+    restaurants: {
+      name_en: string;
+      name_ar: string;
+      logo_url: string | null;
+    } | null;
+  } | null;
+  const restaurant = branch?.restaurants;
+  const logoUrl = branch?.logo_url || restaurant?.logo_url || fallbackLogo.url;
+  const branchLocation = branch
+    ? pick(branch.address_ar || branch.city_ar, branch.address_en || branch.city_en)
+    : null;
   const cancelled = o.status === "CANCELLED";
   const activeIndex = STEPS.indexOf(o.status as (typeof STEPS)[number]);
   const eta = Math.max(
@@ -243,10 +267,33 @@ function TrackPage() {
 
   return (
     <AppShell
+      branchCode={branch?.code}
       header={
-        <header className="border-b border-border px-5 pb-3 pt-6">
-          <div className="flex items-center justify-between gap-3">
-            <h1 className="font-display text-2xl font-bold">{t("trackOrder")}</h1>
+        <header className="border-b border-border bg-card px-5 pb-4 pt-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <img
+                src={logoUrl}
+                alt={restaurant ? pick(restaurant.name_ar, restaurant.name_en) : "QR-Spring"}
+                width={56}
+                height={56}
+                className="h-14 w-14 shrink-0 rounded-2xl border border-border bg-background object-contain p-1 shadow-sm"
+              />
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold text-primary">
+                  {restaurant ? pick(restaurant.name_ar, restaurant.name_en) : "QR-Spring"}
+                </p>
+                <h1 className="truncate font-display text-xl font-bold">
+                  {branch ? pick(branch.name_ar, branch.name_en) : t("trackOrder")}
+                </h1>
+                {branchLocation ? (
+                  <p className="mt-1 flex items-center gap-1 truncate text-xs text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                    <span className="truncate">{branchLocation}</span>
+                  </p>
+                ) : null}
+              </div>
+            </div>
             {isStaff && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                 <Shield className="h-3.5 w-3.5" aria-hidden />
@@ -254,6 +301,20 @@ function TrackPage() {
               </span>
             )}
           </div>
+          {branch ? (
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-primary" aria-hidden />
+                <span dir="ltr">{branch.opens_at.slice(0, 5)}–{branch.closes_at.slice(0, 5)}</span>
+              </span>
+              {branch.phone ? (
+                <a href={`tel:${branch.phone}`} className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                  <Phone className="h-3.5 w-3.5 text-primary" aria-hidden />
+                  <span dir="ltr">{branch.phone}</span>
+                </a>
+              ) : null}
+            </div>
+          ) : null}
         </header>
       }
     >

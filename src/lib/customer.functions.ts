@@ -308,6 +308,14 @@ export const placeOrder = createServerFn({ method: "POST" })
           : null,
         target_prep_minutes: maxPrep,
         notes: data.notes?.slice(0, 300) ?? null,
+        customer_lat: hasFix ? data.lat : null,
+        customer_lng: hasFix ? data.lng : null,
+        distance_km: distanceKm,
+        eta_minutes: etaMinutes,
+        location_updated_at: hasFix ? new Date().toISOString() : null,
+        customer_arrived: arrivedNow,
+        arrived_at: arrivedNow ? new Date().toISOString() : null,
+        arrival_method: arrivedNow ? "AUTO" : null,
       })
       .select("*")
       .single();

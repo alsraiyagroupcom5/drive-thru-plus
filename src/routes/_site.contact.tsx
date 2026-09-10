@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Instagram, Mail, Phone } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, useSite } from "@/lib/site-content";
 import { SectionTitle } from "@/components/marketing/SiteChrome";

@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Inbox, LayoutDashboard, Store, Users } from "lucide-react";
+import { ChevronRight, Inbox, LayoutDashboard, Plus, Store, Users } from "lucide-react";
+import { Modal } from "@/components/console/Modal";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
@@ -61,6 +62,8 @@ function AdminConsole() {
   const { pick, lang } = useI18n();
   const qc = useQueryClient();
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("overview");
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [restOpen, setRestOpen] = useState(false);
 
   const status = useQuery({ queryKey: ["admin-status"], queryFn: () => adminStatus() });
   const enabled = !!status.data?.isSuperAdmin;
@@ -125,6 +128,7 @@ function AdminConsole() {
       }),
     onSuccess: () => {
       toast.success(pick("تم إنشاء الحساب", "Account created"));
+      setAccountOpen(false);
       setEmail("");
       setPassword("");
       setFullName("");
@@ -175,6 +179,7 @@ function AdminConsole() {
       }),
     onSuccess: () => {
       toast.success(pick("تم الحفظ", "Saved"));
+      setRestOpen(false);
       setRest({ id: "", slug: "", name_en: "", name_ar: "", currency: "QAR", org_en: "", org_ar: "", organizationId: "" });
       qc.invalidateQueries({ queryKey: ["admin-restaurants"] });
     },
@@ -304,9 +309,38 @@ function AdminConsole() {
 
       {tab === "accounts" && (
         <section className="space-y-5">
-          <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">{pick("حساب جديد", "New account")}</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-bold">{pick("الحسابات", "Accounts")}</h2>
+              <p className="text-xs text-muted-foreground">
+                {pick("الفريق والصلاحيات على مستوى المنصة.", "Team members and access across the platform.")}
+              </p>
+            </div>
+            <button
+              onClick={() => setAccountOpen(true)}
+              className="inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient-brass)] px-5 py-3 font-display text-sm font-bold text-primary-foreground shadow-lift"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              {pick("حساب جديد", "New account")}
+            </button>
+          </div>
+
+          <Modal
+            open={accountOpen}
+            onClose={() => setAccountOpen(false)}
+            title={pick("حساب جديد", "New account")}
+            subtitle={pick("أنشئ حساب فريق واربطه بفرع.", "Create a team account and link it to a branch.")}
+            footer={
+              <button
+                onClick={() => create.mutate()}
+                disabled={create.isPending || !email || password.length < 8 || (branchMode === "existing" && !branchId)}
+                className="w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
+              >
+                {pick("إنشاء الحساب", "Create account")}
+              </button>
+            }
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
               <input className={input} placeholder={pick("الاسم", "Full name")} value={fullName} onChange={(e) => setFullName(e.target.value)} />
               <input className={input} dir="ltr" type="email" placeholder="team@origami.qa" value={email} onChange={(e) => setEmail(e.target.value)} />
               <input className={input} dir="ltr" type="password" placeholder={pick("كلمة المرور (8+ أحرف)", "Password (8+ chars)")} value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -358,18 +392,10 @@ function AdminConsole() {
               </select>
             )}
 
-            <button
-              onClick={() => create.mutate()}
-              disabled={create.isPending || !email || password.length < 8 || (branchMode === "existing" && !branchId)}
-              className="mt-5 w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
-            >
-              {pick("إنشاء الحساب", "Create account")}
-            </button>
-          </div>
+          </Modal>
 
           <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">{pick("الحسابات", "Accounts")}</h2>
-            <div className="mt-3 divide-y divide-border">
+            <div className="divide-y divide-border">
               {(data.data?.accounts ?? []).map((a) => (
                 <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div className="min-w-0">

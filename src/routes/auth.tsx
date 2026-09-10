@@ -68,9 +68,20 @@ function StaffAuth() {
     setBusy(true);
     try {
       const creds = await demoCredentials({ data: { role } });
-      const { data: signIn, error } = await supabase.auth.signInWithPassword(creds);
+      const result = await secureStaffSignIn({ data: creds });
+      if (!result.ok) {
+        throw new Error(
+          result.code === "LOCKED"
+            ? pick("تم قفل تسجيل الدخول مؤقتاً. حاول بعد 30 دقيقة.", "Sign-in is temporarily locked. Try again in 30 minutes.")
+            : pick("تعذر تسجيل الدخول التجريبي.", "Demo sign-in is unavailable."),
+        );
+      }
+      const { data: signIn, error } = await supabase.auth.setSession({
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+      });
       if (error) throw error;
-      await routeByRole(signIn.user?.id);
+      await routeByRole(signIn.user?.id ?? result.userId);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("somethingWrong"));
     } finally {

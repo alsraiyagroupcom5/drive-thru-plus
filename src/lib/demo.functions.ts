@@ -4,7 +4,7 @@ import { createServerFn } from "@tanstack/react-start";
 const DEMO_ACCOUNTS = {
   admin: "admin@qrspring.qa",
   owner: "owner@qrspring.qa",
-  staff: "staff@example.com",
+  staff: "staff@qrspring.qa",
 } as const;
 
 export type DemoRole = keyof typeof DEMO_ACCOUNTS;

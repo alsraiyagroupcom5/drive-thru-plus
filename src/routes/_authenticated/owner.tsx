@@ -739,104 +739,18 @@ function BranchForm({
 
 const ORDER_FILTERS = ["ALL", "IN_PROGRESS", "READY", "COMPLETED", "CANCELLED"] as const;
 
-function OrdersTab({ branches, lang }: { branches: Row[]; lang: "ar" | "en" }) {
-  const { pick } = useI18n();
-  const [branchId, setBranchId] = useState<string>("");
-  const [filter, setFilter] = useState<(typeof ORDER_FILTERS)[number]>("ALL");
-
+function OrdersTab({ branches }: { branches: Row[]; lang: "ar" | "en" }) {
   const orders = useQuery({
-    queryKey: ["owner-orders", branchId],
-    queryFn: () => ownerOrders({ data: { branchId: branchId || null } }),
+    queryKey: ["owner-orders", "all"],
+    queryFn: () => ownerOrders({ data: { branchId: null } }),
     refetchInterval: 30_000,
   });
 
-  const rows = useMemo(() => {
-    const list = (orders.data ?? []) as Row[];
-    if (filter === "ALL") return list;
-    if (filter === "IN_PROGRESS")
-      return list.filter((o) =>
-        ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "ARRIVING"].includes(
-          o["status"] as string,
-        ),
-      );
-    return list.filter((o) => o["status"] === filter);
-  }, [orders.data, filter]);
-
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap gap-2">
-        <select
-          className={cn(input, "h-9 w-auto")}
-          value={branchId}
-          onChange={(e) => setBranchId(e.target.value)}
-        >
-          <option value="">{pick("كل الفروع", "All branches")}</option>
-          {branches.map((b) => (
-            <option key={b["id"] as string} value={b["id"] as string}>
-              {pick(b["name_ar"] as string, b["name_en"] as string)}
-            </option>
-          ))}
-        </select>
-        {ORDER_FILTERS.map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={cn(
-              "rounded-full border px-4 py-2 text-xs font-semibold",
-              filter === f ? "border-primary bg-primary text-primary-foreground" : "border-border",
-            )}
-          >
-            {f === "ALL"
-              ? pick("الكل", "All")
-              : f === "IN_PROGRESS"
-                ? pick("قيد التنفيذ", "In progress")
-                : f === "READY"
-                  ? pick("جاهز", "Ready")
-                  : f === "COMPLETED"
-                    ? pick("مكتمل", "Completed")
-                    : pick("ملغي", "Cancelled")}
-          </button>
-        ))}
-      </div>
-
-      <div className="space-y-2">
-        {rows.map((o) => {
-          const branch = o["branches"] as Row | null;
-          const items = (o["order_items"] as Row[]) ?? [];
-          return (
-            <div
-              key={o["id"] as string}
-              className="surface flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4"
-            >
-              <div className="min-w-0">
-                <p className="font-display font-bold">{o["order_number"] as string}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {branch ? pick(branch["name_ar"] as string, branch["name_en"] as string) : ""} ·{" "}
-                  {formatDateTime(o["created_at"] as string, lang)}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {items
-                    .map((i) => `${i["quantity"]}× ${pick(i["name_ar"] as string, i["name_en"] as string)}`)
-                    .join(" • ")}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-elevated px-2.5 py-1 text-[11px] font-semibold">
-                  {o["status"] as string}
-                </span>
-                <span className="font-display font-bold text-primary">
-                  {money(Number(o["total"]), lang)}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-        {!rows.length && (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            {pick("لا توجد طلبات", "No orders")}
-          </p>
-        )}
-      </div>
-    </div>
+    <BranchOrdersTab
+      branches={branches}
+      orders={(orders.data ?? []) as Row[]}
+      loading={orders.isLoading}
+    />
   );
 }

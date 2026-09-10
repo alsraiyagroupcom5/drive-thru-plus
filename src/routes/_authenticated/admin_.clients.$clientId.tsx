@@ -254,30 +254,11 @@ function ClientWorkspace() {
       ) : null}
 
       {tab === "orders" ? (
-        <div className="space-y-2">
-          {(orders.data ?? []).map((o) => (
-            <div key={o.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border p-4">
-              <div className="min-w-0">
-                <p className="font-semibold" dir="ltr">
-                  {o.order_number}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {o.branches ? pick(o.branches.name_ar, o.branches.name_en) : ""} ·{" "}
-                  {formatDateTime(o.created_at, lang)}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="rounded-full bg-accent px-3 py-1 text-[11px] font-bold">{o.status}</span>
-                <span className="font-semibold">{money(Number(o.total), lang)}</span>
-              </div>
-            </div>
-          ))}
-          {orders.data && !orders.data.length ? (
-            <p className="py-16 text-center text-sm text-muted-foreground">
-              {pick("لا توجد طلبات", "No orders")}
-            </p>
-          ) : null}
-        </div>
+        <BranchOrdersTab
+          branches={branches}
+          orders={(orders.data ?? []) as Row[]}
+          loading={orders.isLoading}
+        />
       ) : null}
     </ConsoleShell>
   );

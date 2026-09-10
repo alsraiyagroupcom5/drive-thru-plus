@@ -44,6 +44,7 @@ function KitchenPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [, tick] = useState(0);
+  const [detail, setDetail] = useState<LiveOrder | null>(null);
 
   useEffect(() => {
     const id = window.setInterval(() => tick((n) => n + 1), 30_000);
@@ -122,8 +123,16 @@ function KitchenPage() {
                             : "border-transparent",
                       )}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-display text-lg font-bold">{o.order_number}</span>
+                      <div
+                        className="flex cursor-pointer items-center justify-between"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setDetail(o)}
+                        onKeyDown={(e) => e.key === "Enter" && setDetail(o)}
+                      >
+                        <span className="font-display text-lg font-bold underline-offset-4 hover:underline">
+                          {o.order_number}
+                        </span>
                         <span
                           className={cn(
                             "inline-flex items-center gap-1 text-xs font-bold",

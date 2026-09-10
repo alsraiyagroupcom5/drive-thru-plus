@@ -60,6 +60,7 @@ type Tab = "branches" | "menu" | "design" | "team" | "orders" | "settings";
 function OwnerConsole() {
   const { pick, lang } = useI18n();
   const qc = useQueryClient();
+  useOrdersRealtime(["owner-orders", "owner-menu"], "owner-orders");
   const [tab, setTab] = useState<Tab>("menu");
 
   const menu = useQuery({ queryKey: ["owner-menu"], queryFn: () => ownerMenu() });

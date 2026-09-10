@@ -69,6 +69,7 @@ const input =
 function AdminConsole() {
   const { pick, lang } = useI18n();
   const qc = useQueryClient();
+  useOrdersRealtime(["admin-orders-feed", "admin-overview", "admin-client-cards", "admin-restaurants"], "admin-orders");
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const tab = (TABS.some((t) => t.id === search.tab) ? search.tab : "overview") as (typeof TABS)[number]["id"];

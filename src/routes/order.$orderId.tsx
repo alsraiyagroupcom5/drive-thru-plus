@@ -44,7 +44,8 @@ function TrackPage() {
     queryFn: () => getOrder({ data: { token: session!.token, orderId } }),
     enabled: !!session?.token,
     retry: false,
-    refetchInterval: 15_000,
+    refetchInterval: 4_000,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {

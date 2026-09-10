@@ -45,6 +45,11 @@
   --color-console-rail: var(--console-rail);
   --color-console-rail-foreground: var(--console-rail-foreground);
   --color-console-rail-muted: var(--console-rail-muted);
+  --color-site-ivory: var(--site-ivory);
+  --color-site-sand: var(--site-sand);
+  --color-site-teal: var(--site-teal);
+  --color-site-ink: var(--site-ink);
+  --color-site-ink-foreground: var(--site-ink-foreground);
   --font-display: "Outfit", "Tajawal", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Tajawal", "Outfit", ui-sans-serif, system-ui, sans-serif;
 }

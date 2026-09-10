@@ -102,6 +102,13 @@ const dict = {
   pickedUp: { ar: "تم الاستلام", en: "Picked up" },
   imHere: { ar: "وصلت 🚗", en: "I'm here 🚗" },
   arrivalNotified: { ar: "أبلغنا الفرع بوصولك", en: "The branch has been notified" },
+  close: { ar: "إغلاق", en: "Close" },
+  onMyWay: { ar: "في الطريق للاستلام", en: "On my way" },
+  replaySound: { ar: "إعادة التنبيه", en: "Replay alert" },
+  soundAlertOn: { ar: "التنبيه الصوتي مفعّل", en: "Sound alert on" },
+  enableSoundAlert: { ar: "تفعيل التنبيه الصوتي", en: "Enable sound alert" },
+  readyToast: { ar: "طلبك جاهز للاستلام", en: "Your order is ready for pickup" },
+
   liveTracking: { ar: "التتبع المباشر", en: "Live tracking" },
   distanceToBranch: { ar: "المسافة إلى الفرع", en: "Distance to branch" },
   arrivalEta: { ar: "وقت الوصول المتوقع", en: "Arrival in" },

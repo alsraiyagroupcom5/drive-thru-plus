@@ -413,7 +413,10 @@ export const listClientCards = createServerFn({ method: "POST" })
         db.from("branches").select("id, restaurant_id, is_open"),
         db.from("products").select("id, restaurant_id"),
         db.from("user_roles").select("user_id, role, branch_id"),
-        db.from("orders").select("id, restaurant_id, total, created_at").gte("created_at", since),
+        db
+          .from("orders")
+          .select("id, restaurant_id, total, status, created_at")
+          .gte("created_at", since),
       ]);
 
     const branchList = branches ?? [];

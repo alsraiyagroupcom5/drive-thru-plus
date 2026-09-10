@@ -269,8 +269,11 @@ export const placeOrder = createServerFn({ method: "POST" })
         ).data
       : null;
 
-    const { haversineKm, driveMinutes, ARRIVAL_RADIUS_KM } = await import("@/lib/geo");
+    const { haversineKm, driveMinutes, trackingFromBranch } = await import("@/lib/geo");
+    const tracking = trackingFromBranch(branch);
+    const trackingOn = branch.tracking_enabled !== false;
     const hasFix =
+      trackingOn &&
       typeof data.lat === "number" &&
       typeof data.lng === "number" &&
       branch.lat != null &&
@@ -278,8 +281,11 @@ export const placeOrder = createServerFn({ method: "POST" })
     const distanceKm = hasFix
       ? haversineKm(data.lat as number, data.lng as number, Number(branch.lat), Number(branch.lng))
       : null;
-    const etaMinutes = distanceKm == null ? null : driveMinutes(distanceKm);
-    const arrivedNow = distanceKm != null && distanceKm <= ARRIVAL_RADIUS_KM;
+    const etaMinutes = distanceKm == null ? null : driveMinutes(distanceKm, tracking);
+    const arrivedNow =
+      branch.auto_arrival !== false &&
+      distanceKm != null &&
+      distanceKm <= tracking.arrivalRadiusKm;
 
     const { data: seq } = await db.rpc("next_order_number" as never).single();
     const orderNumber =

@@ -26,8 +26,8 @@ import { Modal } from "@/components/console/Modal";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
-import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
-import { useI18n, money, formatDateTime } from "@/lib/i18n";
+import { BranchOrdersTab, LatestOrdersGrid } from "@/components/owner/BranchOrdersTab";
+import { useI18n, money } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { effectivePrice, hasDiscount, todayISO } from "@/lib/pricing";
 import { foodImage } from "@/lib/food-images";
@@ -196,25 +196,10 @@ function ClientWorkspace() {
           </div>
 
           <div className="rounded-3xl border border-border p-5">
-            <h2 className="font-display text-lg font-bold">{pick("أحدث الطلبات", "Latest orders")}</h2>
-            <div className="mt-2 divide-y divide-border">
-              {(orders.data ?? []).slice(0, 8).map((o) => (
-                <div key={o.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                  <div className="min-w-0">
-                    <p className="font-semibold" dir="ltr">
-                      {o.order_number}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {formatDateTime(o.created_at, lang)}
-                    </p>
-                  </div>
-                  <div className="text-end">
-                    <p className="text-xs text-muted-foreground">{o.status}</p>
-                    <p className="font-semibold">{money(Number(o.total), lang)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <LatestOrdersGrid
+              branches={branches}
+              orders={(orders.data ?? []) as Row[]}
+            />
           </div>
         </section>
       ) : null}

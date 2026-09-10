@@ -294,6 +294,101 @@ function OrderDetail({
   );
 }
 
+export function LatestOrdersGrid({
+  branches,
+  orders,
+  limit = 8,
+}: {
+  branches: Row[];
+  orders: Row[];
+  limit?: number;
+}) {
+  const { pick, lang } = useI18n();
+  const [detail, setDetail] = useState<Row | null>(null);
+  const rows = orders.slice(0, limit);
+
+  const branchName = (order: Row): string => {
+    const branch = branches.find((item) => item["id"] === order["branch_id"]);
+    const joined = order["branches"] as Row | null;
+    const source = branch ?? joined;
+    return source
+      ? pick(source["name_ar"] as string, source["name_en"] as string)
+      : pick("فرع", "Branch");
+  };
+
+  return (
+    <section className="space-y-4">
+      <div className="flex items-end justify-between gap-3 border-b border-border pb-4">
+        <div>
+          <p className="text-xs font-bold uppercase text-primary">{pick("الطلبات", "Orders")}</p>
+          <h2 className="mt-1 font-display text-xl font-bold">{pick("أحدث الطلبات", "Latest orders")}</h2>
+        </div>
+        <div className="rounded-xl bg-elevated px-3 py-2 text-center">
+          <p className="text-[10px] text-muted-foreground">{pick("المعروضة", "Showing")}</p>
+          <p className="font-display text-lg font-bold" dir="ltr">{rows.length}</p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {rows.map((order) => {
+          const status = order["status"] as string;
+          const items = (order["order_items"] as Row[]) ?? [];
+          return (
+            <article
+              key={order["id"] as string}
+              className="surface flex min-h-44 flex-col rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+            >
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border pb-3">
+                <div className="min-w-0">
+                  <p className="truncate font-display text-lg font-bold" dir="ltr">{order["order_number"] as string}</p>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {branchName(order)} · {(order["customer_name"] as string) || pick("عميل", "Customer")}
+                  </p>
+                </div>
+                <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold", statusTone(status))}>
+                  {statusLabel(status, pick)}
+                </span>
+              </div>
+
+              <div className="flex-1 py-3">
+                <p className="text-xs text-muted-foreground">{formatDateTime(order["created_at"] as string, lang)}</p>
+                {items.length ? (
+                  <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                    {items.map((item) => `${item["quantity"]}× ${pick(item["name_ar"] as string, item["name_en"] as string)}`).join(" • ")}
+                  </p>
+                ) : null}
+                <div className="mt-3 space-y-2">
+                  <TrackingBadge order={order} />
+                  <TimingLine order={order} />
+                </div>
+              </div>
+
+              <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
+                <button
+                  onClick={() => setDetail(order)}
+                  className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                >
+                  {pick("التفاصيل", "Details")}
+                </button>
+                <span className="font-display text-lg font-bold text-primary" dir="ltr">{money(Number(order["total"]), lang)}</span>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {!rows.length ? (
+        <div className="rounded-2xl border border-dashed border-border py-12 text-center">
+          <ClipboardList className="mx-auto h-7 w-7 text-muted-foreground" aria-hidden />
+          <p className="mt-3 text-sm font-semibold text-muted-foreground">{pick("لا توجد طلبات", "No orders")}</p>
+        </div>
+      ) : null}
+
+      <OrderDetail order={detail} branchName={detail ? branchName(detail) : ""} onClose={() => setDetail(null)} />
+    </section>
+  );
+}
+
 export function BranchOrdersTab({
   branches,
   orders,

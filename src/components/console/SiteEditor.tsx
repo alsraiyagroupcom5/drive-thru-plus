@@ -297,36 +297,8 @@ export function SiteEditor() {
   const set = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
 
-  // Logo aspect ratio (height / width) probed from the image, so height can
-  // auto-follow width changes without distorting the logo.
-  const [logoRatio, setLogoRatio] = useState<number | null>(null);
-  const [autoLogoHeight, setAutoLogoHeight] = useState(true);
-
-  useEffect(() => {
-    const url = draft.brand.logoUrl;
-    if (!url) {
-      setLogoRatio(null);
-      return;
-    }
-    let cancelled = false;
-    const img = new Image();
-    img.onload = () => {
-      if (!cancelled && img.naturalWidth > 0) {
-        setLogoRatio(img.naturalHeight / img.naturalWidth);
-      }
-    };
-    img.src = url;
-    return () => {
-      cancelled = true;
-    };
-  }, [draft.brand.logoUrl]);
-
   const setLogoWidth = (width: number) => {
-    const height =
-      autoLogoHeight && logoRatio && width > 0
-        ? Math.max(16, Math.round(width * logoRatio))
-        : draft.brand.logoHeight;
-    set("brand", { ...draft.brand, logoWidth: width, logoHeight: height });
+    set("brand", { ...draft.brand, logoWidth: width });
   };
 
   const save = useMutation({

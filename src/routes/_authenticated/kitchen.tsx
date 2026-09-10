@@ -586,7 +586,7 @@ function OrderCard({
   onStatus,
 }: {
   order: LiveOrder;
-  next: string;
+  next: string | null;
   onDetails: () => void;
   onAdvance: () => void;
   onStatus: (s: string) => void;

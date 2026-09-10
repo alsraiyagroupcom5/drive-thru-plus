@@ -66,10 +66,12 @@ export function AppShell({
   children,
   header,
   hideNav,
+  branchCode,
 }: {
   children: ReactNode;
   header?: ReactNode;
   hideNav?: boolean;
+  branchCode?: string | null | undefined;
 }) {
   const { t } = useI18n();
   const { count } = useCart();
@@ -98,7 +100,7 @@ export function AppShell({
                 <li key={item.to}>
                   <Link
                     to={item.to}
-                    search={{}}
+                    search={item.to === "/app" && branchCode ? { branch: branchCode } : {}}
                     className={cn(
                       "relative flex flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors",
                       active ? "text-primary" : "text-muted-foreground hover:text-foreground",

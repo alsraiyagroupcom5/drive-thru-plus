@@ -408,7 +408,7 @@ export const getOrder = createServerFn({ method: "POST" })
     let q = db
       .from("orders")
       .select(
-        "*, branches(name_en, name_ar, phone), order_items(*, order_item_modifiers(*)), order_status_history(status, created_at)",
+        "*, branches(name_en, name_ar, phone, code, address_en, address_ar, city_en, city_ar, opens_at, closes_at, logo_url, restaurants(name_en, name_ar, logo_url)), order_items(*, order_item_modifiers(*)), order_status_history(status, created_at)",
       )
       .eq("customer_id", customerId);
     if (isUuid) q = q.eq("id", data.orderId);

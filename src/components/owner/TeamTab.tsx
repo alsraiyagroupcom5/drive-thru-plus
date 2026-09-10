@@ -31,13 +31,14 @@ const ROLES: { id: Role; ar: string; en: string; canAr: string; canEn: string }[
 type Branch = Record<string, unknown>;
 
 export function TeamTab({ branches, restaurantId }: { branches: Branch[]; restaurantId?: string | null }) {
+  const rid = restaurantId ?? null;
   const { pick } = useI18n();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
 
   const team = useQuery({
     queryKey: ["owner-team", restaurantId ?? "self"],
-    queryFn: () => ownerTeam({ data: { restaurantId } }),
+    queryFn: () => ownerTeam({ data: { restaurantId: rid } }),
   });
   const refresh = () => qc.invalidateQueries({ queryKey: ["owner-team"] });
 
@@ -48,7 +49,7 @@ export function TeamTab({ branches, restaurantId }: { branches: Branch[]; restau
 
   const access = useMutation({
     mutationFn: (v: { userId: string; role: Role; branchId: string }) =>
-      setTeamMemberAccess({ data: { ...v, restaurantId } }),
+      setTeamMemberAccess({ data: { ...v, restaurantId: rid } }),
     onSuccess: () => {
       toast.success(pick("تم تحديث الصلاحية", "Access updated"));
       refresh();
@@ -57,13 +58,13 @@ export function TeamTab({ branches, restaurantId }: { branches: Branch[]; restau
   });
 
   const password = useMutation({
-    mutationFn: (v: { userId: string; password: string }) => setTeamMemberPassword({ data: { ...v, restaurantId } }),
+    mutationFn: (v: { userId: string; password: string }) => setTeamMemberPassword({ data: { ...v, restaurantId: rid } }),
     onSuccess: () => toast.success(pick("تم تغيير كلمة المرور", "Password updated")),
     onError: (e: Error) => toast.error(e.message),
   });
 
   const remove = useMutation({
-    mutationFn: (v: { userId: string }) => removeTeamMember({ data: { ...v, restaurantId } }),
+    mutationFn: (v: { userId: string }) => removeTeamMember({ data: { ...v, restaurantId: rid } }),
     onSuccess: () => {
       toast.success(pick("تم حذف الحساب", "Account removed"));
       refresh();
@@ -92,7 +93,7 @@ export function TeamTab({ branches, restaurantId }: { branches: Branch[]; restau
       {creating ? (
         <NewMemberForm
           branches={branches}
-          restaurantId={restaurantId}
+          restaurantId={rid}
           onDone={() => {
             setCreating(false);
             refresh();
@@ -187,11 +188,12 @@ function NewMemberForm({
   onCancel,
 }: {
   branches: Branch[];
-  restaurantId?: string | null;
+  restaurantId: string | null;
   onDone: () => void;
   onCancel: () => void;
 }) {
   const { pick } = useI18n();
+  const rid = restaurantId;
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -201,7 +203,7 @@ function NewMemberForm({
   });
 
   const create = useMutation({
-    mutationFn: () => createTeamMember({ data: { ...form, restaurantId } }),
+    mutationFn: () => createTeamMember({ data: { ...form, restaurantId: rid } }),
     onSuccess: () => {
       toast.success(pick("تم إنشاء الحساب", "Account created"));
       onDone();

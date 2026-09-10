@@ -347,10 +347,10 @@ function MenuTab({
                 <div className="min-w-0">
                   <p className="font-semibold">{pick(p["name_ar"] as string, p["name_en"] as string)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {hasDiscount(p) ? (
+                    {hasDiscount(p as never) ? (
                       <>
                         <span className="line-through">{money(price, lang)}</span>{" "}
-                        <span className="font-bold text-primary">{money(effectivePrice(p), lang)}</span>
+                        <span className="font-bold text-primary">{money(effectivePrice(p as never), lang)}</span>
                       </>
                     ) : (
                       money(price, lang)

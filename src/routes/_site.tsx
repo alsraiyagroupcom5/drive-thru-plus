@@ -1,8 +1,10 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
+import { siteContentQuery } from "@/lib/site-content";
 import { SiteFooter, SiteHeader } from "@/components/marketing/SiteChrome";
 
 export const Route = createFileRoute("/_site")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
   component: MarketingLayout,
 });
 

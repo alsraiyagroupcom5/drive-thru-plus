@@ -49,7 +49,7 @@ function Landing() {
   const { branchId, setBranchId } = useCart();
   const { session, ready } = useCustomerAuth();
   const navigate = useNavigate();
-  const [selected, setSelected] = useState<Product | null>(null);
+  const [customizing, setCustomizing] = useState<Product | null>(null);
 
   const branches = useQuery(branchesQuery);
   const products = useQuery(productsQuery);
@@ -243,7 +243,7 @@ function Landing() {
           {products.isLoading
             ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)
             : featured.map((p) => (
-                <ProductCard key={p.id} product={p} onSelect={setSelected} />
+                <ProductCard key={p.id} product={p} onSelect={setCustomizing} />
               ))}
         </div>
       </section>
@@ -253,7 +253,7 @@ function Landing() {
           <h2 className="mb-3 font-display text-lg font-semibold">{t("new")}</h2>
           <div className="space-y-3">
             {fresh.map((p) => (
-              <ProductCard key={p.id} product={p} onSelect={setSelected} />
+              <ProductCard key={p.id} product={p} onSelect={setCustomizing} />
             ))}
           </div>
         </section>
@@ -268,7 +268,7 @@ function Landing() {
         </Link>
       </p>
 
-      <ProductCustomizer productId={selected?.id ?? null} onClose={() => setSelected(null)} />
+      <ProductCustomizer productId={customizing?.id ?? null} onClose={() => setCustomizing(null)} />
     </AppShell>
   );
 }

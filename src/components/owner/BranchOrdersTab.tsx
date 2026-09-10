@@ -9,6 +9,7 @@ import {
   MapPin,
   Navigation,
   PackageCheck,
+  RotateCcw,
   Store,
   Timer,
   Wallet,
@@ -19,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NEXT_STATUSES, orderControlSettings, updateOrderStatus } from "@/lib/owner.functions";
+import { NEXT_STATUSES, orderControlSettings, resetOrder, updateOrderStatus } from "@/lib/owner.functions";
 import {
   Select,
   SelectContent,
@@ -230,9 +231,23 @@ function OrderStatusControl({ order }: { order: Row }) {
   });
 
 
-  if (!settings.data?.canChangeStatus) return null;
-  const options = NEXT_STATUSES[current] ?? [];
-  if (!options.length) return null;
+  const resetMutation = useMutation({
+    mutationFn: () => resetOrder({ data: { orderId: order["id"] as string } }),
+    onSuccess: () => {
+      setCurrent("RECEIVED");
+      refreshAll();
+      toast.success(pick("تمت إعادة ضبط الطلب كطلب جديد", "Order reset as a new order"));
+    },
+    onError: () => {
+      refreshAll();
+      toast.error(pick("تعذّر إعادة ضبط الطلب", "Could not reset the order"));
+    },
+  });
+
+  const canReset = settings.data?.isSuperAdmin === true;
+  if (!settings.data?.canChangeStatus && !canReset) return null;
+  const options = settings.data?.canChangeStatus ? (NEXT_STATUSES[current] ?? []) : [];
+  if (!options.length && !canReset) return null;
 
   return (
     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
@@ -245,6 +260,7 @@ function OrderStatusControl({ order }: { order: Row }) {
             {pick("اختر الحالة التالية للطلب", "Choose the next status for this order")}
           </p>
         </div>
+        {options.length ? (
         <Select
           key={`${order["id"] as string}-${current}`}
           value={current}
@@ -284,7 +300,27 @@ function OrderStatusControl({ order }: { order: Row }) {
             ))}
           </SelectContent>
         </Select>
+        ) : null}
       </div>
+      {canReset ? (
+        <div className="mt-3 flex flex-col gap-2 border-t border-primary/15 pt-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            {pick(
+              "إعادة ضبط الطلب كأنه تم استلامه الآن",
+              "Reset this order as if it was just placed",
+            )}
+          </p>
+          <button
+            type="button"
+            disabled={resetMutation.isPending}
+            onClick={() => resetMutation.mutate()}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-primary/30 bg-card px-4 text-xs font-bold text-primary transition hover:bg-primary/10 disabled:opacity-60"
+          >
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+            {pick("إعادة ضبط الطلب", "Reset order")}
+          </button>
+        </div>
+      ) : null}
       {mutation.isError ? (
         <p className="mt-3 text-[11px] font-semibold text-destructive">
           {pick("تعذر تحديث الحالة", "Could not update the status")}

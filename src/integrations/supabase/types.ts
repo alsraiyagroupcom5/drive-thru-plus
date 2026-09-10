@@ -993,6 +993,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_reset_order: { Args: { _order_id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

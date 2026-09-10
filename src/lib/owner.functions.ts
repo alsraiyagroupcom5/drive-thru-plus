@@ -701,6 +701,41 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     return { ok: true, status: data.status };
   });
 
+/** Admin-only: put an order back to "just placed" (RECEIVED, timers restarted). */
+export const resetOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { orderId: string }) => {
+    if (!d?.orderId) throw new Error("INVALID_INPUT");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const superAdmin = await isSuperAdmin(context.supabase, context.userId);
+    if (!superAdmin) throw new Error("FORBIDDEN");
+    const db = await admin();
+
+    const { data: order } = await db
+      .from("orders")
+      .select("id, status, order_number")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!order) throw new Error("ORDER_NOT_FOUND");
+
+    const { error } = await (db as unknown as {
+      rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ error: { message: string } | null }>;
+    }).rpc("admin_reset_order", { _order_id: order.id });
+    if (error) throw new Error(error.message);
+
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "ORDER_RESET",
+      entity: "orders",
+      entity_id: order.id,
+      details: { from: order.status, to: "RECEIVED", order_number: order.order_number },
+    });
+
+    return { ok: true, status: "RECEIVED" };
+  });
+
 /* ------------------------------ branding ------------------------------ */
 
 const LOGO_TYPES: Record<string, string> = {

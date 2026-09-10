@@ -451,6 +451,11 @@ export function LatestOrdersGrid({
   const { pick, lang } = useI18n();
   const [detail, setDetail] = useState<Row | null>(null);
   const rows = orders.slice(0, limit);
+  // Keep the open dialog on live data so status changes from any window
+  // (realtime refetch) update the dropdown immediately.
+  const liveDetail = detail
+    ? (orders.find((o) => o["id"] === detail["id"]) ?? detail)
+    : null;
 
   const branchName = (order: Row): string => {
     const branch = branches.find((item) => item["id"] === order["branch_id"]);
@@ -529,7 +534,7 @@ export function LatestOrdersGrid({
         </div>
       ) : null}
 
-      <OrderDetail order={detail} branchName={detail ? branchName(detail) : ""} onClose={() => setDetail(null)} />
+      <OrderDetail order={liveDetail} branchName={liveDetail ? branchName(liveDetail) : ""} onClose={() => setDetail(null)} />
     </section>
   );
 }

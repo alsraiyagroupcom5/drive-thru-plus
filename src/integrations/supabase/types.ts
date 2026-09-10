@@ -87,7 +87,11 @@ export type Database = {
         Row: {
           address_ar: string | null
           address_en: string | null
+          approach_radius_m: number
+          arrival_radius_m: number
+          auto_arrival: boolean
           avg_prep_minutes: number
+          avg_speed_kmh: number
           busy_level: number
           city_ar: string | null
           city_en: string | null
@@ -98,17 +102,23 @@ export type Database = {
           is_open: boolean
           lat: number | null
           lng: number | null
+          location_ping_seconds: number
           maps_url: string | null
           name_ar: string
           name_en: string
           opens_at: string
           phone: string | null
           restaurant_id: string
+          tracking_enabled: boolean
         }
         Insert: {
           address_ar?: string | null
           address_en?: string | null
+          approach_radius_m?: number
+          arrival_radius_m?: number
+          auto_arrival?: boolean
           avg_prep_minutes?: number
+          avg_speed_kmh?: number
           busy_level?: number
           city_ar?: string | null
           city_en?: string | null
@@ -119,17 +129,23 @@ export type Database = {
           is_open?: boolean
           lat?: number | null
           lng?: number | null
+          location_ping_seconds?: number
           maps_url?: string | null
           name_ar: string
           name_en: string
           opens_at?: string
           phone?: string | null
           restaurant_id: string
+          tracking_enabled?: boolean
         }
         Update: {
           address_ar?: string | null
           address_en?: string | null
+          approach_radius_m?: number
+          arrival_radius_m?: number
+          auto_arrival?: boolean
           avg_prep_minutes?: number
+          avg_speed_kmh?: number
           busy_level?: number
           city_ar?: string | null
           city_en?: string | null
@@ -140,12 +156,14 @@ export type Database = {
           is_open?: boolean
           lat?: number | null
           lng?: number | null
+          location_ping_seconds?: number
           maps_url?: string | null
           name_ar?: string
           name_en?: string
           opens_at?: string
           phone?: string | null
           restaurant_id?: string
+          tracking_enabled?: boolean
         }
         Relationships: [
           {

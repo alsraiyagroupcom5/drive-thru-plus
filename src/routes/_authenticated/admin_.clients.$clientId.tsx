@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   ClipboardList,
+  Inbox,
   LayoutDashboard,
   MapPin,
   Palette,
@@ -124,8 +125,8 @@ function ClientWorkspace() {
       title={name}
       subtitle={pick("مساحة إدارة العميل", "Client workspace")}
       items={navItems}
-      active={tab}
-      onSelect={(id) => setTab(id as Tab)}
+      active="restaurants"
+      onSelect={(id) => void navigate({ to: "/admin", search: { tab: id } })}
       search={search}
       onSearchChange={setSearch}
       searchPlaceholder={pick("ابحث في الأصناف…", "Search items…")}
@@ -133,25 +134,20 @@ function ClientWorkspace() {
       backLabel={pick("كل العملاء", "All clients")}
       secondaryTitle={name}
       secondary={
-        <nav className="flex gap-2 overflow-x-auto xl:flex-col xl:gap-1 xl:overflow-visible">
+        <nav className="flex gap-2">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id as Tab)}
               className={cn(
-                "flex shrink-0 items-center gap-2 rounded-2xl px-3 py-2.5 text-start text-xs font-semibold transition xl:shrink",
+                "flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold transition",
                 tab === t.id
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
               )}
             >
-              <t.icon className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="truncate">
-                {pick(t.ar, t.en)}
-                <span className="hidden text-[10px] font-medium text-muted-foreground xl:block">
-                  {pick(t.hintAr, t.hintEn)}
-                </span>
-              </span>
+              <t.icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="truncate">{pick(t.ar, t.en)}</span>
             </button>
           ))}
         </nav>

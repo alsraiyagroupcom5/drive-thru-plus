@@ -23,12 +23,12 @@ export const Route = createFileRoute("/app")({
       {
         name: "description",
         content:
-          "Order specialty coffee, gelato and desserts ahead and collect in minutes at Duhail Night Market, Aspire Downtown or Lusail Marina. Open daily 7AM–12AM.",
+          "Order ahead and collect in minutes from your nearest QR-Spring restaurant. Open daily 7AM–12AM.",
       },
       { property: "og:title", content: "QR-Spring — Smart drive-thru ordering" },
       {
         property: "og:description",
-        content: "Order ahead and collect in minutes across three Doha locations.",
+        content: "Order ahead and collect in minutes from your nearest QR-Spring restaurant.",
       },
     ],
   }),

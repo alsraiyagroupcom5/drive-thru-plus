@@ -28,6 +28,7 @@ export function ProductCard({
   );
 
   const body = (
+    <>
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-elevated">
         <img
           src={foodImage(product.image_url)}
@@ -76,6 +77,7 @@ export function ProductCard({
           </span>
         )}
       </div>
+    </>
   );
 
   if (onSelect) {

@@ -6,6 +6,7 @@ import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users, Ra
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
+import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { Modal } from "@/components/console/Modal";
 

@@ -25,6 +25,7 @@ import { Modal } from "@/components/console/Modal";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
+import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { effectivePrice, hasDiscount, todayISO } from "@/lib/pricing";

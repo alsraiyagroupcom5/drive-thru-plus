@@ -538,7 +538,7 @@ export const adminOrdersFeed = createServerFn({ method: "POST" })
       db
         .from("orders")
         .select(
-          "id, order_number, pickup_code, status, payment_status, payment_method, subtotal, discount, tax, total, notes, target_prep_minutes, created_at, ready_at, completed_at, customer_name, customer_phone, customer_arrived, arrived_at, distance_km, eta_minutes, location_updated_at, location_denied, branch_id, branches(name_en, name_ar), order_items(id, name_en, name_ar, quantity, unit_price, line_total)",
+          "id, short_code, order_number, pickup_code, status, payment_status, payment_method, subtotal, discount, tax, total, notes, target_prep_minutes, created_at, ready_at, completed_at, customer_name, customer_phone, customer_arrived, arrived_at, distance_km, eta_minutes, location_updated_at, location_denied, branch_id, branches(name_en, name_ar), order_items(id, name_en, name_ar, quantity, unit_price, line_total)",
         )
         .order("created_at", { ascending: false })
         .limit(150),

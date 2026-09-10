@@ -164,6 +164,41 @@ function TimingLine({ order }: { order: Row }) {
   );
 }
 
+/** Copy / open icons for the customer tracking page. Uses the short code when available. */
+function CustomerPageActions({ orderId, shortCode }: { orderId: string; shortCode?: string | null | undefined }) {
+  const { pick } = useI18n();
+  const code = shortCode?.trim() || orderId;
+  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/order/${code}`;
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => {
+          void navigator.clipboard
+            .writeText(url)
+            .then(() => toast.success(pick("تم نسخ رابط الطلب", "Order link copied")))
+            .catch(() => toast.error(pick("تعذّر النسخ", "Copy failed")));
+        }}
+        title={pick("نسخ رابط صفحة العميل", "Copy customer page link")}
+        aria-label={pick("نسخ رابط صفحة العميل", "Copy customer page link")}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/30 bg-card text-primary transition hover:bg-primary/10"
+      >
+        <Copy className="h-3.5 w-3.5" aria-hidden />
+      </button>
+      <a
+        href={`/order/${code}`}
+        target="_blank"
+        rel="noreferrer"
+        title={pick("فتح صفحة العميل", "Open customer page")}
+        aria-label={pick("فتح صفحة العميل في تبويب جديد", "Open customer page in a new tab")}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition hover:opacity-90"
+      >
+        <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+      </a>
+    </div>
+  );
+}
+
 /**
  * Status override control. Visible only when the platform (admin) or the
  * restaurant (owner) has the feature enabled; the server re-checks it too.
@@ -453,45 +488,6 @@ export function OrderDetail({
       <div className="space-y-5">
         <OrderStatusControl order={order} />
 
-        {/* Customer live-tracking page: open in a new tab or copy the link. */}
-        <div className="flex items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-elevated p-3">
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              {pick("صفحة العميل", "Customer page")}
-            </p>
-            <p className="truncate text-xs font-semibold text-primary" dir="ltr">
-              /order/{String(order["id"])}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                const url = `${window.location.origin}/order/${String(order["id"])}`;
-                void navigator.clipboard
-                  .writeText(url)
-                  .then(() => toast.success(pick("تم نسخ رابط الطلب", "Order link copied")))
-                  .catch(() => toast.error(pick("تعذّر النسخ", "Copy failed")));
-              }}
-              title={pick("نسخ الرابط", "Copy link")}
-              aria-label={pick("نسخ رابط صفحة العميل", "Copy customer page link")}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-card text-primary transition hover:bg-primary/10"
-            >
-              <Copy className="h-4 w-4" aria-hidden />
-            </button>
-            <a
-              href={`/order/${String(order["id"])}`}
-              target="_blank"
-              rel="noreferrer"
-              title={pick("فتح صفحة العميل", "Open customer page")}
-              aria-label={pick("فتح صفحة العميل في تبويب جديد", "Open customer page in a new tab")}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lift transition hover:opacity-90"
-            >
-              <ExternalLink className="h-4 w-4" aria-hidden />
-            </a>
-          </div>
-        </div>
-
         {/* process */}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -642,12 +638,15 @@ export function LatestOrdersGrid({
               </div>
 
               <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
-                <button
-                  onClick={() => setDetail(order)}
-                  className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
-                >
-                  {pick("التفاصيل", "Details")}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setDetail(order)}
+                    className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                  >
+                    {pick("التفاصيل", "Details")}
+                  </button>
+                  <CustomerPageActions orderId={order["id"] as string} shortCode={order["short_code"] as string | undefined} />
+                </div>
                 <span className="font-display text-lg font-bold text-primary" dir="ltr">{money(Number(order["total"]), lang)}</span>
               </div>
             </article>
@@ -1003,12 +1002,15 @@ export function BranchOrdersTab({
                 </div>
 
                 <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
-                  <button
-                    onClick={() => setDetail(o)}
-                    className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
-                  >
-                    {pick("التفاصيل", "Details")}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setDetail(o)}
+                      className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                    >
+                      {pick("التفاصيل", "Details")}
+                    </button>
+                    <CustomerPageActions orderId={o["id"] as string} shortCode={o["short_code"] as string | undefined} />
+                  </div>
                   <span className="font-display text-lg font-bold text-primary" dir="ltr">
                     {money(Number(o["total"]), lang)}
                   </span>

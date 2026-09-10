@@ -36,3 +36,32 @@ export const claimStaffRole = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+/**
+ * Staff read-only view of a customer order tracking page.
+ * Accepts either the order UUID or its short public code.
+ */
+export const getOrderForStaff = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { orderId: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const roleClient = context.supabase as {
+      rpc: (fn: "is_staff", args: { _user_id: string }) => PromiseLike<{ data: unknown }>;
+    };
+    const { data: staff } = await roleClient.rpc("is_staff", { _user_id: context.userId });
+    if (staff !== true) throw new Error("FORBIDDEN");
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.orderId);
+    let q = supabaseAdmin
+      .from("orders")
+      .select(
+        "*, branches(name_en, name_ar, phone), order_items(*, order_item_modifiers(*)), order_status_history(status, created_at)",
+      )
+      .eq("restaurant_id", RESTAURANT_ID);
+    if (isUuid) q = q.eq("id", data.orderId);
+    else q = q.eq("short_code", data.orderId.toUpperCase());
+    const { data: order, error } = await q.maybeSingle();
+    if (error || !order) throw new Error("ORDER_NOT_FOUND");
+    return order;
+  });

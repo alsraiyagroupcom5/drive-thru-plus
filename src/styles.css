@@ -45,6 +45,11 @@
   --color-console-rail: var(--console-rail);
   --color-console-rail-foreground: var(--console-rail-foreground);
   --color-console-rail-muted: var(--console-rail-muted);
+  --color-site-ivory: var(--site-ivory);
+  --color-site-sand: var(--site-sand);
+  --color-site-teal: var(--site-teal);
+  --color-site-ink: var(--site-ink);
+  --color-site-ink-foreground: var(--site-ink-foreground);
   --font-display: "Outfit", "Tajawal", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Tajawal", "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
@@ -81,6 +86,11 @@
   --console-rail: oklch(0.335 0.095 268);
   --console-rail-foreground: oklch(0.985 0.004 280);
   --console-rail-muted: oklch(0.78 0.045 278);
+  --site-ivory: oklch(0.985 0.004 95);
+  --site-sand: oklch(0.945 0.008 90);
+  --site-teal: oklch(0.505 0.083 205);
+  --site-ink: oklch(0.185 0.026 258);
+  --site-ink-foreground: oklch(0.985 0.004 95);
   --gradient-brass: linear-gradient(135deg, var(--primary), var(--primary-glow));
   --shadow-soft: 0 1px 2px oklch(0.4 0.03 250 / 0.06), 0 12px 30px -20px oklch(0.4 0.03 250 / 0.3);
   --shadow-lift: 0 22px 50px -26px oklch(0.45 0.06 250 / 0.45);
@@ -117,6 +127,11 @@
   --console-rail: oklch(0.245 0.035 268);
   --console-rail-foreground: oklch(0.975 0.004 280);
   --console-rail-muted: oklch(0.72 0.025 275);
+  --site-ivory: oklch(0.185 0.014 252);
+  --site-sand: oklch(0.232 0.016 252);
+  --site-teal: oklch(0.72 0.085 205);
+  --site-ink: oklch(0.145 0.014 252);
+  --site-ink-foreground: oklch(0.965 0.004 240);
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.4), 0 12px 32px -18px oklch(0 0 0 / 0.7);
   --shadow-lift: 0 24px 60px -28px oklch(0 0 0 / 0.85);
 }

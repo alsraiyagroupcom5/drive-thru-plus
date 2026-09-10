@@ -210,8 +210,9 @@ function OrderStatusControl({ order }: { order: Row }) {
     },
     onError: (e: unknown) => {
       const msg = (e as { message?: string })?.message ?? "";
-      // The card may hold a stale status (another screen already moved the
-      // order), so refresh and explain instead of crashing.
+      // Roll back the optimistic move; the card may hold a stale status
+      // (another screen already moved the order), so refresh and explain.
+      setCurrent(status);
       refreshAll();
       toast.error(
         msg.includes("INVALID_TRANSITION")
@@ -230,7 +231,7 @@ function OrderStatusControl({ order }: { order: Row }) {
 
 
   if (!settings.data?.canChangeStatus) return null;
-  const options = NEXT_STATUSES[status] ?? [];
+  const options = NEXT_STATUSES[current] ?? [];
   if (!options.length) return null;
 
   return (
@@ -245,7 +246,8 @@ function OrderStatusControl({ order }: { order: Row }) {
           </p>
         </div>
         <Select
-          value={status}
+          key={`${order["id"] as string}-${current}`}
+          value={current}
           disabled={mutation.isPending}
           onValueChange={(value) => mutation.mutate(value)}
         >
@@ -255,13 +257,22 @@ function OrderStatusControl({ order }: { order: Row }) {
               lang === "ar" && "text-right",
             )}
           >
-            <SelectValue placeholder={statusLabel(status, pick)} />
+            <SelectValue placeholder={statusLabel(current, pick)} />
           </SelectTrigger>
           <SelectContent
             className="rounded-2xl border-primary/20 bg-card p-1.5 shadow-lift"
             position="popper"
             sideOffset={6}
           >
+            {/* The actual current status is always shown (disabled) so the
+                dropdown value reflects the order's real state. */}
+            <SelectItem
+              value={current}
+              disabled
+              className="rounded-xl text-xs font-bold text-primary opacity-100"
+            >
+              {statusLabel(current, pick)} · {pick("الحالية", "Current")}
+            </SelectItem>
             {options.map((s) => (
               <SelectItem
                 key={s}

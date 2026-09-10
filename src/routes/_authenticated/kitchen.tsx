@@ -713,17 +713,21 @@ function OrderCard({
   onDetails,
   onAdvance,
   onStatus,
+  onCancel,
 }: {
   order: LiveOrder;
   next: string | null;
   onDetails: () => void;
   onAdvance: () => void;
   onStatus: (s: string) => void;
+  onCancel: () => void;
 }) {
   const { t, pick, lang } = useI18n();
   const age = minutesSince(o.created_at);
   const target = o.target_prep_minutes ?? 8;
   const urgency = age >= target ? "late" : age >= target - 2 ? "soon" : "ok";
+  const stageNext = nextStage(o.status);
+
 
   return (
     <li

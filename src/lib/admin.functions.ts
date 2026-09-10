@@ -434,6 +434,12 @@ export const listClientCards = createServerFn({ method: "POST" })
         team: team.length,
         orders24h: day.length,
         revenue24h: day.reduce((s, o) => s + Number(o.total || 0), 0),
+        activeOrders: day.filter((o) =>
+          ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "ARRIVING"].includes(o.status as string),
+        ).length,
+        readyOrders: day.filter((o) => o.status === "READY").length,
+        completedOrders: day.filter((o) => ["COMPLETED", "PICKED_UP"].includes(o.status as string)).length,
+        cancelledOrders: day.filter((o) => o.status === "CANCELLED").length,
       };
     });
   });

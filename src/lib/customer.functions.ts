@@ -269,6 +269,18 @@ export const placeOrder = createServerFn({ method: "POST" })
         ).data
       : null;
 
+    const { haversineKm, driveMinutes, ARRIVAL_RADIUS_KM } = await import("@/lib/geo");
+    const hasFix =
+      typeof data.lat === "number" &&
+      typeof data.lng === "number" &&
+      branch.lat != null &&
+      branch.lng != null;
+    const distanceKm = hasFix
+      ? haversineKm(data.lat as number, data.lng as number, Number(branch.lat), Number(branch.lng))
+      : null;
+    const etaMinutes = distanceKm == null ? null : driveMinutes(distanceKm);
+    const arrivedNow = distanceKm != null && distanceKm <= ARRIVAL_RADIUS_KM;
+
     const { data: seq } = await db.rpc("next_order_number" as never).single();
     const orderNumber =
       (seq as unknown as string) ?? `A${Math.floor(1000 + Math.random() * 9000)}`;

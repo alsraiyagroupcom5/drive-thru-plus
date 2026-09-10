@@ -76,6 +76,30 @@ export function ProductCard({
           </span>
         )}
       </div>
+  );
+
+  if (onSelect) {
+    return (
+      <button
+        type="button"
+        onClick={() => available && onSelect(product)}
+        disabled={!available}
+        aria-label={name}
+        className={className}
+      >
+        {body}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      to="/product/$productId"
+      params={{ productId: product.id }}
+      disabled={!available}
+      className={className}
+    >
+      {body}
     </Link>
   );
 }

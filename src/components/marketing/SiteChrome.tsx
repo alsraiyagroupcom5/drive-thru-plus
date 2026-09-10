@@ -185,7 +185,7 @@ export function SiteFooter() {
           </p>
           <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
             {site.nav.map((n) => (
-              <Link key={n.to} to={n.to} className="hover:text-foreground">
+              <SiteLink key={n.to} to={n.to} className="hover:text-foreground">
                 {pick(n.label.ar, n.label.en)}
               </SiteLink>
             ))}

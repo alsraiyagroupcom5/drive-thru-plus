@@ -134,6 +134,7 @@ const dict = {
   liveOrders: { ar: "الطلبات المباشرة", en: "Live orders" },
   required: { ar: "مطلوب", en: "Required" },
   orderDetails: { ar: "تفاصيل الطلب", en: "Order details" },
+  details: { ar: "التفاصيل", en: "Details" },
   paymentDetails: { ar: "الدفع", en: "Payment" },
   timeSinceOrder: { ar: "منذ الطلب", en: "Since ordered" },
   waitingAtBranch: { ar: "ينتظر منذ", en: "Waiting at branch" },

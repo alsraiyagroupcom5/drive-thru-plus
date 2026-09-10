@@ -178,16 +178,24 @@ function KitchenPage() {
                           {o.notes}
                         </p>
                       ) : null}
-                      <button
-                        onClick={() => advance(o, col.next)}
-                        className="mt-3 w-full rounded-full bg-primary py-2.5 text-sm font-bold text-primary-foreground"
-                      >
-                        {col.next === "PREPARING"
-                          ? t("preparing")
-                          : col.next === "READY"
-                            ? t("ready")
-                            : t("pickedUp")}
-                      </button>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => setDetail(o)}
+                          className="rounded-full border border-border bg-background py-2.5 text-sm font-bold hover:bg-accent"
+                        >
+                          {t("details")}
+                        </button>
+                        <button
+                          onClick={() => advance(o, col.next)}
+                          className="rounded-full bg-primary py-2.5 text-sm font-bold text-primary-foreground"
+                        >
+                          {col.next === "PREPARING"
+                            ? t("preparing")
+                            : col.next === "READY"
+                              ? t("ready")
+                              : t("pickedUp")}
+                        </button>
+                      </div>
                     </li>
                   );
                 })}

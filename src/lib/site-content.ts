@@ -15,6 +15,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getSiteContent } from "@/lib/site.functions";
+import slideDriveThru from "@/assets/slide-drivethru.jpg";
+import slideKitchen from "@/assets/slide-kitchen.jpg";
+import slideScan from "@/assets/slide-scan.jpg";
 
 export type T = { ar: string; en: string };
 

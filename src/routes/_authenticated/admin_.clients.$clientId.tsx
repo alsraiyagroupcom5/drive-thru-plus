@@ -19,6 +19,7 @@ import {
   UtensilsCrossed,
   Users,
   Radar,
+  Image as ImageIcon,
 } from "lucide-react";
 import { ConsoleShell, StatusChip } from "@/components/console/ConsoleShell";
 import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
@@ -26,6 +27,7 @@ import { Modal } from "@/components/console/Modal";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
+import { BrandingTab } from "@/components/owner/BrandingTab";
 import { BranchOrdersTab, LatestOrdersGrid } from "@/components/owner/BranchOrdersTab";
 import { useI18n, money } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -61,7 +63,7 @@ const input =
   "h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2";
 
 type Row = Record<string, unknown>;
-type Tab = "overview" | "menu" | "design" | "branches" | "team" | "contact" | "orders" | "settings";
+type Tab = "overview" | "menu" | "design" | "branches" | "team" | "contact" | "branding" | "orders" | "settings";
 
 const TABS = [
   { id: "overview", ar: "نظرة عامة", en: "Overview", hintAr: "المؤشرات", hintEn: "Key numbers", icon: LayoutDashboard },
@@ -69,6 +71,7 @@ const TABS = [
   { id: "design", ar: "شكل المنيو", en: "Menu layout", hintAr: "الأقسام والترتيب", hintEn: "Sections & order", icon: Palette },
   { id: "branches", ar: "الفروع", en: "Branches", hintAr: "المواقع والأوقات", hintEn: "Locations & hours", icon: MapPin },
   { id: "team", ar: "الفريق", en: "Staff", hintAr: "الحسابات والصلاحيات", hintEn: "Accounts & access", icon: Users },
+  { id: "branding", ar: "الشعار", en: "Branding", hintAr: "شعار المطعم والفروع", hintEn: "Restaurant & branch logos", icon: ImageIcon },
   { id: "contact", ar: "بيانات التواصل", en: "Contact", hintAr: "اسم المطعم والهواتف", hintEn: "Name & phones", icon: Phone },
   { id: "settings", ar: "الإعدادات", en: "Settings", hintAr: "التتبع والمواقع", hintEn: "Tracking & locations", icon: Radar },
   { id: "orders", ar: "الطلبات", en: "Orders", hintAr: "آخر الطلبات", hintEn: "Latest orders", icon: ClipboardList },
@@ -234,6 +237,15 @@ function ClientWorkspace() {
 
       {tab === "contact" && summary.data ? (
         <ContactTab
+          restaurant={summary.data.restaurant as Row}
+          branches={branches}
+          onChanged={refresh}
+        />
+      ) : null}
+
+      {tab === "branding" && summary.data ? (
+        <BrandingTab
+          restaurantId={clientId}
           restaurant={summary.data.restaurant as Row}
           branches={branches}
           onChanged={refresh}

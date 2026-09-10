@@ -57,6 +57,13 @@
       "when": 1788971602938,
       "tag": "0007_fix_order_status_transitions",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789024652476,
+      "tag": "0008_harden_trigger_function_grants",
+      "breakpoints": true
     }
   ]
 }

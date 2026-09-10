@@ -484,7 +484,7 @@ function MenuTab({
           categories={categories}
           branches={branches}
           product={editing}
-          initialBranchIds={editing ? branchIdsOf(editing["id"] as string) : [selectedBranchId]}
+          initialBranchIds={editing ? branchIdsOf(editing["id"] as string) : [selectedBranch["id"] as string]}
           onDone={() => {
             setCreating(false);
             setEditing(null);

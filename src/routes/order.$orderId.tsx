@@ -245,7 +245,7 @@ function TrackPage() {
           </div>
         </div>
 
-        <ol className="relative px-5 py-5">
+        <ol className="flex items-start gap-1 px-4 py-6 sm:gap-2 sm:px-5">
           {STEPS.map((step, i) => {
             const done = !cancelled && i < activeIndex;
             const current = !cancelled && i === activeIndex;
@@ -254,21 +254,26 @@ function TrackPage() {
             const Icon = [Receipt, ChefHat, PackageCheck, Check][i]!;
             const label = [t("received"), t("preparing"), t("ready"), t("pickedUp")][i]!;
             return (
-              <li key={step} className="relative flex items-center gap-4 pb-6 last:pb-0">
+              <li key={step} className="relative flex min-w-0 flex-1 flex-col items-center text-center">
                 {!last && (
                   <span
                     aria-hidden
-                    className="absolute start-[21px] top-11 h-[calc(100%-2.25rem)] w-0.5 rounded-full bg-elevated"
+                    dir="ltr"
+                    className={cn(
+                      "absolute top-[21px] h-0.5 overflow-hidden rounded-full bg-elevated",
+                      lang === "ar" ? "right-1/2 left-[-50%]" : "left-1/2 right-[-50%]",
+                    )}
                   >
                     <span
                       className={cn(
-                        "block w-full rounded-full bg-[image:var(--gradient-brass)] transition-all duration-700 ease-out",
-                        done || current ? "h-full" : "h-0",
+                        "block h-full rounded-full bg-[image:var(--gradient-brass)] transition-all duration-700 ease-out",
+                        done ? "w-full" : current ? "w-1/2" : "w-0",
+                        lang === "ar" && "ms-auto",
                       )}
                     />
                   </span>
                 )}
-                <span className="relative grid shrink-0 place-items-center">
+                <span className="relative grid place-items-center">
                   {current && (
                     <span
                       aria-hidden
@@ -288,27 +293,23 @@ function TrackPage() {
                     {done ? <Check className="h-5 w-5" aria-hidden /> : <Icon className="h-5 w-5" aria-hidden />}
                   </span>
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p
-                    className={cn(
-                      "font-display text-sm font-bold transition-colors",
-                      upcoming ? "text-muted-foreground/60" : "text-foreground",
-                    )}
-                  >
-                    {label}
-                  </p>
-                  {current && (
-                    <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" aria-hidden />
-                      {pick("الآن", "Now")}
-                    </span>
+                <p
+                  className={cn(
+                    "mt-2 text-[11px] font-bold leading-tight transition-colors sm:text-xs",
+                    upcoming ? "text-muted-foreground/60" : "text-foreground",
                   )}
-                  {done && (
-                    <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">
-                      {pick("تم", "Done")}
-                    </p>
-                  )}
-                </div>
+                >
+                  {label}
+                </p>
+                {current && (
+                  <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" aria-hidden />
+                    {pick("الآن", "Now")}
+                  </span>
+                )}
+                {done && (
+                  <p className="mt-1 text-[10px] font-semibold text-muted-foreground">{pick("تم", "Done")}</p>
+                )}
               </li>
             );
           })}

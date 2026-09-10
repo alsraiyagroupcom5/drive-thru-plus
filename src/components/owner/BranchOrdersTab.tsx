@@ -165,7 +165,7 @@ function TimingLine({ order }: { order: Row }) {
 }
 
 /** Copy / open icons for the customer tracking page. Uses the short code when available. */
-function CustomerPageActions({ orderId, shortCode }: { orderId: string; shortCode?: string | null }) {
+function CustomerPageActions({ orderId, shortCode }: { orderId: string; shortCode?: string | null | undefined }) {
   const { pick } = useI18n();
   const code = shortCode?.trim() || orderId;
   const url = `${typeof window !== "undefined" ? window.location.origin : ""}/order/${code}`;

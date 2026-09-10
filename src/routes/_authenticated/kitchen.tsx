@@ -681,11 +681,15 @@ function OrderCard({
     <li
       className={cn(
         "group rounded-[22px] border bg-card p-3.5 shadow-sm transition hover:shadow-lift",
-        urgency === "late"
-          ? "border-destructive/60"
-          : urgency === "soon"
-            ? "border-warning/60"
-            : "border-border/60",
+        o.status === "RECEIVED"
+          ? "order-glow-new"
+          : "order-glow-progress",
+        o.status !== "RECEIVED" &&
+          (urgency === "late"
+            ? "border-destructive/60"
+            : urgency === "soon"
+              ? "border-warning/60"
+              : ""),
       )}
     >
       <div

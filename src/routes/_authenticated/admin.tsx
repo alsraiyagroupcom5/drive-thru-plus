@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowUpRight, ChevronRight, CircleDollarSign, Inbox, LayoutDashboard, MapPin, Package, Plus, ShoppingBag, Store, Users } from "lucide-react";
+import { ArrowUpRight, ChevronRight, CircleDollarSign, Inbox, LayoutDashboard, MapPin, Package, Plus, QrCode, ShoppingBag, Store, Users } from "lucide-react";
 import { Modal } from "@/components/console/Modal";
+import { ClientAccessDialog } from "@/components/console/ClientAccessDialog";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
@@ -71,6 +73,8 @@ function AdminConsole() {
     void navigate({ search: { tab: id }, replace: true });
   const [accountOpen, setAccountOpen] = useState(false);
   const [restOpen, setRestOpen] = useState(false);
+  const [accessClient, setAccessClient] = useState<{ id: string; title: string } | null>(null);
+
 
   const status = useQuery({ queryKey: ["admin-status"], queryFn: () => adminStatus() });
   const enabled = !!status.data?.isSuperAdmin;

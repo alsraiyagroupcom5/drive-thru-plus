@@ -1,7 +1,32 @@
 /** Shared geo helpers for drive-thru arrival tracking. */
 
 export const ARRIVAL_RADIUS_KM = 0.2;
-const AVG_CITY_SPEED_KMH = 32;
+export const DEFAULT_SPEED_KMH = 32;
+
+export type TrackingConfig = {
+  /** Radius, in km, where the customer counts as arrived at the branch. */
+  arrivalRadiusKm: number;
+  /** Average driving speed used for the ETA estimate. */
+  avgSpeedKmh: number;
+};
+
+export const DEFAULT_TRACKING: TrackingConfig = {
+  arrivalRadiusKm: ARRIVAL_RADIUS_KM,
+  avgSpeedKmh: DEFAULT_SPEED_KMH,
+};
+
+/** Build a config from raw branch settings columns. */
+export function trackingFromBranch(branch: {
+  arrival_radius_m?: number | null;
+  avg_speed_kmh?: number | null;
+}): TrackingConfig {
+  const radius = Number(branch.arrival_radius_m);
+  const speed = Number(branch.avg_speed_kmh);
+  return {
+    arrivalRadiusKm: Number.isFinite(radius) && radius > 0 ? radius / 1000 : ARRIVAL_RADIUS_KM,
+    avgSpeedKmh: Number.isFinite(speed) && speed > 0 ? speed : DEFAULT_SPEED_KMH,
+  };
+}
 
 export function haversineKm(
   aLat: number,
@@ -20,9 +45,9 @@ export function haversineKm(
 }
 
 /** Rough drive time in minutes for a straight-line distance. */
-export function driveMinutes(distanceKm: number): number {
-  if (distanceKm <= ARRIVAL_RADIUS_KM) return 0;
-  return Math.max(1, Math.round((distanceKm / AVG_CITY_SPEED_KMH) * 60) + 1);
+export function driveMinutes(distanceKm: number, config: TrackingConfig = DEFAULT_TRACKING): number {
+  if (distanceKm <= config.arrivalRadiusKm) return 0;
+  return Math.max(1, Math.round((distanceKm / config.avgSpeedKmh) * 60) + 1);
 }
 
 /** Always renders western digits, per project rule. */

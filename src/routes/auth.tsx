@@ -34,7 +34,7 @@ function StaffAuth() {
       ? await supabase.from("user_roles").select("role").eq("user_id", userId)
       : { data: [] };
     const list = (roles ?? []).map((r) => r.role as string);
-    if (list.includes("super_admin")) navigate({ to: "/admin" });
+    if (list.includes("super_admin")) navigate({ to: "/admin", search: { tab: undefined } });
     else if (list.includes("general_manager")) navigate({ to: "/owner" });
     else if (list.includes("kitchen")) navigate({ to: "/kitchen" });
     else navigate({ to: "/live" });
@@ -143,6 +143,7 @@ function StaffAuth() {
 
           <Link
             to="/admin"
+            search={{ tab: undefined }}
             className="block w-full text-center text-xs text-muted-foreground underline underline-offset-4"
           >
             {pick("لوحة المسؤول العام", "General admin console")}

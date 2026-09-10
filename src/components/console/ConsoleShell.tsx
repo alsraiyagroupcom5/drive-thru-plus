@@ -154,17 +154,6 @@ export function ConsoleShell({
           </div>
         ) : null}
 
-        {secondary ? (
-          <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-60 shrink-0 overflow-y-auto rounded-3xl bg-card p-4 shadow-soft xl:block">
-            {secondaryTitle ? (
-              <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                {secondaryTitle}
-              </p>
-            ) : null}
-            {secondary}
-          </aside>
-        ) : null}
-
         <div className="min-w-0 flex-1 lg:flex lg:gap-4">
           <main className="min-w-0 flex-1 rounded-none bg-card shadow-soft lg:rounded-3xl">
             <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-4 sm:px-6">
@@ -217,7 +206,14 @@ export function ConsoleShell({
             </header>
 
             {secondary ? (
-              <div className="border-b border-border px-4 py-3 sm:px-6 xl:hidden">{secondary}</div>
+              <div className="border-b border-border bg-elevated/40 px-4 py-3 sm:px-6">
+                {secondaryTitle ? (
+                  <p className="pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {secondaryTitle}
+                  </p>
+                ) : null}
+                <div className="overflow-x-auto pb-1">{secondary}</div>
+              </div>
             ) : null}
 
             <div className="px-4 py-5 sm:px-6">{children}</div>

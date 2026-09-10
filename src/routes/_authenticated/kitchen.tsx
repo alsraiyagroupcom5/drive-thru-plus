@@ -10,6 +10,7 @@ import {
   Clock,
   LogOut,
   MapPin,
+  MapPinOff,
   Navigation,
   PackageCheck,
   Phone,
@@ -456,7 +457,7 @@ function KitchenPage() {
                   {en(items.length)}
                 </span>
               </div>
-              <ul className="space-y-3">
+              <ul className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
                 {items.map((o) => (
                   <OrderCard
                     key={o.id}
@@ -473,7 +474,7 @@ function KitchenPage() {
                   />
                 ))}
                 {!items.length && (
-                  <li className="rounded-2xl border border-dashed border-border/70 py-12 text-center text-xs text-muted-foreground">
+                  <li className="col-span-full rounded-2xl border border-dashed border-border/70 py-12 text-center text-xs text-muted-foreground">
                     {pick("لا توجد طلبات", "No orders")}
                   </li>
                 )}
@@ -584,6 +585,11 @@ function KitchenPage() {
                 <p dir="ltr" className="mt-1 text-sm font-bold text-primary">
                   {formatKm(Number(detail.distance_km), lang === "ar" ? "ar" : "en")} ·{" "}
                   {detail.eta_minutes ?? "—"} {t("minutes")} {t("away")}
+                </p>
+              ) : detail.location_denied ? (
+                <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-warning-foreground">
+                  <MapPinOff className="h-4 w-4" aria-hidden />
+                  {t("customerLocationOff")}
                 </p>
               ) : (
                 <p className="mt-1 text-sm text-muted-foreground">{t("noLocation")}</p>

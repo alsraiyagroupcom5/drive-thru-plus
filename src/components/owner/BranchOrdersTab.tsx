@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   List,
   MapPin,
+  MapPinOff,
   Navigation,
   PackageCheck,
   RefreshCcw,
@@ -100,6 +101,14 @@ function TrackingBadge({ order }: { order: Row }) {
       <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-[10px] font-bold text-success">
         <MapPin className="h-3 w-3" aria-hidden />
         {pick("العميل وصل", "Customer arrived")}
+      </span>
+    );
+  }
+  if (order["location_denied"]) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-[10px] font-bold text-warning-foreground">
+        <MapPinOff className="h-3 w-3" aria-hidden />
+        {pick("لم يشارك موقعه", "Location not shared")}
       </span>
     );
   }
@@ -405,7 +414,9 @@ export function OrderDetail({
       value:
         order["distance_km"] != null
           ? `${Number(order["distance_km"]).toFixed(1)} ${pick("كم", "km")}`
-          : "—",
+          : order["location_denied"]
+            ? pick("لم يشارك موقعه", "Not shared")
+            : "—",
     },
     {
       ar: "وصول العميل",
@@ -414,7 +425,9 @@ export function OrderDetail({
         ? pick("وصل", "Arrived")
         : order["eta_minutes"] != null
           ? `${String(order["eta_minutes"])} ${pick("د", "min")}`
-          : "—",
+          : order["location_denied"]
+            ? pick("الموقع غير مشارك", "Location off")
+            : "—",
     },
     {
       ar: "انتظار بالموقع",

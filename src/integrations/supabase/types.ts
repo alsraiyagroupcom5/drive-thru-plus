@@ -486,6 +486,7 @@ export type Database = {
           distance_km: number | null
           eta_minutes: number | null
           id: string
+          location_denied: boolean
           location_updated_at: string | null
           notes: string | null
           order_number: string
@@ -519,6 +520,7 @@ export type Database = {
           distance_km?: number | null
           eta_minutes?: number | null
           id?: string
+          location_denied?: boolean
           location_updated_at?: string | null
           notes?: string | null
           order_number: string
@@ -552,6 +554,7 @@ export type Database = {
           distance_km?: number | null
           eta_minutes?: number | null
           id?: string
+          location_denied?: boolean
           location_updated_at?: string | null
           notes?: string | null
           order_number?: string

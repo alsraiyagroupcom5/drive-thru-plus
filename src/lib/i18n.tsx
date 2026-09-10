@@ -149,6 +149,10 @@ const dict = {
   customerLocation: { ar: "موقع العميل", en: "Customer location" },
   phone: { ar: "الجوال", en: "Phone" },
   noLocation: { ar: "لا يوجد تتبع موقع", en: "No location tracking" },
+  customerLocationOff: {
+    ar: "العميل لم يسمح بمشاركة موقعه",
+    en: "Customer didn't allow location sharing",
+  },
   paid: { ar: "مدفوع", en: "Paid" },
   pending: { ar: "قيد الانتظار", en: "Pending" },
   optional: { ar: "اختياري", en: "Optional" },

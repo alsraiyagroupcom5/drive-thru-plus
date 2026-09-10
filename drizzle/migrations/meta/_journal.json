@@ -99,6 +99,13 @@
       "when": 1789039202769,
       "tag": "0013_admin_reset_order",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1789041615509,
+      "tag": "0014_order_location_denied_flag",
+      "breakpoints": true
     }
   ]
 }

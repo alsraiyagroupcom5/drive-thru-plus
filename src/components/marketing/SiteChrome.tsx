@@ -4,44 +4,37 @@ import { ChevronDown, Instagram, Mail, Menu, Moon, Phone, Sun, X } from "lucide-
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-import { CONTACT } from "@/lib/marketing";
+import { useSite } from "@/lib/site-content";
 import logo from "@/assets/qr-spring-logo.png.asset.json";
-
-const NAV = [
-  { to: "/" as const, ar: "الرئيسية", en: "Home" },
-  { to: "/features" as const, ar: "المزايا", en: "Features" },
-  { to: "/pricing" as const, ar: "الأسعار", en: "Pricing" },
-  { to: "/contact" as const, ar: "تواصل معنا", en: "Contact" },
-];
-
-const ACCESS = [
-  { to: "/admin" as const, ar: "المسؤول العام", en: "Platform admin" },
-  { to: "/owner" as const, ar: "مالك المطعم", en: "Restaurant owner" },
-  { to: "/auth" as const, ar: "فريق الفرع", en: "Branch team" },
-  { to: "/app" as const, ar: "تطبيق العملاء", en: "Customer app" },
-];
 
 export function SiteHeader() {
   const { pick, toggle } = useI18n();
   const { theme, toggle: toggleTheme } = useTheme();
+  const site = useSite();
   const [openNav, setOpenNav] = useState(false);
   const [openAccess, setOpenAccess] = useState(false);
+  const logoUrl = site.brand.logoUrl ?? logo.url;
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
-        <Link to="/" className="flex items-center">
+        <Link to="/" className="flex items-center gap-2">
           <img
-            src={logo.url}
-            alt="QR-Spring"
+            src={logoUrl}
+            alt={pick(site.brand.name.ar, site.brand.name.en)}
             width={192}
             height={64}
             className="h-16 w-48 rounded-2xl border border-border bg-white object-contain p-0.5"
           />
+          {site.brand.showName ? (
+            <span className="font-display text-lg font-bold">
+              {pick(site.brand.name.ar, site.brand.name.en)}
+            </span>
+          ) : null}
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV.map((n) => (
+          {site.nav.map((n) => (
             <Link
               key={n.to}
               to={n.to}
@@ -49,7 +42,7 @@ export function SiteHeader() {
               activeProps={{ className: "bg-accent text-accent-foreground" }}
               className="rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
             >
-              {pick(n.ar, n.en)}
+              {pick(n.label.ar, n.label.en)}
             </Link>
           ))}
         </nav>
@@ -86,14 +79,14 @@ export function SiteHeader() {
                 className="surface absolute end-0 mt-2 w-52 overflow-hidden rounded-2xl p-1.5"
                 onMouseLeave={() => setOpenAccess(false)}
               >
-                {ACCESS.map((a) => (
+                {site.access.map((a) => (
                   <Link
                     key={a.to}
                     to={a.to}
                     onClick={() => setOpenAccess(false)}
                     className="block rounded-xl px-3 py-2 text-sm font-semibold hover:bg-accent"
                   >
-                    {pick(a.ar, a.en)}
+                    {pick(a.label.ar, a.label.en)}
                   </Link>
                 ))}
               </div>
@@ -113,14 +106,14 @@ export function SiteHeader() {
       {openNav ? (
         <div className="border-t border-border px-5 py-3 md:hidden">
           <div className="grid gap-1">
-            {NAV.map((n) => (
+            {site.nav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
                 onClick={() => setOpenNav(false)}
                 className="rounded-xl px-3 py-2 text-sm font-semibold"
               >
-                {pick(n.ar, n.en)}
+                {pick(n.label.ar, n.label.en)}
               </Link>
             ))}
           </div>
@@ -128,14 +121,14 @@ export function SiteHeader() {
             {pick("دخول المنصة", "Sign in")}
           </p>
           <div className="grid gap-1">
-            {ACCESS.map((a) => (
+            {site.access.map((a) => (
               <Link
                 key={a.to}
                 to={a.to}
                 onClick={() => setOpenNav(false)}
                 className="rounded-xl px-3 py-2 text-sm text-muted-foreground"
               >
-                {pick(a.ar, a.en)}
+                {pick(a.label.ar, a.label.en)}
               </Link>
             ))}
           </div>
@@ -147,13 +140,15 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   const { pick } = useI18n();
+  const site = useSite();
+  const logoUrl = site.brand.logoUrl ?? logo.url;
   return (
     <footer className="border-t border-border bg-card/40">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-3">
         <div>
           <div className="flex items-center">
             <img
-              src={logo.url}
+              src={logoUrl}
               alt=""
               width={192}
               height={64}
@@ -161,53 +156,63 @@ export function SiteFooter() {
             />
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            {pick(
-              "منصة طلب ذكية للمطاعم والدرايف ثرو في قطر.",
-              "A smart ordering platform for restaurants and drive-thrus in Qatar.",
-            )}
+            {pick(site.footer.tagline.ar, site.footer.tagline.en)}
           </p>
-          <p className="mt-3 text-xs text-muted-foreground">{pick(CONTACT.hoursAr, CONTACT.hoursEn)}</p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {pick(site.contact.hours.ar, site.contact.hours.en)}
+          </p>
         </div>
 
         <div>
-          <p className="font-display text-sm font-bold">{pick("الموقع", "Website")}</p>
+          <p className="font-display text-sm font-bold">
+            {pick(site.footer.websiteTitle.ar, site.footer.websiteTitle.en)}
+          </p>
           <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
-            {NAV.map((n) => (
+            {site.nav.map((n) => (
               <Link key={n.to} to={n.to} className="hover:text-foreground">
-                {pick(n.ar, n.en)}
+                {pick(n.label.ar, n.label.en)}
               </Link>
             ))}
           </div>
         </div>
 
         <div>
-          <p className="font-display text-sm font-bold">{pick("تواصل", "Get in touch")}</p>
+          <p className="font-display text-sm font-bold">
+            {pick(site.footer.contactTitle.ar, site.footer.contactTitle.en)}
+          </p>
           <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
-            {CONTACT.branches.map((b) => (
-              <a key={b.phone} href={`tel:+974${b.phone}`} className="flex items-center gap-2 hover:text-foreground">
+            {site.contact.branches.map((b) => (
+              <a
+                key={b.phone}
+                href={`tel:+974${b.phone}`}
+                className="flex items-center gap-2 hover:text-foreground"
+              >
                 <Phone className="h-3.5 w-3.5" aria-hidden />
                 <span dir="ltr">{b.phone}</span>
-                <span className="text-xs">· {pick(b.ar, b.en)}</span>
+                <span className="text-xs">· {pick(b.name.ar, b.name.en)}</span>
               </a>
             ))}
-            <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-2 hover:text-foreground">
+            <a
+              href={`mailto:${site.contact.email}`}
+              className="flex items-center gap-2 hover:text-foreground"
+            >
               <Mail className="h-3.5 w-3.5" aria-hidden />
-              <span dir="ltr">{CONTACT.email}</span>
+              <span dir="ltr">{site.contact.email}</span>
             </a>
             <a
-              href={CONTACT.instagram}
+              href={site.contact.instagram}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 hover:text-foreground"
             >
               <Instagram className="h-3.5 w-3.5" aria-hidden />
-              origami.qa
+              {site.contact.instagramLabel}
             </a>
           </div>
         </div>
       </div>
       <div className="border-t border-border py-5 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} QR-Spring
+        © {new Date().getFullYear()} {pick(site.footer.copyright.ar, site.footer.copyright.en)}
       </div>
     </footer>
   );

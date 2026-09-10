@@ -455,11 +455,30 @@ export const announceArrival = createServerFn({ method: "POST" })
 /* ----------------------- live location tracking ----------------------- */
 
 export const updateOrderLocation = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string; orderId: string; lat: number; lng: number }) => d)
+  .inputValidator(
+    (d: { token: string; orderId: string; lat?: number; lng?: number; denied?: boolean }) => d,
+  )
   .handler(async ({ data }) => {
     const customerId = await requireCustomer(data.token);
-    if (!Number.isFinite(data.lat) || !Number.isFinite(data.lng)) throw new Error("INVALID_FIX");
     const db = await admin();
+
+    if (data.denied) {
+      await db
+        .from("orders")
+        .update({ location_denied: true } as never)
+        .eq("id", data.orderId)
+        .eq("customer_id", customerId);
+      return { distanceKm: null, etaMinutes: null, arrived: false };
+    }
+
+    if (
+      typeof data.lat !== "number" ||
+      typeof data.lng !== "number" ||
+      !Number.isFinite(data.lat) ||
+      !Number.isFinite(data.lng)
+    ) {
+      throw new Error("INVALID_FIX");
+    }
 
     const { data: order } = await db
       .from("orders")

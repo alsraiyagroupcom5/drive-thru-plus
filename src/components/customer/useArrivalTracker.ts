@@ -81,6 +81,11 @@ export function useArrivalTracker(opts: {
           ...s,
           status: err.code === err.PERMISSION_DENIED ? "denied" : "error",
         }));
+        if (err.code === err.PERMISSION_DENIED) {
+          void updateOrderLocation({ data: { token, orderId, denied: true } }).catch(
+            () => undefined,
+          );
+        }
       },
       { enableHighAccuracy: true, maximumAge: 10_000, timeout: 20_000 },
     );

@@ -193,6 +193,10 @@ function TrackPage() {
             <Link to="/menu" className="text-sm text-primary underline">
               {t("viewMenu")}
             </Link>
+            <Link to="/auth" className="text-sm text-muted-foreground underline">
+              {pick("دخول الموظفين / الإدارة", "Staff / admin sign in")}
+            </Link>
+
           </div>
         </div>
       </AppShell>

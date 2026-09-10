@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
+
 import {
   ArrowLeft,
   ArrowRight,
@@ -44,7 +46,7 @@ import {
 
 type Row = Record<string, unknown>;
 
-const ORDER_FILTERS = ["ALL", "IN_PROGRESS", "READY", "COMPLETED", "CANCELLED"] as const;
+const ORDER_FILTERS = ["ALL", "IN_PROGRESS", "READY", "CANCELLED"] as const;
 type Filter = (typeof ORDER_FILTERS)[number];
 
 const IN_PROGRESS_STATUSES = ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "ARRIVING"];
@@ -64,12 +66,12 @@ function filterLabel(f: Filter, pick: (ar: string, en: string) => string): strin
       return pick("قيد التنفيذ", "In progress");
     case "READY":
       return pick("جاهز", "Ready");
-    case "COMPLETED":
-      return pick("مكتمل", "Completed");
     case "CANCELLED":
       return pick("ملغي", "Cancelled");
   }
 }
+
+
 
 function matchesFilter(status: string, filter: Filter): boolean {
   if (filter === "ALL") return true;
@@ -185,16 +187,16 @@ function CustomerPageActions({ orderId, shortCode }: { orderId: string; shortCod
       >
         <Copy className="h-3.5 w-3.5" aria-hidden />
       </button>
-      <a
-        href={`/order/${code}`}
-        target="_blank"
-        rel="noreferrer"
+      <Link
+        to="/order/$orderId"
+        params={{ orderId: code }}
         title={pick("فتح صفحة العميل", "Open customer page")}
-        aria-label={pick("فتح صفحة العميل في تبويب جديد", "Open customer page in a new tab")}
+        aria-label={pick("فتح صفحة العميل", "Open customer page")}
         className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition hover:opacity-90"
       >
         <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-      </a>
+      </Link>
+
     </div>
   );
 }
@@ -567,7 +569,10 @@ export function LatestOrdersGrid({
 }) {
   const { pick, lang } = useI18n();
   const [detail, setDetail] = useState<Row | null>(null);
-  const rows = orders.slice(0, limit);
+  const rows = orders
+    .filter((o) => !DONE_STATUSES.includes(o["status"] as string))
+    .slice(0, limit);
+
   // Keep the open dialog on live data so status changes from any window
   // (realtime refetch) update the dropdown immediately.
   const liveDetail = detail
@@ -661,12 +666,188 @@ export function LatestOrdersGrid({
         </div>
       ) : null}
 
+      <CompletedOrdersTable orders={orders} branchName={branchName} onOpen={(o) => setDetail(o)} />
+
+
       <OrderDetail order={liveDetail} branchName={liveDetail ? branchName(liveDetail) : ""} onClose={() => setDetail(null)} />
     </section>
   );
 }
 
+const DONE_STATUSES = ["COMPLETED", "PICKED_UP"];
+
+type RangeId = "today" | "yesterday" | "last7" | "month" | "custom";
+
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function inRange(iso: string, range: RangeId, customDay: string): boolean {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return false;
+  const today = startOfDay(new Date());
+  if (range === "today") return at >= today;
+  if (range === "yesterday") {
+    const y = new Date(today);
+    y.setDate(y.getDate() - 1);
+    return at >= y && at < today;
+  }
+  if (range === "last7") {
+    const from = new Date(today);
+    from.setDate(from.getDate() - 6);
+    return at >= from;
+  }
+  if (range === "month") {
+    const from = new Date(today.getFullYear(), today.getMonth(), 1);
+    return at >= from;
+  }
+  if (!customDay) return false;
+  const from = startOfDay(new Date(`${customDay}T00:00:00`));
+  if (Number.isNaN(from.getTime())) return false;
+  const to = new Date(from);
+  to.setDate(to.getDate() + 1);
+  return at >= from && at < to;
+}
+
+/**
+ * Completed / picked-up orders, moved out of the live board into a dated
+ * table so staff only see work in progress above.
+ */
+function CompletedOrdersTable({
+  orders,
+  branchName,
+  onOpen,
+}: {
+  orders: Row[];
+  branchName: (o: Row) => string;
+  onOpen: (o: Row) => void;
+}) {
+  const { pick, lang } = useI18n();
+  const [range, setRange] = useState<RangeId>("today");
+  const [customDay, setCustomDay] = useState("");
+
+  const done = useMemo(
+    () =>
+      orders
+        .filter((o) => DONE_STATUSES.includes(o["status"] as string))
+        .filter((o) => inRange(o["created_at"] as string, range, customDay)),
+    [orders, range, customDay],
+  );
+  const revenue = done.reduce((sum, o) => sum + Number(o["total"] ?? 0), 0);
+
+  const options: { id: RangeId; ar: string; en: string }[] = [
+    { id: "today", ar: "اليوم", en: "Today" },
+    { id: "yesterday", ar: "أمس", en: "Yesterday" },
+    { id: "last7", ar: "آخر 7 أيام", en: "Last 7 days" },
+    { id: "month", ar: "هذا الشهر", en: "This month" },
+  ];
+
+  return (
+    <section className="surface rounded-2xl p-4 md:p-5">
+      <header className="flex flex-wrap items-center gap-3 border-b border-border pb-4">
+        <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 text-primary">
+          <PackageCheck className="h-4 w-4" aria-hidden />
+        </span>
+        <div className="me-auto min-w-0">
+          <h3 className="font-display text-base font-bold">{pick("طلبات مكتملة", "Completed orders")}</h3>
+          <p className="text-xs text-muted-foreground">
+            <span dir="ltr">{done.length}</span> {pick("طلب", "orders")} ·{" "}
+            <span dir="ltr">{money(revenue, lang)}</span>
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {options.map((o) => (
+            <button
+              key={o.id}
+              onClick={() => setRange(o.id)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-[11px] font-bold transition",
+                range === o.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border text-muted-foreground hover:border-primary/40",
+              )}
+            >
+              {pick(o.ar, o.en)}
+            </button>
+          ))}
+          <input
+            type="date"
+            value={customDay}
+            onChange={(e) => {
+              setCustomDay(e.target.value);
+              setRange("custom");
+            }}
+            dir="ltr"
+            aria-label={pick("اختر يوماً", "Pick a day")}
+            className={cn(
+              "rounded-full border bg-card px-3 py-1.5 text-[11px] font-bold transition",
+              range === "custom" ? "border-primary text-primary" : "border-border text-muted-foreground",
+            )}
+          />
+        </div>
+      </header>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-start text-xs">
+          <thead>
+            <tr className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              <th className="py-3 text-start font-semibold">{pick("الطلب", "Order")}</th>
+              <th className="py-3 text-start font-semibold">{pick("الفرع", "Branch")}</th>
+              <th className="py-3 text-start font-semibold">{pick("العميل", "Customer")}</th>
+              <th className="py-3 text-start font-semibold">{pick("الوقت", "Time")}</th>
+              <th className="py-3 text-start font-semibold">{pick("مدة التحضير", "Prep")}</th>
+              <th className="py-3 text-end font-semibold">{pick("الإجمالي", "Total")}</th>
+              <th className="py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {done.map((o) => {
+              const prep = minutesBetween(o["created_at"], o["ready_at"] ?? o["completed_at"]);
+              return (
+                <tr key={o["id"] as string} className="transition hover:bg-elevated">
+                  <td className="py-3 font-display text-sm font-bold" dir="ltr">
+                    {o["order_number"] as string}
+                  </td>
+                  <td className="py-3 text-muted-foreground">{branchName(o)}</td>
+                  <td className="py-3 text-muted-foreground">
+                    {(o["customer_name"] as string) || pick("عميل", "Customer")}
+                  </td>
+                  <td className="py-3 text-muted-foreground">
+                    {formatDateTime(o["created_at"] as string, lang)}
+                  </td>
+                  <td className="py-3 text-muted-foreground" dir="ltr">
+                    {prep != null ? `${prep} ${pick("د", "min")}` : "—"}
+                  </td>
+                  <td className="py-3 text-end font-display text-sm font-bold text-primary" dir="ltr">
+                    {money(Number(o["total"]), lang)}
+                  </td>
+                  <td className="py-3 text-end">
+                    <button
+                      onClick={() => onOpen(o)}
+                      className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                    >
+                      {pick("التفاصيل", "Details")}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {!done.length ? (
+          <p className="py-10 text-center text-sm font-semibold text-muted-foreground">
+            {pick("لا توجد طلبات مكتملة في هذه الفترة", "No completed orders in this period")}
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 export function BranchOrdersTab({
+
   branches,
   orders,
   loading,
@@ -847,7 +1028,10 @@ export function BranchOrdersTab({
 
   /* ------------------------- selected branch view ------------------------- */
   const branchOrders = byBranch.get(selectedBranch["id"] as string) ?? [];
-  const rows = branchOrders.filter((o) => matchesFilter(o["status"] as string, filter));
+  const rows = branchOrders
+    .filter((o) => !DONE_STATUSES.includes(o["status"] as string))
+    .filter((o) => matchesFilter(o["status"] as string, filter));
+
 
   return (
     <div className="space-y-4">
@@ -1074,6 +1258,9 @@ export function BranchOrdersTab({
           )}
         </div>
       )}
+
+      <CompletedOrdersTable orders={branchOrders} branchName={branchName} onOpen={(o) => setDetail(o)} />
+
 
       <OrderDetail
         order={liveDetail}

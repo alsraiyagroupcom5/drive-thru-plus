@@ -7,6 +7,9 @@ import { SectionTitle } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 import heroImage from "@/assets/business-hero.jpg";
 
+const OG_IMAGE =
+  "https://drive-thru-plus.lovable.app/__l5e/assets-v1/0cec0fac-0bcd-4383-8e30-8462ae4a84b5/qr-spring-og.jpg";
+
 export const Route = createFileRoute("/_site/")({
   head: () => ({
     meta: [

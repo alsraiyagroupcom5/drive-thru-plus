@@ -337,6 +337,7 @@ function MenuTab({
           const price = Number(p["price"]);
           const disc = Number(p["discount_percent"] ?? 0);
           const rows = branchesOf.get(id) ?? [];
+          const selectedStock = rows.find((row) => row.branchId === selectedBranchId);
           return (
             <article key={id} className="surface overflow-hidden rounded-2xl">
               <div className="relative aspect-[16/9] overflow-hidden bg-elevated">
@@ -397,9 +398,9 @@ function MenuTab({
                 </div>
 
               <div className="mt-3 border-t border-border pt-3">
-                {rows.find((row) => row.branchId === selectedBranchId) ? (
-                  <button onClick={() => stock.mutate({ productId: id, branchId: selectedBranchId, outOfStock: !rows.find((row) => row.branchId === selectedBranchId)?.outToday })} className={cn("w-full rounded-xl border px-3 py-2 text-xs font-semibold", rows.find((row) => row.branchId === selectedBranchId)?.outToday ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-border text-muted-foreground")}>
-                    {rows.find((row) => row.branchId === selectedBranchId)?.outToday ? pick("نفد اليوم", "Out today") : pick("متوفر اليوم", "In stock today")}
+                {selectedStock ? (
+                  <button onClick={() => stock.mutate({ productId: id, branchId: selectedStock.branchId, outOfStock: !selectedStock.outToday })} className={cn("w-full rounded-xl border px-3 py-2 text-xs font-semibold", selectedStock.outToday ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-border text-muted-foreground")}>
+                    {selectedStock.outToday ? pick("نفد اليوم", "Out today") : pick("متوفر اليوم", "In stock today")}
                   </button>
                 ) : null}
               </div>

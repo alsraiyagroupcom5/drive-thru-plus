@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { CONTACT } from "@/lib/marketing";
-import logo from "@/assets/origami-logo.jpg.asset.json";
+import logo from "@/assets/qr-spring-logo.png.asset.json";
 
 const NAV = [
   { to: "/" as const, ar: "الرئيسية", en: "Home" },
@@ -33,13 +33,13 @@ export function SiteHeader() {
         <Link to="/" className="flex items-center gap-2.5">
           <img
             src={logo.url}
-            alt="Origami Platform"
+            alt="QR-Spring"
             width={36}
             height={36}
             className="h-9 w-9 rounded-xl border border-border bg-white object-contain p-0.5"
           />
           <span className="font-display text-base font-bold">
-            {pick("منصة أوريغامي", "Origami Platform")}
+            {pick("كيو آر سبرينغ", "QR-Spring")}
           </span>
         </Link>
 
@@ -162,7 +162,7 @@ export function SiteFooter() {
               height={32}
               className="h-8 w-8 rounded-lg border border-border bg-white object-contain p-0.5"
             />
-            <span className="font-display font-bold">{pick("منصة أوريغامي", "Origami Platform")}</span>
+            <span className="font-display font-bold">{pick("كيو آر سبرينغ", "QR-Spring")}</span>
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             {pick(
@@ -211,7 +211,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border py-5 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Origami Platform
+        © {new Date().getFullYear()} QR-Spring
       </div>
     </footer>
   );

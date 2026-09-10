@@ -8,6 +8,7 @@ import { DesignTab } from "@/components/owner/DesignTab";
 import { TrackingTab } from "@/components/owner/TrackingTab";
 import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
+import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { Modal } from "@/components/console/Modal";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +60,7 @@ type Tab = "branches" | "menu" | "design" | "team" | "orders" | "settings";
 function OwnerConsole() {
   const { pick, lang } = useI18n();
   const qc = useQueryClient();
+  useOrdersRealtime(["owner-orders", "owner-menu"], "owner-orders");
   const [tab, setTab] = useState<Tab>("menu");
 
   const menu = useQuery({ queryKey: ["owner-menu"], queryFn: () => ownerMenu() });

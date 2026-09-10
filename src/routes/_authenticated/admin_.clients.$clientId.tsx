@@ -21,6 +21,7 @@ import {
   Radar,
 } from "lucide-react";
 import { ConsoleShell, StatusChip } from "@/components/console/ConsoleShell";
+import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { Modal } from "@/components/console/Modal";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
@@ -77,6 +78,7 @@ function ClientWorkspace() {
   const { clientId } = Route.useParams();
   const { pick, lang } = useI18n();
   const qc = useQueryClient();
+  useOrdersRealtime(["client-orders", "client-summary", "admin-client-cards"], "client-orders");
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
 

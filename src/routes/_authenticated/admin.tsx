@@ -9,6 +9,7 @@ import { ClientAccessDialog } from "@/components/console/ClientAccessDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
+import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { cn } from "@/lib/utils";
 
 import {
@@ -68,6 +69,7 @@ const input =
 function AdminConsole() {
   const { pick, lang } = useI18n();
   const qc = useQueryClient();
+  useOrdersRealtime(["admin-orders-feed", "admin-overview", "admin-client-cards", "admin-restaurants"], "admin-orders");
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const tab = (TABS.some((t) => t.id === search.tab) ? search.tab : "overview") as (typeof TABS)[number]["id"];

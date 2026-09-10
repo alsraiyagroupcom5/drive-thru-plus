@@ -33,6 +33,8 @@ function OrdersPage() {
     queryKey: ["my-orders", session?.token],
     queryFn: () => myOrders({ data: { token: session!.token } }),
     enabled: !!session?.token,
+    refetchInterval: 5_000,
+    refetchOnWindowFocus: true,
   });
 
   const reorder = (items: { product_id: string | null; quantity: number }[]) => {

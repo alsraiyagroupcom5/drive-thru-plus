@@ -471,16 +471,26 @@ export const updateOrderLocation = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
 
-    const branch = order.branches as { lat: number | null; lng: number | null } | null;
-    if (branch?.lat == null || branch?.lng == null) {
+    const branch = order.branches as {
+      lat: number | null;
+      lng: number | null;
+      tracking_enabled?: boolean | null;
+      auto_arrival?: boolean | null;
+      arrival_radius_m?: number | null;
+      avg_speed_kmh?: number | null;
+    } | null;
+    if (branch?.lat == null || branch?.lng == null || branch.tracking_enabled === false) {
       return { distanceKm: null, etaMinutes: null, arrived: order.customer_arrived };
     }
 
-    const { haversineKm, driveMinutes, ARRIVAL_RADIUS_KM } = await import("@/lib/geo");
+    const { haversineKm, driveMinutes, trackingFromBranch } = await import("@/lib/geo");
+    const tracking = trackingFromBranch(branch);
     const distanceKm = haversineKm(data.lat, data.lng, Number(branch.lat), Number(branch.lng));
-    const etaMinutes = driveMinutes(distanceKm);
+    const etaMinutes = driveMinutes(distanceKm, tracking);
     const done = ["COMPLETED", "PICKED_UP", "CANCELLED", "REFUNDED"].includes(order.status);
-    const arrived = order.customer_arrived || (!done && distanceKm <= ARRIVAL_RADIUS_KM);
+    const arrived =
+      order.customer_arrived ||
+      (!done && branch.auto_arrival !== false && distanceKm <= tracking.arrivalRadiusKm);
 
     const patch: Record<string, unknown> = {
       customer_lat: data.lat,

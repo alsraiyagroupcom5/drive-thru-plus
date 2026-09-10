@@ -327,27 +327,11 @@ function AdminConsole() {
           </div>
 
           <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">{pick("أحدث الطلبات", "Latest orders")}</h2>
-            <div className="mt-3 divide-y divide-border">
-              {(o?.recent ?? []).map((r) => (
-                <div key={r.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                  <div className="min-w-0">
-                    <p className="font-semibold">{r.order_number}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {r.branches ? pick(r.branches.name_ar, r.branches.name_en) : ""} ·{" "}
-                      {formatDateTime(r.created_at, lang)}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-end">
-                    <p className="text-xs text-muted-foreground">{r.status}</p>
-                    <p className="font-semibold">{money(Number(r.total), lang)}</p>
-                  </div>
-                </div>
-              ))}
-              {overview.isLoading && (
-                <p className="py-4 text-sm text-muted-foreground">{pick("جارٍ التحميل…", "Loading…")}</p>
-              )}
-            </div>
+            <BranchOrdersTab
+              branches={(ordersFeed.data?.branches ?? []) as Record<string, unknown>[]}
+              orders={(ordersFeed.data?.orders ?? []) as Record<string, unknown>[]}
+              loading={ordersFeed.isLoading}
+            />
           </div>
         </section>
       )}

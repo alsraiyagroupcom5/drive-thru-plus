@@ -200,6 +200,8 @@ export const placeOrder = createServerFn({ method: "POST" })
       paymentMethod: "CARD" | "APPLE_PAY" | "GOOGLE_PAY" | "PAY_AT_PICKUP";
       items: CartLine[];
       notes?: string;
+      lat?: number | null;
+      lng?: number | null;
     }) => d,
   )
   .handler(async ({ data }) => {

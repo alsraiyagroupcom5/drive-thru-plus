@@ -34,9 +34,9 @@ export function SiteHeader() {
           <img
             src={logo.url}
             alt="QR-Spring"
-            width={56}
+            width={144}
             height={56}
-            className="h-14 w-14 rounded-2xl border border-border bg-white object-contain p-1"
+            className="h-14 w-36 rounded-2xl border border-border bg-white object-contain p-1"
           />
         </Link>
 
@@ -155,9 +155,9 @@ export function SiteFooter() {
             <img
               src={logo.url}
               alt=""
-              width={56}
+              width={144}
               height={56}
-              className="h-14 w-14 rounded-2xl border border-border bg-white object-contain p-1"
+              className="h-14 w-36 rounded-2xl border border-border bg-white object-contain p-1"
             />
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  Check,
   Image as ImageIcon,
   Layers,
   Plus,
@@ -313,6 +314,7 @@ export function SiteEditor() {
   });
 
   const SECTIONS = [
+    { id: "theme", ar: "مظهر الموقع", en: "Website theme", hint: pick("اختر تصميم الواجهة", "Choose the front-page design") },
     { id: "brand", ar: "الهوية والشعار", en: "Brand & logo", hint: pick("الشعار والاسم", "Logo and name") },
     { id: "nav", ar: "القوائم والروابط", en: "Menus & links", hint: pick("قائمة الموقع والدخول", "Site menu and sign-in") },
     { id: "hero", ar: "الواجهة الرئيسية", en: "Hero section", hint: pick("العنوان والصورة والأزرار", "Headline, image, buttons") },
@@ -379,6 +381,71 @@ export function SiteEditor() {
           </button>
         ))}
       </div>
+
+      <Modal
+        open={open === "theme"}
+        onClose={() => setOpen(null)}
+        title={pick("مظهر الموقع", "Website theme")}
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          {([
+            {
+              id: "architectural" as const,
+              ar: "المظهر المعماري الحالي",
+              en: "Current architectural",
+              hintAr: "فاتح، تحريري وعملي",
+              hintEn: "Light, editorial and practical",
+              preview: "bg-site-sand",
+            },
+            {
+              id: "luxury" as const,
+              ar: "QR-Spring الفاخر",
+              en: "QR-Spring luxury",
+              hintAr: "تيال داكن، ذهبي وزجاجي",
+              hintEn: "Deep teal, muted gold and glass",
+              preview: "bg-luxury-ground",
+            },
+          ]).map((option) => {
+            const selected = draft.theme === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => set("theme", option.id)}
+                className={cn(
+                  "relative overflow-hidden rounded-2xl border p-3 text-start transition",
+                  selected ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/40",
+                )}
+              >
+                <span className={cn("relative block h-28 overflow-hidden rounded-xl", option.preview)}>
+                  <span className="absolute inset-x-4 top-4 h-2 rounded-full bg-foreground/15" />
+                  <span className="absolute start-4 top-9 h-12 w-1/2 rounded-lg bg-background/70" />
+                  <span className="absolute end-4 top-9 h-12 w-1/3 rounded-lg bg-primary/35" />
+                </span>
+                <span className="mt-3 flex items-start justify-between gap-3">
+                  <span>
+                    <span className="block text-sm font-bold">{pick(option.ar, option.en)}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                      {pick(option.hintAr, option.hintEn)}
+                    </span>
+                  </span>
+                  {selected ? (
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="h-3.5 w-3.5" aria-hidden />
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+          {pick(
+            "يؤثر الاختيار على الموقع العام فقط. لوحات التحكم وتطبيق الطلب لا تتغير.",
+            "This only changes the public website. Dashboards and ordering stay unchanged.",
+          )}
+        </p>
+      </Modal>
 
       {/* Brand */}
       <Modal

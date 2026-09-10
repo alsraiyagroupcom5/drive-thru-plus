@@ -17,7 +17,9 @@ export type CartLine = {
 type Ctx = {
   lines: CartLine[];
   branchId: string | null;
-  setBranchId: (id: string) => void;
+  branchLocked: boolean;
+  setBranchId: (id: string, locked?: boolean) => void;
+  setBranchLocked: (locked: boolean) => void;
   add: (line: Omit<CartLine, "key">) => void;
   setQuantity: (key: string, quantity: number) => void;
   remove: (key: string) => void;
@@ -30,6 +32,7 @@ type Ctx = {
 const CartContext = createContext<Ctx | null>(null);
 const CART_KEY = "qrspring.cart";
 const BRANCH_KEY = "qrspring.branch";
+const BRANCH_LOCK_KEY = "qrspring.branch-locked";
 
 export function lineUnitPrice(line: CartLine) {
   return line.basePrice + line.options.reduce((s, o) => s + Number(o.price_delta || 0), 0);
@@ -38,6 +41,7 @@ export function lineUnitPrice(line: CartLine) {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [branchId, setBranchIdState] = useState<string | null>(null);
+  const [branchLocked, setBranchLockedState] = useState(false);
 
   useEffect(() => {
     try {
@@ -45,6 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (raw) setLines(JSON.parse(raw) as CartLine[]);
       const branch = window.localStorage.getItem(BRANCH_KEY);
       if (branch) setBranchIdState(branch);
+      setBranchLockedState(window.localStorage.getItem(BRANCH_LOCK_KEY) === "true");
     } catch {
       /* ignore */
     }
@@ -55,10 +60,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(CART_KEY, JSON.stringify(next));
   }, []);
 
-  const setBranchId = useCallback((id: string) => {
+  const setBranchLocked = useCallback((locked: boolean) => {
+    window.localStorage.setItem(BRANCH_LOCK_KEY, String(locked));
+    setBranchLockedState(locked);
+  }, []);
+
+  const setBranchId = useCallback((id: string, locked?: boolean) => {
     window.localStorage.setItem(BRANCH_KEY, id);
     setBranchIdState(id);
-  }, []);
+    if (locked !== undefined) setBranchLocked(locked);
+  }, [setBranchLocked]);
 
   const add = useCallback<Ctx["add"]>(
     (line) => {
@@ -102,7 +113,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return {
       lines,
       branchId,
+      branchLocked,
       setBranchId,
+      setBranchLocked,
       add,
       setQuantity,
       remove,
@@ -111,7 +124,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal,
       lineTotal: (line) => lineUnitPrice(line) * line.quantity,
     };
-  }, [lines, branchId, setBranchId, add, setQuantity, remove, clear]);
+  }, [lines, branchId, branchLocked, setBranchId, setBranchLocked, add, setQuantity, remove, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

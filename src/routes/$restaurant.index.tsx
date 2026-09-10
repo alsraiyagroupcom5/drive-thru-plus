@@ -1,10 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { MapPin, Phone, ArrowLeft, ArrowRight, Store } from "lucide-react";
 import { restaurantBySlugQuery } from "@/lib/restaurant-link";
 import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/$restaurant/")({
   loader: ({ params, context }) =>
@@ -44,22 +42,8 @@ function RestaurantNotFound() {
 function RestaurantPage() {
   const { restaurant: slug } = Route.useParams();
   const { pick, dir } = useI18n();
-  const { data, isLoading } = useQuery(restaurantBySlugQuery(slug));
+  const data = Route.useLoaderData();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
-
-  if (isLoading || !data) {
-    return (
-      <div className="mx-auto max-w-3xl space-y-4 px-5 py-16">
-        <Skeleton className="h-24 w-24 rounded-3xl" />
-        <Skeleton className="h-8 w-56 rounded-full" />
-        <div className="grid gap-4 sm:grid-cols-2">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-40 rounded-3xl" />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   const { restaurant, branches } = data;
 

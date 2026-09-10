@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/app")({
   validateSearch: (search: Record<string, unknown>) => ({
     branch: typeof search["branch"] === "string" ? (search["branch"] as string) : undefined,
+    locked: search["locked"] === true || search["locked"] === "1" || search["locked"] === "true",
   }),
   head: () => ({
     meta: [
@@ -44,9 +45,9 @@ function greetingKey() {
 }
 
 function Landing() {
-  const { branch: branchCode } = Route.useSearch();
+  const { branch: branchCode, locked } = Route.useSearch();
   const { t, pick, lang, dir } = useI18n();
-  const { branchId, setBranchId } = useCart();
+  const { branchId, branchLocked, setBranchId, setBranchLocked } = useCart();
   const { session, ready } = useCustomerAuth();
   const navigate = useNavigate();
   const [customizing, setCustomizing] = useState<Product | null>(null);
@@ -62,10 +63,14 @@ function Landing() {
 
   // QR deep link: /?branch=lusail selects the branch automatically.
   useEffect(() => {
-    if (!branchCode || !branches.data) return;
+    if (!branchCode) {
+      setBranchLocked(false);
+      return;
+    }
+    if (!branches.data) return;
     const match = branches.data.find((b) => b.code === branchCode);
-    if (match) setBranchId(match.id);
-  }, [branchCode, branches.data, setBranchId]);
+    if (match) setBranchId(match.id, locked);
+  }, [branchCode, locked, branches.data, setBranchId, setBranchLocked]);
 
   const selected = branches.data?.find((b) => b.id === branchId) ?? null;
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
@@ -75,6 +80,7 @@ function Landing() {
 
   return (
     <AppShell
+      branchCode={selected?.code}
       header={
         <header className="flex items-center justify-between gap-3 px-5 pb-2 pt-6">
           <BrandMark />
@@ -127,12 +133,14 @@ function Landing() {
                 {t("minutes")}
               </p>
             </div>
-            <button
-              onClick={() => setBranchId("")}
-              className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:bg-accent"
-            >
-              {t("change")}
-            </button>
+            {!branchLocked ? (
+              <button
+                onClick={() => setBranchId("")}
+                className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:bg-accent"
+              >
+                {t("change")}
+              </button>
+            ) : null}
           </div>
         ) : (
           <div>

@@ -104,6 +104,27 @@ export const ownerOrders = createServerFn({ method: "POST" })
     return orders ?? [];
   });
 
+export const saveMenuLinkMode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Scoped & { mode: "all_branches" | "separate_branches" }) => d)
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    if (!(["all_branches", "separate_branches"] as const).includes(data.mode)) {
+      throw new Error("INVALID_LINK_MODE");
+    }
+    const db = await admin();
+    const { error } = await db.from("restaurants").update({ menu_link_mode: data.mode }).eq("id", rid);
+    if (error) throw new Error(error.message);
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "restaurant.menu_link_mode.update",
+      entity: "restaurant",
+      entity_id: rid,
+      details: { mode: data.mode },
+    });
+    return { ok: true };
+  });
+
 /* ---------------------------- branches ---------------------------- */
 
 type BranchInput = Scoped & {

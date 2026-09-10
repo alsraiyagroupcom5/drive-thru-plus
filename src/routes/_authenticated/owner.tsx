@@ -83,7 +83,7 @@ function OwnerConsole() {
         <p className="mt-2 text-sm text-muted-foreground">
           {pick("هذا الحساب ليس لديه صلاحية المالك.", "This account is not a restaurant owner.")}
         </p>
-        <Link to="/app" search={{ branch: undefined }} className="mt-4 block text-xs underline">
+        <Link to="/app" search={{ branch: undefined, locked: false }} className="mt-4 block text-xs underline">
           {pick("العودة للرئيسية", "Back to home")}
         </Link>
       </div>
@@ -117,6 +117,7 @@ function OwnerConsole() {
     >
       {tab === "menu" && (
         <MenuTab
+          restaurant={data.restaurant}
           branches={data.branches}
           categories={data.categories}
           products={data.products}
@@ -131,7 +132,7 @@ function OwnerConsole() {
       {tab === "branches" && <BranchesTab branches={data.branches} onChanged={refreshMenu} />}
       {tab === "team" && <TeamTab branches={data.branches} />}
       {tab === "settings" && (
-        <TrackingTab branches={data.branches} onChanged={refreshMenu} />
+        <TrackingTab branches={data.branches} restaurant={data.restaurant} onChanged={refreshMenu} />
       )}
       {tab === "orders" && <OrdersTab branches={data.branches} lang={lang} />}
     </ConsoleShell>
@@ -144,6 +145,7 @@ function OwnerConsole() {
 type Row = Record<string, unknown>;
 
 function MenuTab({
+  restaurant,
   branches,
   categories,
   products,
@@ -151,6 +153,7 @@ function MenuTab({
   onChanged,
   lang,
 }: {
+  restaurant: Row | null;
   branches: Row[];
   categories: Row[];
   products: Row[];
@@ -257,12 +260,14 @@ function MenuTab({
                       aria-label={pick("معاينة المنيو كزائر", "Preview menu as guest")}
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}`, "_blank", "noopener");
+                        const locked = restaurant?.["menu_link_mode"] === "separate_branches";
+                        window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}&locked=${locked}`, "_blank", "noopener");
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.stopPropagation();
-                          window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}`, "_blank", "noopener");
+                          const locked = restaurant?.["menu_link_mode"] === "separate_branches";
+                          window.open(`/app?branch=${encodeURIComponent(String(branch["code"] ?? ""))}&locked=${locked}`, "_blank", "noopener");
                         }
                       }}
                       className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-primary"
@@ -323,7 +328,7 @@ function MenuTab({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <a
-            href={`/app?branch=${encodeURIComponent(String(selectedBranch["code"] ?? ""))}`}
+            href={`/app?branch=${encodeURIComponent(String(selectedBranch["code"] ?? ""))}&locked=${restaurant?.["menu_link_mode"] === "separate_branches"}`}
             target="_blank"
             rel="noopener"
             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"

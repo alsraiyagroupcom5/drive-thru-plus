@@ -22,6 +22,7 @@ import slideScan from "@/assets/slide-scan.jpg";
 export type T = { ar: string; en: string };
 
 export type SiteContent = {
+  theme: "architectural" | "luxury";
   brand: { logoUrl: string | null; name: T; showName: boolean; logoWidth: number; logoHeight: number };
   nav: { to: string; label: T }[];
   access: { to: string; label: T }[];
@@ -92,6 +93,7 @@ export function siteIcon(key: string): LucideIcon {
 const t = (ar: string, en: string): T => ({ ar, en });
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
+  theme: "architectural",
   brand: {
     logoUrl: null,
     name: t("QR-Spring", "QR-Spring"),

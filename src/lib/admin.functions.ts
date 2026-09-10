@@ -494,7 +494,7 @@ export const clientAccess = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: restaurant } = await db
       .from("restaurants")
-      .select("id, slug, name_en, name_ar")
+      .select("id, slug, name_en, name_ar, menu_link_mode")
       .eq("id", data.restaurantId)
       .maybeSingle();
     if (!restaurant) throw new Error("RESTAURANT_NOT_FOUND");

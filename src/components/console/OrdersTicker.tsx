@@ -3,6 +3,7 @@ import { Clock, Store, User } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { OrderDetail } from "@/components/owner/BranchOrdersTab";
 import { cn } from "@/lib/utils";
+import { orderGlow } from "@/lib/order-status";
 
 type Row = Record<string, unknown>;
 
@@ -88,7 +89,7 @@ export function OrdersTicker({ orders, branches }: { orders: Row[]; branches: Ro
               <article
                 key={`${String(o["id"])}-${i}`}
                 dir={lang === "ar" ? "rtl" : "ltr"}
-                className="surface w-60 shrink-0 rounded-2xl p-3.5 text-start"
+                className={cn("surface w-60 shrink-0 rounded-2xl p-3.5 text-start", orderGlow(status))}
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate font-display text-sm font-bold" dir="ltr">

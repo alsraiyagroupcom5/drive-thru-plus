@@ -30,6 +30,20 @@ export function isCancelled(status: string): boolean {
   return status === "CANCELLED" || status === "REFUNDED";
 }
 
+/**
+ * Live status glow for order boxes: brand-new orders pulse red, and the halo
+ * turns warm orange as soon as the team moves the order forward. Closed
+ * orders get no glow. Returns a Tailwind utility class defined in styles.css.
+ */
+export function orderGlow(status: string): "order-glow-new" | "order-glow-progress" | "" {
+  if (status === "RECEIVED") return "order-glow-new";
+  const stage = stageOf(status);
+  if (stage && stage !== "RECEIVED" && stage !== "COMPLETED" && !isCancelled(status)) {
+    return "order-glow-progress";
+  }
+  return "";
+}
+
 const LABELS: Record<string, { ar: string; en: string }> = {
   RECEIVED: { ar: "تم استلام الطلب", en: "Order received" },
   PREPARING: { ar: "جاري التحضير", en: "Preparing" },

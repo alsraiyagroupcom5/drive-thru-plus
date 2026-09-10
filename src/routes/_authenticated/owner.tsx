@@ -83,7 +83,7 @@ function OwnerConsole() {
         <p className="mt-2 text-sm text-muted-foreground">
           {pick("هذا الحساب ليس لديه صلاحية المالك.", "This account is not a restaurant owner.")}
         </p>
-        <Link to="/app" search={{ branch: undefined }} className="mt-4 block text-xs underline">
+        <Link to="/app" search={{ branch: undefined, locked: false }} className="mt-4 block text-xs underline">
           {pick("العودة للرئيسية", "Back to home")}
         </Link>
       </div>

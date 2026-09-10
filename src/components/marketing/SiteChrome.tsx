@@ -72,7 +72,7 @@ export function SiteHeader() {
               key={n.to}
               to={n.to}
               activeOptions={{ exact: n.to === "/" }}
-              activeProps={luxury ? undefined : { className: "bg-accent text-accent-foreground" }}
+              {...(!luxury ? { activeProps: { className: "bg-accent text-accent-foreground" } } : {})}
               className={luxury ? "luxury-nav-link" : "rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"}
             >
               {pick(n.label.ar, n.label.en)}

@@ -47,10 +47,61 @@ export const Route = createFileRoute("/_authenticated/kitchen")({
 
 const FLOW = ["RECEIVED", "PREPARING", "READY", "COMPLETED"] as const;
 
+/** Transitions the database guard accepts. Keep in sync with `order_status_guard`. */
+const ALLOWED: Record<string, string[]> = {
+  DRAFT: ["PENDING_PAYMENT", "RECEIVED", "CANCELLED"],
+  PENDING_PAYMENT: ["PAID", "PAYMENT_FAILED", "CANCELLED"],
+  PAYMENT_FAILED: ["PENDING_PAYMENT", "CANCELLED"],
+  PAID: ["RECEIVED", "CANCELLED", "REFUNDED"],
+  RECEIVED: ["ACCEPTED", "PREPARING", "CANCELLED"],
+  ACCEPTED: ["PREPARING", "CANCELLED"],
+  PREPARING: ["QUALITY_CHECK", "READY", "CANCELLED"],
+  QUALITY_CHECK: ["READY", "PREPARING", "CANCELLED"],
+  READY: ["ARRIVING", "PICKED_UP", "COMPLETED", "CANCELLED"],
+  ARRIVING: ["PICKED_UP", "COMPLETED", "CANCELLED"],
+  PICKED_UP: ["COMPLETED"],
+  COMPLETED: ["REFUNDED"],
+  CANCELLED: [],
+  REFUNDED: [],
+};
+
+/** Preferred one-tap next step for each live status. */
+const NEXT_STEP: Record<string, string> = {
+  PAID: "RECEIVED",
+  RECEIVED: "PREPARING",
+  ACCEPTED: "PREPARING",
+  PREPARING: "READY",
+  QUALITY_CHECK: "READY",
+  READY: "COMPLETED",
+  ARRIVING: "COMPLETED",
+  PICKED_UP: "COMPLETED",
+};
+
+function nextOf(status: string): string | null {
+  const next = NEXT_STEP[status];
+  if (!next) return null;
+  return (ALLOWED[status] ?? []).includes(next) ? next : null;
+}
+
 const COLUMNS = [
-  { status: "RECEIVED", next: "PREPARING", accent: "text-primary", dot: "bg-primary" },
-  { status: "PREPARING", next: "READY", accent: "text-warning", dot: "bg-warning" },
-  { status: "READY", next: "COMPLETED", accent: "text-success", dot: "bg-success" },
+  {
+    status: "RECEIVED",
+    match: ["RECEIVED", "PAID", "ACCEPTED"],
+    accent: "text-primary",
+    dot: "bg-primary",
+  },
+  {
+    status: "PREPARING",
+    match: ["PREPARING", "QUALITY_CHECK"],
+    accent: "text-warning",
+    dot: "bg-warning",
+  },
+  {
+    status: "READY",
+    match: ["READY", "ARRIVING", "PICKED_UP"],
+    accent: "text-success",
+    dot: "bg-success",
+  },
 ] as const;
 
 function en(n: number | string) {

@@ -6,6 +6,7 @@ import { DEFAULT_SITE_CONTENT, siteContentQuery, siteIcon, useSite } from "@/lib
 import { SectionTitle, SiteLink } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 import heroImage from "@/assets/business-hero.jpg";
+import qrSpringLogo from "@/assets/qr-spring-logo.png";
 
 export const Route = createFileRoute("/_site/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),

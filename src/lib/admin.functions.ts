@@ -464,3 +464,50 @@ export const clientSummary = createServerFn({ method: "POST" })
       ).length,
     };
   });
+
+/** Sharing panel: restaurant + branch links and the login accounts per branch. */
+export const clientAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { restaurantId: string }) => d)
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const { data: restaurant } = await db
+      .from("restaurants")
+      .select("id, slug, name_en, name_ar")
+      .eq("id", data.restaurantId)
+      .maybeSingle();
+    if (!restaurant) throw new Error("RESTAURANT_NOT_FOUND");
+
+    const { data: branches } = await db
+      .from("branches")
+      .select("id, code, name_en, name_ar, is_open")
+      .eq("restaurant_id", data.restaurantId)
+      .order("name_en");
+
+    const ids = (branches ?? []).map((b) => b.id);
+    const { data: roles } = ids.length
+      ? await db.from("user_roles").select("user_id, role, branch_id").in("branch_id", ids)
+      : { data: [] as { user_id: string; role: string; branch_id: string }[] };
+    const userIds = [...new Set((roles ?? []).map((r) => r.user_id))];
+    const { data: profiles } = userIds.length
+      ? await db.from("profiles").select("id, full_name, email").in("id", userIds)
+      : { data: [] as { id: string; full_name: string | null; email: string | null }[] };
+    const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
+
+    return {
+      restaurant,
+      branches: (branches ?? []).map((b) => ({
+        ...b,
+        accounts: (roles ?? [])
+          .filter((r) => r.branch_id === b.id)
+          .map((r) => ({
+            userId: r.user_id,
+            role: r.role as string,
+            fullName: byId.get(r.user_id)?.full_name ?? null,
+            email: byId.get(r.user_id)?.email ?? null,
+          })),
+      })),
+    };
+  });
+

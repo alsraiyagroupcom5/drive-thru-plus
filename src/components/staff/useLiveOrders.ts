@@ -18,6 +18,7 @@ export type LiveOrder = {
   distance_km: number | null;
   eta_minutes: number | null;
   location_updated_at: string | null;
+  location_denied: boolean;
   customer_name: string | null;
   customer_phone: string | null;
   vehicle_snapshot: { plate?: string; make?: string; model?: string; color?: string } | null;

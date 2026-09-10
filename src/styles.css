@@ -257,7 +257,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-orders-marquee {
+  .animate-orders-marquee,
+  .order-glow-new,
+  .order-glow-progress {
     animation: none;
+  }
+
+  .order-glow-new {
+    box-shadow: 0 0 22px 2px color-mix(in oklab, var(--destructive) 45%, transparent);
+  }
+
+  .order-glow-progress {
+    box-shadow: 0 0 18px 2px color-mix(in oklab, var(--warning) 38%, transparent);
   }
 }

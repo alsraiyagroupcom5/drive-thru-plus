@@ -520,3 +520,27 @@ export const clientAccess = createServerFn({ method: "POST" })
     };
   });
 
+
+/** Platform-wide live orders feed: every branch + its recent orders for the overview boxes. */
+export const adminOrdersFeed = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const db = await admin();
+    const [branches, orders] = await Promise.all([
+      db
+        .from("branches")
+        .select("id, restaurant_id, code, name_en, name_ar, is_open, city_en, city_ar")
+        .order("created_at", { ascending: true }),
+      db
+        .from("orders")
+        .select(
+          "id, order_number, pickup_code, status, payment_status, payment_method, subtotal, discount, tax, total, notes, target_prep_minutes, created_at, ready_at, completed_at, customer_name, customer_phone, customer_arrived, arrived_at, distance_km, eta_minutes, location_updated_at, branch_id, branches(name_en, name_ar), order_items(id, name_en, name_ar, quantity, unit_price, line_total)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(150),
+    ]);
+    if (branches.error) throw new Error(branches.error.message);
+    if (orders.error) throw new Error(orders.error.message);
+    return { branches: branches.data ?? [], orders: orders.data ?? [] };
+  });

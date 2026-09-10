@@ -71,7 +71,7 @@ export function AppShell({
   children: ReactNode;
   header?: ReactNode;
   hideNav?: boolean;
-  branchCode?: string | null;
+  branchCode?: string | null | undefined;
 }) {
   const { t } = useI18n();
   const { count } = useCart();

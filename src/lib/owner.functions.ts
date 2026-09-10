@@ -759,7 +759,9 @@ export const reactivateOrder = createServerFn({ method: "POST" })
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
-    if (order.status !== "CANCELLED") throw new Error("NOT_CANCELLED");
+    if (order.status !== "CANCELLED" && order.status !== "REFUNDED")
+      throw new Error("NOT_CANCELLED");
+
 
     const { error } = await (db as unknown as {
       rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ error: { message: string } | null }>;

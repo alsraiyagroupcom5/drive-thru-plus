@@ -131,7 +131,7 @@ function OwnerConsole() {
       {tab === "branches" && <BranchesTab branches={data.branches} onChanged={refreshMenu} />}
       {tab === "team" && <TeamTab branches={data.branches} />}
       {tab === "settings" && (
-        <TrackingTab branches={data.branches} onChanged={refreshMenu} />
+        <TrackingTab branches={data.branches} restaurant={data.restaurant} onChanged={refreshMenu} />
       )}
       {tab === "orders" && <OrdersTab branches={data.branches} lang={lang} />}
     </ConsoleShell>

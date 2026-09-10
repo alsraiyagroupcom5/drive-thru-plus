@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Crosshair, ExternalLink, MapPin, Navigation, Radar, Timer, Gauge } from "lucide-react";
+import { Crosshair, ExternalLink, Link2, MapPin, Navigation, Radar, Timer, Gauge } from "lucide-react";
 import { Modal } from "@/components/console/Modal";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { saveTrackingSettings } from "@/lib/owner.functions";
+import { saveMenuLinkMode, saveTrackingSettings } from "@/lib/owner.functions";
 import { OrderOverrideCard } from "@/components/console/OrderOverrideCard";
 
 type Row = Record<string, unknown>;
@@ -21,19 +21,61 @@ function n(v: unknown, fallback: number) {
 
 export function TrackingTab({
   branches,
+  restaurant,
   restaurantId,
   onChanged,
 }: {
   branches: Row[];
+  restaurant?: Row | null;
   restaurantId?: string | null;
   onChanged: () => void;
 }) {
   const { pick } = useI18n();
   const [editing, setEditing] = useState<Row | null>(null);
+  const linkMode = (restaurant?.["menu_link_mode"] as string | undefined) ?? "all_branches";
+  const saveLinkMode = useMutation({
+    mutationFn: (mode: "all_branches" | "separate_branches") =>
+      saveMenuLinkMode({ data: { restaurantId: restaurantId ?? null, mode } }),
+    onSuccess: () => {
+      toast.success(pick("تم تحديث طريقة روابط المنيو", "Menu link mode updated"));
+      onChanged();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   return (
     <div className="space-y-5">
       <OrderOverrideCard scope="owner" restaurantId={restaurantId ?? null} />
+
+      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-primary">
+          <Link2 className="h-3.5 w-3.5" aria-hidden />
+          {pick("روابط المنيو", "Menu links")}
+        </p>
+        <h2 className="mt-2 font-display text-xl font-bold">
+          {pick("اختر كيف يرى العميل فروعك", "Choose how customers see your branches")}
+        </h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {([
+            { id: "all_branches" as const, ar: "رابط واحد لكل الفروع", en: "One link for all branches", hintAr: "يفتح صفحة المطعم ويختار العميل الفرع.", hintEn: "Customers open the restaurant page and choose a branch." },
+            { id: "separate_branches" as const, ar: "رابط مستقل لكل فرع", en: "Separate link per branch", hintAr: "يفتح الفرع مباشرة ويخفي تغيير الفرع.", hintEn: "Opens the branch directly and hides branch switching." },
+          ]).map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              disabled={saveLinkMode.isPending}
+              onClick={() => saveLinkMode.mutate(option.id)}
+              className={cn(
+                "rounded-2xl border p-4 text-start transition",
+                linkMode === option.id ? "border-primary bg-primary/5 ring-2 ring-primary/15" : "border-border hover:border-primary/40",
+              )}
+            >
+              <span className="block text-sm font-bold">{pick(option.ar, option.en)}</span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{pick(option.hintAr, option.hintEn)}</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6">
         <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-primary">

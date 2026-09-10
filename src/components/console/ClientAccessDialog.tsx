@@ -129,10 +129,13 @@ export function ClientAccessDialog({
               <QrCode className="h-4 w-4" aria-hidden />
               {pick("رابط المطعم", "Restaurant link")}
             </p>
-            <LinkRow
-              url={`${origin}/${access.data?.restaurant.slug ?? "app"}`}
-              title={title}
-            />
+            {access.data?.restaurant.menu_link_mode === "separate_branches" ? (
+              <p className="rounded-2xl border border-border bg-elevated p-3 text-xs text-muted-foreground">
+                {pick("هذا المطعم يستخدم رابطاً مستقلاً لكل فرع.", "This restaurant uses a separate link for each branch.")}
+              </p>
+            ) : (
+              <LinkRow url={`${origin}/${access.data?.restaurant.slug ?? "app"}`} title={title} />
+            )}
           </div>
 
           <div className="space-y-3">
@@ -144,7 +147,9 @@ export function ClientAccessDialog({
               const branchUrl = `${origin}/${access.data?.restaurant.slug}/${encodeURIComponent(b.code)}`;
               return (
                 <div key={b.id} className="rounded-2xl border border-border p-3">
-                  <LinkRow url={branchUrl} title={pick(b.name_ar, b.name_en)} />
+                   {access.data?.restaurant.menu_link_mode === "separate_branches" ? (
+                     <LinkRow url={branchUrl} title={pick(b.name_ar, b.name_en)} />
+                   ) : null}
                   <div className="mt-3 space-y-2">
                     {b.accounts.length === 0 ? (
                       <p className="text-[11px] text-muted-foreground">

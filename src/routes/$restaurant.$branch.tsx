@@ -23,7 +23,11 @@ function BranchRedirect() {
 
   useEffect(() => {
     if (!data || !exists) return;
-    navigate({ to: "/app", search: { branch: code }, replace: true });
+    navigate({
+      to: "/app",
+      search: { branch: code, locked: data.restaurant.menu_link_mode === "separate_branches" },
+      replace: true,
+    });
   }, [data, exists, code, navigate]);
 
   if (!isLoading && data && !exists) {

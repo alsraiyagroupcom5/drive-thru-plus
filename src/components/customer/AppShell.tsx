@@ -6,6 +6,8 @@ import { useTheme } from "@/lib/theme";
 import { useCart } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/qr-spring-logo.png.asset.json";
+import { useQuery } from "@tanstack/react-query";
+import { branchesQuery } from "@/lib/menu-data";
 
 export function BrandMark({ className }: { className?: string }) {
   const { t } = useI18n();
@@ -74,8 +76,10 @@ export function AppShell({
   branchCode?: string | null | undefined;
 }) {
   const { t } = useI18n();
-  const { count } = useCart();
+  const { count, branchId, branchLocked } = useCart();
+  const branches = useQuery(branchesQuery);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const lockedCode = branchCode ?? branches.data?.find((branch) => branch.id === branchId)?.code ?? null;
 
   const items = [
     { to: "/app", icon: Home, label: t("home") },
@@ -100,7 +104,7 @@ export function AppShell({
                 <li key={item.to}>
                   <Link
                     to={item.to}
-                    search={item.to === "/app" && branchCode ? { branch: branchCode } : {}}
+                    search={item.to === "/app" && branchLocked && lockedCode ? { branch: lockedCode, locked: true } : {}}
                     className={cn(
                       "relative flex flex-col items-center gap-1 py-3 text-[11px] font-medium transition-colors",
                       active ? "text-primary" : "text-muted-foreground hover:text-foreground",

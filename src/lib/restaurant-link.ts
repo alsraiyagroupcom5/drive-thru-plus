@@ -8,6 +8,7 @@ export type RestaurantRow = {
   name_en: string;
   name_ar: string;
   logo_url: string | null;
+  menu_link_mode: "all_branches" | "separate_branches";
 };
 
 export type BranchLinkRow = {
@@ -31,7 +32,7 @@ export function restaurantBySlugQuery(slug: string) {
     queryFn: async () => {
       const { data: restaurant, error } = await supabase
         .from("restaurants")
-        .select("id, slug, name_en, name_ar, logo_url")
+        .select("id, slug, name_en, name_ar, logo_url, menu_link_mode")
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;

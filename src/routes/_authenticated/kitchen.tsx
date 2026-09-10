@@ -457,7 +457,7 @@ function KitchenPage() {
                   {en(items.length)}
                 </span>
               </div>
-              <ul className="space-y-3">
+              <ul className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
                 {items.map((o) => (
                   <OrderCard
                     key={o.id}
@@ -474,7 +474,7 @@ function KitchenPage() {
                   />
                 ))}
                 {!items.length && (
-                  <li className="rounded-2xl border border-dashed border-border/70 py-12 text-center text-xs text-muted-foreground">
+                  <li className="col-span-full rounded-2xl border border-dashed border-border/70 py-12 text-center text-xs text-muted-foreground">
                     {pick("لا توجد طلبات", "No orders")}
                   </li>
                 )}

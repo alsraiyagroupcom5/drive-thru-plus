@@ -63,6 +63,20 @@ function TrackPage() {
     },
   });
 
+  const orderStatus = order.data?.status;
+  const trackable =
+    !!orderStatus && ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "READY"].includes(orderStatus);
+
+  const tracker = useArrivalTracker({
+    enabled: trackable && !!session?.token,
+    token: session?.token,
+    orderId,
+    onArrived: () => {
+      toast.success(t("arrivalNotified"));
+      queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+    },
+  });
+
   const expired =
     order.isError &&
     order.error instanceof Error &&

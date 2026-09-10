@@ -132,12 +132,21 @@ function KitchenPage() {
                           {age} {t("minutes")}
                         </span>
                       </div>
-                      {o.customer_arrived && (
+                      {o.customer_arrived ? (
                         <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold text-success">
                           <Car className="h-3 w-3" aria-hidden />
-                          {t("imHere")}
+                          {t("customerArrived")}
                         </p>
-                      )}
+                      ) : o.distance_km != null ? (
+                        <p
+                          dir="ltr"
+                          className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary"
+                        >
+                          <Navigation className="h-3 w-3" aria-hidden />
+                          {formatKm(Number(o.distance_km), lang === "ar" ? "ar" : "en")} ·{" "}
+                          {o.eta_minutes ?? "—"} {t("minutes")}
+                        </p>
+                      ) : null}
                       <ul className="mt-2 space-y-1 text-sm">
                         {o.order_items.map((item) => (
                           <li key={item.id}>

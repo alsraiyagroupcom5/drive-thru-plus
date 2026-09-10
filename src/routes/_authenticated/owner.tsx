@@ -6,6 +6,7 @@ import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users } f
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
+import { Modal } from "@/components/console/Modal";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
@@ -205,7 +206,15 @@ function MenuTab({
         {pick("صنف جديد", "New item")}
       </button>
 
-      {(creating || editing) && (
+      <Modal
+        open={creating || editing !== null}
+        onClose={() => {
+          setEditing(null);
+          setCreating(false);
+        }}
+        title={editing ? pick("تعديل الصنف", "Edit item") : pick("صنف جديد", "New item")}
+        subtitle={pick("تفاصيل الصنف والسعر والفروع.", "Item details, price and branches.")}
+      >
         <ProductForm
           key={(editing?.["id"] as string) ?? "new"}
           product={editing}
@@ -226,7 +235,7 @@ function MenuTab({
             setCreating(false);
           }}
         />
-      )}
+      </Modal>
 
       <div className="space-y-2">
         {products.map((p) => {
@@ -565,7 +574,15 @@ function BranchesTab({ branches, onChanged }: { branches: Row[]; onChanged: () =
         {pick("فرع جديد", "New branch")}
       </button>
 
-      {(creating || editing) && (
+      <Modal
+        open={creating || editing !== null}
+        onClose={() => {
+          setEditing(null);
+          setCreating(false);
+        }}
+        title={editing ? pick("تعديل الفرع", "Edit branch") : pick("فرع جديد", "New branch")}
+        subtitle={pick("بيانات الفرع والموقع وأوقات العمل.", "Branch details, location and hours.")}
+      >
         <BranchForm
           key={(editing?.["id"] as string) ?? "new"}
           branch={editing}
@@ -579,7 +596,7 @@ function BranchesTab({ branches, onChanged }: { branches: Row[]; onChanged: () =
             setCreating(false);
           }}
         />
-      )}
+      </Modal>
 
       <div className="space-y-2">
         {branches.map((b) => (

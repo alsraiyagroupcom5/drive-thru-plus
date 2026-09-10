@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { KeyRound, Plus, Trash2, UserCog } from "lucide-react";
+import { Modal } from "@/components/console/Modal";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -90,7 +91,12 @@ export function TeamTab({ branches, restaurantId }: { branches: Branch[]; restau
         </button>
       </div>
 
-      {creating ? (
+      <Modal
+        open={creating}
+        onClose={() => setCreating(false)}
+        title={pick("حساب جديد", "New account")}
+        subtitle={pick("أنشئ حساب موظف وحدّد الفرع والصلاحية.", "Create a team account with branch and access.")}
+      >
         <NewMemberForm
           branches={branches}
           restaurantId={rid}
@@ -100,7 +106,7 @@ export function TeamTab({ branches, restaurantId }: { branches: Branch[]; restau
           }}
           onCancel={() => setCreating(false)}
         />
-      ) : null}
+      </Modal>
 
       <div className="space-y-2">
         {(team.data ?? []).map((m) => (

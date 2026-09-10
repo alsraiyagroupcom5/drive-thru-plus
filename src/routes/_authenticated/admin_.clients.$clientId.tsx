@@ -345,8 +345,17 @@ function MenuTab({
         </button>
       </div>
 
-      {creating || editing ? (
+      <Modal
+        open={creating || editing !== null}
+        onClose={() => {
+          setCreating(false);
+          setEditing(null);
+        }}
+        title={editing ? pick("تعديل الصنف", "Edit item") : pick("صنف جديد", "New item")}
+        subtitle={pick("تفاصيل الصنف والسعر والفروع.", "Item details, price and branches.")}
+      >
         <ProductForm
+          key={(editing?.["id"] as string | undefined) ?? "new"}
           restaurantId={restaurantId}
           categories={categories}
           branches={branches}
@@ -362,7 +371,7 @@ function MenuTab({
             setEditing(null);
           }}
         />
-      ) : null}
+      </Modal>
 
       <div className="space-y-2">
         {products.map((p) => {

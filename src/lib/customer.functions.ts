@@ -404,14 +404,16 @@ export const getOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const customerId = await requireCustomer(data.token);
     const db = await admin();
-    const { data: order } = await db
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.orderId);
+    let q = db
       .from("orders")
       .select(
         "*, branches(name_en, name_ar, phone), order_items(*, order_item_modifiers(*)), order_status_history(status, created_at)",
       )
-      .eq("id", data.orderId)
-      .eq("customer_id", customerId)
-      .maybeSingle();
+      .eq("customer_id", customerId);
+    if (isUuid) q = q.eq("id", data.orderId);
+    else q = q.eq("short_code", data.orderId.toUpperCase());
+    const { data: order } = await q.maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
     return order;
   });

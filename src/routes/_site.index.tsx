@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, siteIcon, useSite } from "@/lib/site-content";
+import { SiteLink } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 import heroImage from "@/assets/business-hero.jpg";
 import qrSpringLogoAsset from "@/assets/qr-spring-logo.png.asset.json";
@@ -451,8 +452,8 @@ function SiteLinkButton({
   children: React.ReactNode;
 }) {
   return (
-    <a
-      href={to}
+    <SiteLink
+      to={to}
       className={cn(
         "inline-flex items-center gap-2 px-8 py-4 font-display text-sm font-bold transition-colors duration-300",
         variant === "solid"
@@ -461,17 +462,17 @@ function SiteLinkButton({
       )}
     >
       {children}
-    </a>
+    </SiteLink>
   );
 }
 
 function SiteLinkPlain({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <a
-      href={to}
+    <SiteLink
+      to={to}
       className="mt-4 inline-block border-b border-site-teal pb-0.5 text-sm font-bold text-site-teal"
     >
       {children}
-    </a>
+    </SiteLink>
   );
 }

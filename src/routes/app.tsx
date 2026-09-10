@@ -49,6 +49,7 @@ function Landing() {
   const { branchId, setBranchId } = useCart();
   const { session, ready } = useCustomerAuth();
   const navigate = useNavigate();
+  const [selected, setSelected] = useState<Product | null>(null);
 
   const branches = useQuery(branchesQuery);
   const products = useQuery(productsQuery);
@@ -266,6 +267,8 @@ function Landing() {
           {t("staffLogin")}
         </Link>
       </p>
+
+      <ProductCustomizer productId={selected?.id ?? null} onClose={() => setSelected(null)} />
     </AppShell>
   );
 }

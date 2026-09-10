@@ -11,19 +11,16 @@ async function admin() {
   return supabaseAdmin;
 }
 
-/** Admin (super_admin) or restaurant owner (general_manager) may manage accounts. */
+/** Platform-wide administration is restricted to super administrators. */
 async function assertSuperAdmin(supabase: unknown, userId: string) {
   const client = supabase as {
     rpc: (
       fn: "has_role",
-      args: { _user_id: string; _role: "super_admin" | "general_manager" },
+      args: { _user_id: string; _role: "super_admin" },
     ) => PromiseLike<{ data: unknown }>;
   };
-  const [{ data: isAdmin }, { data: isOwner }] = await Promise.all([
-    client.rpc("has_role", { _user_id: userId, _role: "super_admin" }),
-    client.rpc("has_role", { _user_id: userId, _role: "general_manager" }),
-  ]);
-  if (isAdmin !== true && isOwner !== true) throw new Error("FORBIDDEN");
+  const { data: isAdmin } = await client.rpc("has_role", { _user_id: userId, _role: "super_admin" });
+  if (isAdmin !== true) throw new Error("FORBIDDEN");
 }
 
 
@@ -41,7 +38,7 @@ export const adminStatus = createServerFn({ method: "POST" })
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId)
-      .in("role", ["super_admin", "general_manager"]);
+      .eq("role", "super_admin");
     return { isSuperAdmin: (mine ?? []).length > 0, superAdminExists: (count ?? 0) > 0 };
   });
 

@@ -13,3 +13,4 @@
 - [ ] Completed/picked-up orders move to a "done" table at the bottom with date filters (today / yesterday / last 7 days / this month / specific date)
 
 - [x] Completed/picked-up orders moved to a bottom dated table with today/yesterday/7 days/month/exact-day filters
+- [ ] Security hardening: five-attempt lockout, admin alerts, tenant/branch isolation, and privilege audit

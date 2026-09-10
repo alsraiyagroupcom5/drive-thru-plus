@@ -124,6 +124,31 @@ function ClientWorkspace() {
       searchPlaceholder={pick("ابحث في الأصناف…", "Search items…")}
       backTo="/admin"
       backLabel={pick("كل العملاء", "All clients")}
+      secondaryTitle={name}
+      secondary={
+        <nav className="flex gap-2 overflow-x-auto xl:flex-col xl:gap-1 xl:overflow-visible">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id as Tab)}
+              className={cn(
+                "flex shrink-0 items-center gap-2 rounded-2xl px-3 py-2.5 text-start text-xs font-semibold transition xl:shrink",
+                tab === t.id
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
+            >
+              <t.icon className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="truncate">
+                {pick(t.ar, t.en)}
+                <span className="hidden text-[10px] font-medium text-muted-foreground xl:block">
+                  {pick(t.hintAr, t.hintEn)}
+                </span>
+              </span>
+            </button>
+          ))}
+        </nav>
+      }
     >
       {menu.isLoading || summary.isLoading ? (
         <p className="py-16 text-center text-sm text-muted-foreground">{pick("جارٍ التحميل…", "Loading…")}</p>

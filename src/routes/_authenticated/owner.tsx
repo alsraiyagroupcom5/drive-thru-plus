@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users } from "lucide-react";
+import { Store, UtensilsCrossed, ClipboardList, Pencil, Plus, Palette, Users, Radar } from "lucide-react";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
+import { TrackingTab } from "@/components/owner/TrackingTab";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { Modal } from "@/components/console/Modal";
 
@@ -51,7 +52,7 @@ const IMAGE_KEYS = [
   "cooler",
 ];
 
-type Tab = "branches" | "menu" | "design" | "team" | "orders";
+type Tab = "branches" | "menu" | "design" | "team" | "orders" | "settings";
 
 function OwnerConsole() {
   const { pick, lang } = useI18n();
@@ -90,6 +91,7 @@ function OwnerConsole() {
     { id: "design", label: pick("شكل المنيو", "Menu design"), hint: pick("الترتيب والتمييز", "Order & highlights"), icon: Palette },
     { id: "branches", label: pick("الفروع", "Branches"), hint: pick("المواقع والتفاصيل", "Locations & details"), icon: Store },
     { id: "team", label: pick("الفريق", "Team"), hint: pick("الحسابات والصلاحيات", "Accounts & access"), icon: Users },
+    { id: "settings", label: pick("الإعدادات", "Settings"), hint: pick("التتبع والمواقع", "Tracking & locations"), icon: Radar },
     { id: "orders", label: pick("الطلبات", "Orders"), hint: pick("قيد التنفيذ ومكتملة", "In progress & done"), icon: ClipboardList },
   ];
 
@@ -123,6 +125,9 @@ function OwnerConsole() {
       )}
       {tab === "branches" && <BranchesTab branches={data.branches} onChanged={refreshMenu} />}
       {tab === "team" && <TeamTab branches={data.branches} />}
+      {tab === "settings" && (
+        <TrackingTab branches={data.branches} onChanged={refreshMenu} />
+      )}
       {tab === "orders" && <OrdersTab branches={data.branches} lang={lang} />}
     </ConsoleShell>
   );

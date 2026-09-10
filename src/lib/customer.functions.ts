@@ -269,8 +269,11 @@ export const placeOrder = createServerFn({ method: "POST" })
         ).data
       : null;
 
-    const { haversineKm, driveMinutes, ARRIVAL_RADIUS_KM } = await import("@/lib/geo");
+    const { haversineKm, driveMinutes, trackingFromBranch } = await import("@/lib/geo");
+    const tracking = trackingFromBranch(branch);
+    const trackingOn = branch.tracking_enabled !== false;
     const hasFix =
+      trackingOn &&
       typeof data.lat === "number" &&
       typeof data.lng === "number" &&
       branch.lat != null &&
@@ -278,8 +281,11 @@ export const placeOrder = createServerFn({ method: "POST" })
     const distanceKm = hasFix
       ? haversineKm(data.lat as number, data.lng as number, Number(branch.lat), Number(branch.lng))
       : null;
-    const etaMinutes = distanceKm == null ? null : driveMinutes(distanceKm);
-    const arrivedNow = distanceKm != null && distanceKm <= ARRIVAL_RADIUS_KM;
+    const etaMinutes = distanceKm == null ? null : driveMinutes(distanceKm, tracking);
+    const arrivedNow =
+      branch.auto_arrival !== false &&
+      distanceKm != null &&
+      distanceKm <= tracking.arrivalRadiusKm;
 
     const { data: seq } = await db.rpc("next_order_number" as never).single();
     const orderNumber =
@@ -457,22 +463,34 @@ export const updateOrderLocation = createServerFn({ method: "POST" })
 
     const { data: order } = await db
       .from("orders")
-      .select("id, status, customer_arrived, branch_id, branches(lat, lng)")
+      .select(
+        "id, status, customer_arrived, branch_id, branches(lat, lng, tracking_enabled, auto_arrival, arrival_radius_m, avg_speed_kmh)",
+      )
       .eq("id", data.orderId)
       .eq("customer_id", customerId)
       .maybeSingle();
     if (!order) throw new Error("ORDER_NOT_FOUND");
 
-    const branch = order.branches as { lat: number | null; lng: number | null } | null;
-    if (branch?.lat == null || branch?.lng == null) {
+    const branch = order.branches as {
+      lat: number | null;
+      lng: number | null;
+      tracking_enabled?: boolean | null;
+      auto_arrival?: boolean | null;
+      arrival_radius_m?: number | null;
+      avg_speed_kmh?: number | null;
+    } | null;
+    if (branch?.lat == null || branch?.lng == null || branch.tracking_enabled === false) {
       return { distanceKm: null, etaMinutes: null, arrived: order.customer_arrived };
     }
 
-    const { haversineKm, driveMinutes, ARRIVAL_RADIUS_KM } = await import("@/lib/geo");
+    const { haversineKm, driveMinutes, trackingFromBranch } = await import("@/lib/geo");
+    const tracking = trackingFromBranch(branch);
     const distanceKm = haversineKm(data.lat, data.lng, Number(branch.lat), Number(branch.lng));
-    const etaMinutes = driveMinutes(distanceKm);
+    const etaMinutes = driveMinutes(distanceKm, tracking);
     const done = ["COMPLETED", "PICKED_UP", "CANCELLED", "REFUNDED"].includes(order.status);
-    const arrived = order.customer_arrived || (!done && distanceKm <= ARRIVAL_RADIUS_KM);
+    const arrived =
+      order.customer_arrived ||
+      (!done && branch.auto_arrival !== false && distanceKm <= tracking.arrivalRadiusKm);
 
     const patch: Record<string, unknown> = {
       customer_lat: data.lat,

@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Car, Clock, LogOut, Navigation } from "lucide-react";
+import { Car, Clock, LogOut, Navigation, Phone, Wallet } from "lucide-react";
 import { formatKm } from "@/lib/geo";
+import { Modal } from "@/components/console/Modal";
 import { toast } from "sonner";
 import {
   useLiveOrders,
@@ -11,7 +12,7 @@ import {
   minutesSince,
   type LiveOrder,
 } from "@/components/staff/useLiveOrders";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, money } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";

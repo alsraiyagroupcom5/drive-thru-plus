@@ -10,19 +10,44 @@ import heroImage from "@/assets/business-hero.jpg";
 export const Route = createFileRoute("/_site/")({
   head: () => ({
     meta: [
-      { title: "Origami Platform — smart drive-thru ordering for restaurants" },
+      { title: "QR-Spring — smart drive-thru ordering for restaurants" },
       {
         name: "description",
         content:
-          "Branded ordering app, live kitchen screen, branch and menu control, discounts and reporting. Plans from QAR 349 per branch monthly in Qatar.",
+          "QR-Spring gives restaurants a branded ordering app, live kitchen screen, branch and menu control, discounts and reporting. Plans from QAR 349 per branch monthly in Qatar.",
       },
-      { property: "og:title", content: "Origami Platform — smart drive-thru ordering" },
+      { property: "og:title", content: "QR-Spring — smart drive-thru ordering" },
       {
         property: "og:description",
         content: "Branded ordering app, live kitchen display and branch analytics in one platform.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://drive-thru-plus.lovable.app/" },
+      { property: "og:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: OG_IMAGE },
+    ],
+    links: [{ rel: "canonical", href: "https://drive-thru-plus.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "QR-Spring",
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web",
+          url: "https://drive-thru-plus.lovable.app/",
+          image: OG_IMAGE,
+          description:
+            "Smart drive-thru ordering and restaurant management platform: branded ordering app, live kitchen display, branch and menu control.",
+          offers: {
+            "@type": "Offer",
+            price: "349",
+            priceCurrency: "QAR",
+          },
+        }),
+      },
     ],
   }),
   component: BusinessHome,

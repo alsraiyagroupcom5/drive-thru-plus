@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Bell,
+  BellOff,
   Car,
   CheckCircle2,
   ChefHat,
@@ -27,6 +29,7 @@ import {
   type LiveOrder,
 } from "@/components/staff/useLiveOrders";
 import { useBranchInfo } from "@/components/staff/useBranchInfo";
+import { useNewOrderAlert } from "@/components/staff/useNewOrderAlert";
 import { useI18n, money } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,6 +122,16 @@ function KitchenPage() {
   const [now, setNow] = useState(() => new Date());
   const [online, setOnline] = useState(true);
   const [detail, setDetail] = useState<LiveOrder | null>(null);
+
+  // Live "new order" notification: fires as soon as an order lands, no refresh.
+  const alerts = useNewOrderAlert(orders.data, (fresh) => {
+    for (const o of fresh) {
+      toast.success(
+        pick(`طلب جديد · ${o.order_number}`, `New order · ${o.order_number}`),
+        { duration: 8000 },
+      );
+    }
+  });
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 15_000);
@@ -306,6 +319,29 @@ function KitchenPage() {
               )}
               {live ? pick("متصل مباشر", "Live") : pick("غير متصل", "Offline")}
             </span>
+            <button
+              type="button"
+              onClick={() =>
+                alerts.soundOn && !alerts.needsGesture
+                  ? alerts.setSound(false)
+                  : void alerts.enableSound()
+              }
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition",
+                alerts.soundOn && !alerts.needsGesture
+                  ? "bg-success/20 text-success"
+                  : "bg-white/10 text-console-rail-foreground/80 hover:bg-white/20",
+              )}
+            >
+              {alerts.soundOn && !alerts.needsGesture ? (
+                <Bell className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <BellOff className="h-3.5 w-3.5" aria-hidden />
+              )}
+              {alerts.soundOn && !alerts.needsGesture
+                ? pick("التنبيه الصوتي مفعّل", "Sound on")
+                : pick("تفعيل التنبيه الصوتي", "Enable sound")}
+            </button>
             <LanguageToggle />
             <button
               onClick={signOut}

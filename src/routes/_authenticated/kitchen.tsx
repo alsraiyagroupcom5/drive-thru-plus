@@ -533,15 +533,25 @@ function KitchenPage() {
 }
 
 
+const EXTRA_LABELS: Record<string, { ar: string; en: string }> = {
+  ACCEPTED: { ar: "تم القبول", en: "Accepted" },
+  QUALITY_CHECK: { ar: "فحص الجودة", en: "Quality check" },
+  ARRIVING: { ar: "العميل في الطريق", en: "Arriving" },
+  COMPLETED: { ar: "مكتمل", en: "Completed" },
+  CANCELLED: { ar: "ملغي", en: "Cancelled" },
+  PAID: { ar: "مدفوع", en: "Paid" },
+  REFUNDED: { ar: "مسترجع", en: "Refunded" },
+};
+
 function statusText(s: string, t: (k: never) => string) {
   const tt = t as unknown as (k: string) => string;
-  return s === "RECEIVED"
-    ? tt("received")
-    : s === "PREPARING"
-      ? tt("preparing")
-      : s === "READY"
-        ? tt("ready")
-        : tt("pickedUp");
+  if (s === "RECEIVED") return tt("received");
+  if (s === "PREPARING") return tt("preparing");
+  if (s === "READY") return tt("ready");
+  if (s === "PICKED_UP") return tt("pickedUp");
+  const extra = EXTRA_LABELS[s];
+  if (!extra) return s;
+  return document?.documentElement?.lang === "en" ? extra.en : extra.ar;
 }
 
 function StatusFlow({ status, compact = false }: { status: string; compact?: boolean }) {

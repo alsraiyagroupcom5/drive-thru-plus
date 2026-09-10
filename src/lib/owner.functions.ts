@@ -97,7 +97,7 @@ export const ownerOrders = createServerFn({ method: "POST" })
       )
       .eq("restaurant_id", rid)
       .order("created_at", { ascending: false })
-      .limit(120);
+      .limit(400);
     if (data.branchId) q = q.eq("branch_id", data.branchId);
     const { data: orders, error } = await q;
     if (error) throw new Error(error.message);

@@ -352,9 +352,12 @@ function KitchenPage() {
                   <OrderCard
                     key={o.id}
                     order={o}
-                    next={col.next}
+                    next={nextOf(o.status)}
                     onDetails={() => setDetail(o)}
-                    onAdvance={() => advance(o, col.next)}
+                    onAdvance={() => {
+                      const n = nextOf(o.status);
+                      if (n) advance(o, n);
+                    }}
                     onStatus={(s) => advance(o, s)}
                   />
                 ))}

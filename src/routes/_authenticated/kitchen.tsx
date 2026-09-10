@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Car, Clock, LogOut } from "lucide-react";
+import { Car, Clock, LogOut, Navigation } from "lucide-react";
+import { formatKm } from "@/lib/geo";
 import { toast } from "sonner";
 import {
   useLiveOrders,
@@ -35,7 +36,7 @@ const COLUMNS = [
 ] as const;
 
 function KitchenPage() {
-  const { t, pick } = useI18n();
+  const { t, pick, lang } = useI18n();
   const staff = useStaffBranch();
   const branchId = staff.data?.branch_id ?? null;
   const orders = useLiveOrders(branchId);

@@ -14,8 +14,8 @@ const dict = {
   brand: { ar: "كيو آر سبرينغ", en: "QR-Spring" },
   brandFull: { ar: "كيو آر سبرينغ", en: "QR-Spring" },
   tagline: {
-    ar: "قهوة مختصة وآيس كريم وحلويات",
-    en: "Specialty Coffee, Ice Cream & Desserts",
+    ar: "طلب ذكي عبر الدرايف ثرو",
+    en: "Smart drive-thru ordering",
   },
   openHours: { ar: "يومياً ٧ صباحاً – ١٢ منتصف الليل", en: "Daily 7AM – 12AM" },
   callBranch: { ar: "اتصل بالفرع", en: "Call branch" },

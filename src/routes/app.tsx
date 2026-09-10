@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Clock, MapPin, Repeat, Gift } from "lucide-react";
 import { AppShell, BrandMark, LanguageToggle } from "@/components/customer/AppShell";
 import { ProductCard } from "@/components/customer/ProductCard";
-import { branchesQuery, productsQuery } from "@/lib/menu-data";
+import { ProductCustomizer } from "@/components/customer/ProductCustomizer";
+import { branchesQuery, productsQuery, type Product } from "@/lib/menu-data";
 import { useI18n, money } from "@/lib/i18n";
 import { useCart } from "@/lib/cart";
 import { useCustomerAuth } from "@/lib/customer-auth";
@@ -240,7 +241,9 @@ function Landing() {
         <div className="space-y-3">
           {products.isLoading
             ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)
-            : featured.map((p) => <ProductCard key={p.id} product={p} />)}
+            : featured.map((p) => (
+                <ProductCard key={p.id} product={p} onSelect={setSelected} />
+              ))}
         </div>
       </section>
 
@@ -249,7 +252,7 @@ function Landing() {
           <h2 className="mb-3 font-display text-lg font-semibold">{t("new")}</h2>
           <div className="space-y-3">
             {fresh.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} onSelect={setSelected} />
             ))}
           </div>
         </section>

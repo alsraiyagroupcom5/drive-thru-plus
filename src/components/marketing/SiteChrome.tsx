@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { ChevronDown, Instagram, Mail, Menu, Moon, Phone, Sun, X } from "lucide-react";
@@ -31,7 +31,8 @@ export function SiteHeader() {
   const [openAccess, setOpenAccess] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const logoUrl = site.brand.logoUrl ?? logo.url;
-  const luxury = site.theme === "luxury";
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const luxury = site.theme === "luxury" && pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -71,7 +72,7 @@ export function SiteHeader() {
               key={n.to}
               to={n.to}
               activeOptions={{ exact: n.to === "/" }}
-              activeProps={{ className: "bg-accent text-accent-foreground" }}
+              activeProps={luxury ? undefined : { className: "bg-accent text-accent-foreground" }}
               className={luxury ? "luxury-nav-link" : "rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"}
             >
               {pick(n.label.ar, n.label.en)}
@@ -174,7 +175,8 @@ export function SiteFooter() {
   const { pick } = useI18n();
   const site = useSite();
   const logoUrl = site.brand.logoUrl ?? logo.url;
-  const luxury = site.theme === "luxury";
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const luxury = site.theme === "luxury" && pathname === "/";
   return (
     <footer className={cn("border-t", luxury ? "luxury-footer" : "border-border bg-card/40")}>
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-3">

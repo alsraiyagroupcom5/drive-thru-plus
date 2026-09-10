@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { ConsoleShell, StatusChip } from "@/components/console/ConsoleShell";
+import { Modal } from "@/components/console/Modal";
 import { TeamTab } from "@/components/owner/TeamTab";
 import { DesignTab } from "@/components/owner/DesignTab";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
@@ -610,8 +611,17 @@ function BranchesTab({
         </button>
       </div>
 
-      {creating || editing ? (
+      <Modal
+        open={creating || editing !== null}
+        onClose={() => {
+          setCreating(false);
+          setEditing(null);
+        }}
+        title={editing ? pick("تعديل الفرع", "Edit branch") : pick("فرع جديد", "New branch")}
+        subtitle={pick("بيانات الفرع والموقع وأوقات العمل.", "Branch details, location and opening hours.")}
+      >
         <BranchForm
+          key={(editing?.["id"] as string | undefined) ?? "new"}
           restaurantId={restaurantId}
           branch={editing}
           onDone={() => {
@@ -624,7 +634,7 @@ function BranchesTab({
             setEditing(null);
           }}
         />
-      ) : null}
+      </Modal>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {branches.map((b) => (
@@ -715,7 +725,7 @@ function BranchForm({
   });
 
   return (
-    <div className="rounded-3xl border border-border p-5">
+    <div>
       <div className="grid gap-3 sm:grid-cols-2">
         <input className={input} placeholder={pick("اسم الفرع (عربي)", "Branch name (Arabic)")} value={f.name_ar} onChange={(e) => setF({ ...f, name_ar: e.target.value })} />
         <input className={input} dir="ltr" placeholder="Branch name (English)" value={f.name_en} onChange={(e) => setF({ ...f, name_en: e.target.value })} />
@@ -744,7 +754,7 @@ function BranchForm({
           {f.is_open ? pick("الفرع مفتوح", "Branch open") : pick("الفرع مغلق", "Branch closed")}
         </button>
       </div>
-      <div className="mt-5 flex gap-2">
+      <div className="mt-5 flex gap-2 border-t border-border pt-4">
         <button
           onClick={() => save.mutate()}
           disabled={save.isPending}

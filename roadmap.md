@@ -10,4 +10,5 @@
 
 ## Open
 - (done) Admin: new account / new restaurant as pop-up buttons, restaurant sub-menu in dashboard side nav
+- (done) Admin: branch create/edit popups and redesigned restaurant client cards
 - Real contact email for the website (currently hello@origami.qa placeholder)

@@ -5,22 +5,45 @@ import { CONTACT } from "@/lib/marketing";
 import { SectionTitle } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 
+const OG_IMAGE =
+  "https://drive-thru-plus.lovable.app/__l5e/assets-v1/0cec0fac-0bcd-4383-8e30-8462ae4a84b5/qr-spring-og.jpg";
+
 export const Route = createFileRoute("/_site/contact")({
   head: () => ({
     meta: [
-      { title: "Contact us — Origami Platform, Doha Qatar" },
+      { title: "Contact us — QR-Spring, Doha Qatar" },
       {
         name: "description",
         content:
-          "Talk to the Origami team: Duhail Night Market 60020078, Aspire Downtown 66741689, Lusail Marina 51358247. Open daily 7AM to 12AM.",
+          "Talk to the QR-Spring team: Duhail Night Market 60020078, Aspire Downtown 66741689, Lusail Marina 51358247. Open daily 7AM to 12AM.",
       },
-      { property: "og:title", content: "Contact us — Origami Platform" },
+      { property: "og:title", content: "Contact us — QR-Spring" },
       {
         property: "og:description",
-        content: "Phone, email and Instagram for the Origami ordering platform team in Qatar.",
+        content: "Phone, email and Instagram for the QR-Spring ordering platform team in Qatar.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://drive-thru-plus.lovable.app/contact" },
+      { property: "og:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: OG_IMAGE },
+    ],
+    links: [{ rel: "canonical", href: "https://drive-thru-plus.lovable.app/contact" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "QR-Spring",
+          url: "https://drive-thru-plus.lovable.app/",
+          logo: "https://drive-thru-plus.lovable.app/__l5e/assets-v1/7373a51e-6b9f-410b-86c2-a88175ed136a/qr-spring-logo.png",
+          areaServed: "QA",
+          contactPoint: [
+            { "@type": "ContactPoint", telephone: "+97460020078", contactType: "customer service" },
+          ],
+        }),
+      },
     ],
   }),
   component: ContactPage,

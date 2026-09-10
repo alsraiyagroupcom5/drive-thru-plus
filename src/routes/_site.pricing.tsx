@@ -6,23 +6,30 @@ import { PLANS } from "@/lib/marketing";
 import { SectionTitle } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 
+const OG_IMAGE =
+  "https://drive-thru-plus.lovable.app/__l5e/assets-v1/0cec0fac-0bcd-4383-8e30-8462ae4a84b5/qr-spring-og.jpg";
+
 export const Route = createFileRoute("/_site/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — from QAR 349 per branch monthly | Origami Platform" },
+      { title: "Pricing — from QAR 349 per branch monthly | QR-Spring" },
       {
         name: "description",
         content:
-          "Simple per-branch pricing for restaurant ordering: Starter QAR 349, Growth QAR 649, Enterprise custom. Hosting, updates and support included.",
+          "Simple per-branch pricing for restaurant ordering with QR-Spring: Starter QAR 349, Growth QAR 649, Enterprise custom. Hosting, updates and support included.",
       },
-      { property: "og:title", content: "Pricing — Origami Platform" },
+      { property: "og:title", content: "Pricing — QR-Spring" },
       {
         property: "og:description",
         content: "Starter QAR 349, Growth QAR 649 per branch monthly, Enterprise custom pricing.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://drive-thru-plus.lovable.app/pricing" },
+      { property: "og:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: OG_IMAGE },
     ],
+    links: [{ rel: "canonical", href: "https://drive-thru-plus.lovable.app/pricing" }],
   }),
   component: PricingPage,
 });

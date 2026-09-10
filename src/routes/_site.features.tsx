@@ -4,23 +4,30 @@ import { useI18n } from "@/lib/i18n";
 import { FEATURES, ROLES } from "@/lib/marketing";
 import { SectionTitle } from "@/components/marketing/SiteChrome";
 
+const OG_IMAGE =
+  "https://drive-thru-plus.lovable.app/__l5e/assets-v1/0cec0fac-0bcd-4383-8e30-8462ae4a84b5/qr-spring-og.jpg";
+
 export const Route = createFileRoute("/_site/features")({
   head: () => ({
     meta: [
-      { title: "Platform features — ordering, kitchen screen, branch control | Origami" },
+      { title: "Features — ordering, kitchen screen, branch control | QR-Spring" },
       {
         name: "description",
         content:
-          "Every feature of the Origami ordering platform: customer app, live kitchen display, branch and menu control, discounts, staff privileges and reporting.",
+          "Every feature of the QR-Spring ordering platform: customer app, live kitchen display, branch and menu control, discounts, staff privileges and reporting.",
       },
-      { property: "og:title", content: "Platform features — Origami" },
+      { property: "og:title", content: "Platform features — QR-Spring" },
       {
         property: "og:description",
         content: "Customer app, kitchen display, branch and menu control, discounts and reporting.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://drive-thru-plus.lovable.app/features" },
+      { property: "og:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: OG_IMAGE },
     ],
+    links: [{ rel: "canonical", href: "https://drive-thru-plus.lovable.app/features" }],
   }),
   component: FeaturesPage,
 });

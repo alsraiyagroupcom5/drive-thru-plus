@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   List,
   MapPin,
+  MapPinOff,
   Navigation,
   PackageCheck,
   RefreshCcw,
@@ -413,7 +414,9 @@ export function OrderDetail({
       value:
         order["distance_km"] != null
           ? `${Number(order["distance_km"]).toFixed(1)} ${pick("كم", "km")}`
-          : "—",
+          : order["location_denied"]
+            ? pick("لم يشارك موقعه", "Not shared")
+            : "—",
     },
     {
       ar: "وصول العميل",
@@ -422,7 +425,9 @@ export function OrderDetail({
         ? pick("وصل", "Arrived")
         : order["eta_minutes"] != null
           ? `${String(order["eta_minutes"])} ${pick("د", "min")}`
-          : "—",
+          : order["location_denied"]
+            ? pick("الموقع غير مشارك", "Location off")
+            : "—",
     },
     {
       ar: "انتظار بالموقع",

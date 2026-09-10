@@ -342,6 +342,15 @@ function TrackPage() {
           </span>
         </div>
       </section>
+
+      <ReadyAlertOverlay
+        open={readyAlert.open}
+        onClose={readyAlert.close}
+        onReplay={readyAlert.replay}
+        pickupCode={o.pickup_code}
+        orderNumber={o.order_number}
+      />
     </AppShell>
+
   );
 }

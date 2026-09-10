@@ -9,6 +9,7 @@ import { ClientAccessDialog } from "@/components/console/ClientAccessDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
+import { OrderOverrideCard } from "@/components/console/OrderOverrideCard";
 import { useOrdersRealtime } from "@/hooks/useOrdersRealtime";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +62,7 @@ const TABS = [
   { id: "accounts", ar: "الحسابات", en: "Accounts", hintAr: "الفريق والصلاحيات", hintEn: "People & access", icon: Users },
   { id: "restaurants", ar: "المطاعم", en: "Restaurants", hintAr: "العملاء", hintEn: "Clients", icon: Store },
   { id: "requests", ar: "طلبات الاشتراك", en: "Sign-up requests", hintAr: "عملاء محتملون", hintEn: "Leads", icon: Inbox },
+  { id: "settings", ar: "الإعدادات", en: "Settings", hintAr: "صلاحيات المنصة", hintEn: "Platform controls", icon: SlidersHorizontal },
 ] as const;
 
 
@@ -305,6 +307,12 @@ function AdminConsole() {
       ]}
     >
 
+
+      {tab === "settings" && (
+        <section className="space-y-5">
+          <OrderOverrideCard scope="admin" />
+        </section>
+      )}
 
       {tab === "overview" && (
         <section className="space-y-5">

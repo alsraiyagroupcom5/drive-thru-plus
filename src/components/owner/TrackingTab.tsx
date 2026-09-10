@@ -6,6 +6,7 @@ import { Modal } from "@/components/console/Modal";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { saveTrackingSettings } from "@/lib/owner.functions";
+import { OrderOverrideCard } from "@/components/console/OrderOverrideCard";
 
 type Row = Record<string, unknown>;
 
@@ -32,6 +33,8 @@ export function TrackingTab({
 
   return (
     <div className="space-y-5">
+      <OrderOverrideCard scope="owner" restaurantId={restaurantId ?? null} />
+
       <section className="rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6">
         <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-primary">
           <Radar className="h-3.5 w-3.5" aria-hidden />

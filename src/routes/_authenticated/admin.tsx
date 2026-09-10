@@ -500,7 +500,7 @@ function AdminConsole() {
               {(clientCards.data ?? []).map((c) => (
                 <Link
                   key={c.id}
-                  to="/admin/client/$clientId"
+                  to="/admin/clients/$clientId"
                   params={{ clientId: c.id }}
                   className="group rounded-3xl border border-border bg-card p-5 transition hover:shadow-lift"
                 >

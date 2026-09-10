@@ -31,7 +31,7 @@ import {
   setProductDiscount,
 } from "@/lib/owner.functions";
 
-export const Route = createFileRoute("/_authenticated/admin_/client/$clientId")({
+export const Route = createFileRoute("/_authenticated/admin_/clients/$clientId")({
   head: () => ({
     meta: [
       { title: "Client workspace — Origami Platform" },

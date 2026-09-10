@@ -57,7 +57,9 @@ export function useLiveOrders(branchId: string | null | undefined) {
   const query = useQuery({
     queryKey: ["live-orders", branchId],
     enabled: !!branchId,
-    refetchInterval: 20_000,
+    refetchInterval: 8_000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const since = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
       const { data, error } = await supabase
@@ -73,23 +75,75 @@ export function useLiveOrders(branchId: string | null | undefined) {
     },
   });
 
+  // Realtime `postgres_changes` are RLS-filtered, so the socket needs the
+  // signed-in user's token. Set it explicitly and resubscribe on errors,
+  // otherwise the channel silently goes dead and boards look frozen.
   useEffect(() => {
     if (!branchId) return;
-    const channel = supabase
-      .channel(`branch-orders-${branchId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders", filter: `branch_id=eq.${branchId}` },
-        () => queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] }),
-      )
-      .subscribe();
+    let disposed = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let retry: ReturnType<typeof setTimeout> | null = null;
+
+    const refresh = () => {
+      queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
+      queryClient.invalidateQueries({ queryKey: ["owner-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["client-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders-feed"] });
+    };
+
+    const connect = async () => {
+      if (disposed) return;
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) supabase.realtime.setAuth(data.session.access_token);
+      if (disposed) return;
+      channel = supabase
+        .channel(`branch-orders-${branchId}-${Math.random().toString(36).slice(2, 8)}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "orders", filter: `branch_id=eq.${branchId}` },
+          refresh,
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "order_status_history" },
+          refresh,
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            refresh();
+            return;
+          }
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            if (disposed || retry) return;
+            retry = setTimeout(() => {
+              retry = null;
+              if (channel) supabase.removeChannel(channel);
+              channel = null;
+              void connect();
+            }, 4000);
+          }
+        });
+    };
+
+    void connect();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "TOKEN_REFRESHED" && session?.access_token) {
+        supabase.realtime.setAuth(session.access_token);
+      }
+    });
+
     return () => {
-      supabase.removeChannel(channel);
+      disposed = true;
+      if (retry) clearTimeout(retry);
+      sub.subscription.unsubscribe();
+      if (channel) supabase.removeChannel(channel);
     };
   }, [branchId, queryClient]);
 
   return query;
 }
+
 
 export async function setOrderStatus(orderId: string, status: string) {
   const patch: Record<string, unknown> = { status };

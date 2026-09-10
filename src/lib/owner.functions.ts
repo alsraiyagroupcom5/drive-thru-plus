@@ -93,7 +93,7 @@ export const ownerOrders = createServerFn({ method: "POST" })
     let q = db
       .from("orders")
       .select(
-        "id, order_number, status, payment_status, payment_method, total, created_at, ready_at, completed_at, customer_name, customer_phone, customer_arrived, branch_id, branches(name_en, name_ar), order_items(id, name_en, name_ar, quantity)",
+        "id, order_number, status, payment_status, payment_method, total, created_at, ready_at, completed_at, customer_name, customer_phone, customer_arrived, arrived_at, distance_km, eta_minutes, location_updated_at, branch_id, branches(name_en, name_ar), order_items(id, name_en, name_ar, quantity)",
       )
       .eq("restaurant_id", rid)
       .order("created_at", { ascending: false })

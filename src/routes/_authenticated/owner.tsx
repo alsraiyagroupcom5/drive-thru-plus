@@ -321,7 +321,18 @@ function MenuTab({
           </button>
           <div className="min-w-0"><h2 className="truncate font-display text-xl font-bold">{pick(selectedBranch["name_ar"] as string, selectedBranch["name_en"] as string)}</h2><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock3 className="h-3.5 w-3.5 shrink-0" aria-hidden /><span dir="ltr">{String(selectedBranch["opens_at"] ?? "").slice(0, 5)}–{String(selectedBranch["closes_at"] ?? "").slice(0, 5)}</span></p></div>
         </div>
-        <button onClick={() => { setEditing(null); setCreating(true); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[image:var(--gradient-brass)] px-4 py-2.5 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" aria-hidden />{pick("صنف جديد", "New item")}</button>
+        <div className="flex shrink-0 items-center gap-2">
+          <a
+            href={`/app?branch=${encodeURIComponent(String(selectedBranch["code"] ?? ""))}`}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+          >
+            <ExternalLink className="h-4 w-4" aria-hidden />
+            {pick("معاينة كزائر", "Preview as guest")}
+          </a>
+          <button onClick={() => { setEditing(null); setCreating(true); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[image:var(--gradient-brass)] px-4 py-2.5 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" aria-hidden />{pick("صنف جديد", "New item")}</button>
+        </div>
       </div>
 
       <Modal

@@ -103,6 +103,14 @@ function TrackingBadge({ order }: { order: Row }) {
       </span>
     );
   }
+  if (order["location_denied"]) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-[10px] font-bold text-warning-foreground">
+        <MapPinOff className="h-3 w-3" aria-hidden />
+        {pick("لم يشارك موقعه", "Location not shared")}
+      </span>
+    );
+  }
   const dist = order["distance_km"];
   if (dist != null) {
     const eta = order["eta_minutes"];

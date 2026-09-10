@@ -19,7 +19,7 @@ import { getSiteContent } from "@/lib/site.functions";
 export type T = { ar: string; en: string };
 
 export type SiteContent = {
-  brand: { logoUrl: string | null; name: T; showName: boolean };
+  brand: { logoUrl: string | null; name: T; showName: boolean; logoWidth: number; logoHeight: number };
   nav: { to: string; label: T }[];
   access: { to: string; label: T }[];
   hero: {
@@ -93,6 +93,8 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
     logoUrl: null,
     name: t("QR-Spring", "QR-Spring"),
     showName: false,
+    logoWidth: 192,
+    logoHeight: 64,
   },
   nav: [
     { to: "/", label: t("الرئيسية", "Home") },

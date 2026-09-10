@@ -165,7 +165,7 @@ function TimingLine({ order }: { order: Row }) {
  * restaurant (owner) has the feature enabled; the server re-checks it too.
  */
 function OrderStatusControl({ order }: { order: Row }) {
-  const { pick } = useI18n();
+  const { pick, lang } = useI18n();
   const qc = useQueryClient();
   const rid = (order["restaurant_id"] as string) ?? null;
   const status = order["status"] as string;

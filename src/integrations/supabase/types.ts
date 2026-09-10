@@ -496,6 +496,7 @@ export type Database = {
           points_earned: number
           ready_at: string | null
           restaurant_id: string
+          short_code: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           target_prep_minutes: number
@@ -530,6 +531,7 @@ export type Database = {
           points_earned?: number
           ready_at?: string | null
           restaurant_id: string
+          short_code?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           target_prep_minutes?: number
@@ -564,6 +566,7 @@ export type Database = {
           points_earned?: number
           ready_at?: string | null
           restaurant_id?: string
+          short_code?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           target_prep_minutes?: number
@@ -997,6 +1000,7 @@ export type Database = {
     }
     Functions: {
       admin_reset_order: { Args: { _order_id: string }; Returns: undefined }
+      generate_order_short_code: { Args: { _length?: number }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

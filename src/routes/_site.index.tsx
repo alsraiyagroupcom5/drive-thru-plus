@@ -108,15 +108,28 @@ function BusinessHome() {
               {site.slides.map((s, i) => (
                 <article
                   key={i}
-                  className="surface relative w-[85%] shrink-0 snap-center overflow-hidden rounded-3xl sm:w-[60%] lg:w-[48%]"
+                  className="surface group relative w-[85%] shrink-0 snap-center overflow-hidden rounded-3xl sm:w-[60%] lg:w-[48%]"
                 >
-                  {s.imageUrl ? (
-                    <img
-                      src={s.imageUrl}
-                      alt={pick(s.title.ar, s.title.en)}
-                      className="h-56 w-full object-cover"
+                  <div className="relative">
+                    {s.imageUrl ? (
+                      <img
+                        src={s.imageUrl}
+                        alt={pick(s.title.ar, s.title.en)}
+                        className="h-56 w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-56 w-full bg-[image:var(--gradient-hero)]" />
+                    )}
+                    <div
+                      className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent"
+                      aria-hidden
                     />
-                  ) : null}
+                    <img
+                      src={site.brand.logoUrl ?? qrSpringLogo}
+                      alt={pick(site.brand.name.ar, site.brand.name.en)}
+                      className="absolute left-1/2 top-4 h-12 w-auto -translate-x-1/2 object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
                   <div className="p-5">
                     <h3 className="font-display text-lg font-bold">{pick(s.title.ar, s.title.en)}</h3>
                     <p className="mt-2 text-sm text-muted-foreground">{pick(s.text.ar, s.text.en)}</p>

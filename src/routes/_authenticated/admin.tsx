@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ChevronRight, Inbox, LayoutDashboard, Plus, Store, Users } from "lucide-react";
+import { ArrowUpRight, ChevronRight, CircleDollarSign, Inbox, LayoutDashboard, MapPin, Package, Plus, ShoppingBag, Store, Users } from "lucide-react";
 import { Modal } from "@/components/console/Modal";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
@@ -564,53 +564,73 @@ function AdminConsole() {
           </Modal>
 
           <div>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 xl:grid-cols-2">
               {(clientCards.data ?? []).map((c) => (
                 <Link
                   key={c.id}
                   to="/admin/clients/$clientId"
                   params={{ clientId: c.id }}
-                  className="group rounded-3xl border border-border bg-card p-5 transition hover:shadow-lift"
+                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lift"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[image:var(--gradient-brass)] font-display text-base font-black text-primary-foreground">
-                      {pick(c.name_ar, c.name_en).trim().charAt(0)}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-3.5">
+                      <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-elevated font-display text-xl font-black text-primary">
+                        {c.logo_url ? (
+                          <img
+                            src={c.logo_url}
+                            alt={pick(c.name_ar, c.name_en)}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          pick(c.name_ar, c.name_en).trim().charAt(0)
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-display text-lg font-bold">{pick(c.name_ar, c.name_en)}</p>
+                        <p className="mt-0.5 truncate text-[11px] text-muted-foreground" dir="ltr">
+                          {c.slug} · {c.currency}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate font-display font-bold">{pick(c.name_ar, c.name_en)}</p>
-                      <p className="truncate text-[11px] text-muted-foreground" dir="ltr">
-                        {c.slug} · {c.currency}
-                      </p>
-                    </div>
+                    <span
+                      className={cn(
+                        "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold",
+                        c.openBranches ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      <span className={cn("h-1.5 w-1.5 rounded-full", c.openBranches ? "bg-success" : "bg-muted-foreground")} />
+                      {c.openBranches ? pick("مفتوح", "Open") : pick("مغلق", "Closed")}
+                    </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-center">
+                  <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 border-y border-border py-4 sm:grid-cols-4">
                     {[
-                      { ar: "فروع", en: "Branches", v: c.branches },
-                      { ar: "أصناف", en: "Items", v: c.products },
-                      { ar: "الفريق", en: "Staff", v: c.team },
-                      { ar: "طلبات ٢٤س", en: "Orders 24h", v: c.orders24h },
+                      { ar: "الفروع", en: "Branches", v: c.branches, icon: MapPin },
+                      { ar: "الأصناف", en: "Items", v: c.products, icon: Package },
+                      { ar: "الفريق", en: "Staff", v: c.team, icon: Users },
+                      { ar: "طلبات 24س", en: "Orders 24h", v: c.orders24h, icon: ShoppingBag },
                     ].map((k) => (
-                      <div key={k.en} className="rounded-2xl bg-elevated py-2">
-                        <p className="font-display text-lg font-bold" dir="ltr">
-                          {k.v}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">{pick(k.ar, k.en)}</p>
+                      <div key={k.en} className="flex items-center gap-2.5">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-elevated text-muted-foreground">
+                          <k.icon className="h-3.5 w-3.5" aria-hidden />
+                        </span>
+                        <div>
+                          <p className="font-display text-base font-bold leading-none" dir="ltr">{k.v}</p>
+                          <p className="mt-1 text-[9px] text-muted-foreground">{pick(k.ar, k.en)}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{money(Number(c.revenue24h), lang)}</span>
-                    <span
-                      className={cn(
-                        "rounded-full px-2.5 py-1 text-[10px] font-bold",
-                        c.openBranches ? "bg-success/15 text-success" : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      {c.openBranches
-                        ? pick("مفتوح الآن", "Open now")
-                        : pick("مغلق", "Closed")}
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <CircleDollarSign className="h-4 w-4" aria-hidden />
+                      <span>{pick("مبيعات 24 ساعة", "24h revenue")}</span>
+                      <strong className="text-foreground" dir="ltr">{money(Number(c.revenue24h), lang)}</strong>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-primary">
+                      {pick("فتح مساحة العمل", "Open workspace")}
+                      <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100" aria-hidden />
                     </span>
                   </div>
                 </Link>

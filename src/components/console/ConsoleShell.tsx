@@ -206,7 +206,14 @@ export function ConsoleShell({
             </header>
 
             {secondary ? (
-              <div className="border-b border-border px-4 py-3 sm:px-6 xl:hidden">{secondary}</div>
+              <div className="border-b border-border bg-elevated/40 px-4 py-3 sm:px-6">
+                {secondaryTitle ? (
+                  <p className="pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {secondaryTitle}
+                  </p>
+                ) : null}
+                <div className="overflow-x-auto pb-1">{secondary}</div>
+              </div>
             ) : null}
 
             <div className="px-4 py-5 sm:px-6">{children}</div>

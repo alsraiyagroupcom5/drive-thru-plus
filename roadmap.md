@@ -15,3 +15,5 @@
 - [x] Completed/picked-up orders moved to a bottom dated table with today/yesterday/7 days/month/exact-day filters
 - [x] Security hardening: five-attempt lockout, admin alerts, tenant/branch isolation, and privilege audit
 - [x] Customer order page: restaurant logo and branch details; Home keeps the selected branch
+- [ ] Owner menu-link mode: one restaurant link with branch selection or separate locked branch links
+- [ ] Admin-selectable public website theme: current layout or uploaded QR-Spring luxury theme

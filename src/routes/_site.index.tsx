@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_site/")({
 
 function SiteSlides({ slides, logoUrl, brandName }: {
   slides: typeof DEFAULT_SITE_CONTENT.slides;
-  logoUrl?: string;
+  logoUrl?: string | null;
   brandName: { ar: string; en: string };
 }) {
   const { pick, dir } = useI18n();

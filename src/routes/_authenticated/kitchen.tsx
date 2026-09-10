@@ -468,6 +468,8 @@ function KitchenPage() {
                       if (n) advance(o, n);
                     }}
                     onStatus={(s) => advance(o, s)}
+                    onCancel={() => cancel(o)}
+
                   />
                 ))}
                 {!items.length && (

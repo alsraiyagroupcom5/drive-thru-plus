@@ -15,6 +15,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getSiteContent } from "@/lib/site.functions";
+import slideDriveThru from "@/assets/slide-drivethru.jpg";
+import slideKitchen from "@/assets/slide-kitchen.jpg";
+import slideScan from "@/assets/slide-scan.jpg";
 
 export type T = { ar: string; en: string };
 
@@ -131,7 +134,32 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       { value: "24/7", label: t("لوحة تحكم مباشرة", "live dashboard") },
     ],
   },
-  slides: [],
+  slides: [
+    {
+      imageUrl: slideScan,
+      title: t("امسح. اطلب. انطلق.", "Scan. Order. Drive through."),
+      text: t(
+        "رمز QR واحد يفتح منيو مطعمك بالكامل على جوال العميل — بدون تطبيق وبدون انتظار.",
+        "One QR code opens your full menu on the customer's phone — no app, no waiting.",
+      ),
+    },
+    {
+      imageUrl: slideKitchen,
+      title: t("مطبخك يعمل بإيقاع لحظي", "Your kitchen, in real time"),
+      text: t(
+        "شاشة مطبخ فاخرة تعرض كل طلب وحالته وزمن تحضيره مع تنبيه صوتي للطلبات الجديدة.",
+        "A refined kitchen screen shows every order, its stage and prep time, with a sound alert for new orders.",
+      ),
+    },
+    {
+      imageUrl: slideDriveThru,
+      title: t("الطلب جاهز عند وصول العميل", "Ready the moment they arrive"),
+      text: t(
+        "تتبع موقع العميل يخبر الفريق بالمسافة والوقت المتبقي، فيستلم طلبه من النافذة دون توقف.",
+        "Live location tracking tells your team the distance and ETA, so the order meets the car at the window.",
+      ),
+    },
+  ],
   features: {
     eyebrow: t("المزايا", "Features"),
     title: t("كل ما يحتاجه مطعمك في مكان واحد", "Everything your restaurant needs, in one place"),

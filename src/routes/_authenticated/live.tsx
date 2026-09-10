@@ -105,8 +105,29 @@ function LivePage() {
         <div className="mx-4 rounded-2xl border border-success/40 bg-success/10 p-3">
           <p className="text-sm font-bold text-success">
             <Car className="me-1.5 inline h-4 w-4" aria-hidden />
-            {arrivals.map((o) => o.order_number).join(" · ")} — {t("arrivalNotified")}
+            {arrivals.map((o) => o.order_number).join(" · ")} — {t("customerArrived")}
           </p>
+        </div>
+      ) : null}
+
+      {approaching.length ? (
+        <div className="mx-4 mt-2 rounded-2xl border border-primary/30 bg-primary/5 p-3">
+          <p className="mb-2 inline-flex items-center gap-1.5 text-xs font-bold text-primary">
+            <Navigation className="h-3.5 w-3.5" aria-hidden />
+            {t("customerOnTheWay")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {approaching.map((o) => (
+              <span
+                key={o.id}
+                dir="ltr"
+                className="rounded-full border border-primary/30 bg-console-panel px-3 py-1 text-[11px] font-semibold"
+              >
+                {o.order_number} · {formatKm(Number(o.distance_km), lang === "ar" ? "ar" : "en")} ·{" "}
+                {o.eta_minutes ?? "—"} {t("minutes")}
+              </span>
+            ))}
+          </div>
         </div>
       ) : null}
 

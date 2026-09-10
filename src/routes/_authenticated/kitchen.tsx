@@ -807,7 +807,7 @@ function OrderCard({
         <p className="mt-2 rounded-lg bg-warning/10 p-2 text-[11px] text-warning">{o.notes}</p>
       ) : null}
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           onClick={onDetails}
           className="rounded-full border border-border bg-background px-3 py-2.5 text-xs font-bold transition hover:bg-accent"
@@ -822,20 +822,30 @@ function OrderCard({
             {statusText(next, t as never)}
           </button>
         ) : null}
+        {/* The dropdown only offers the next customer-facing stage; cancelling
+            has its own button so it can never be picked by mistake. */}
         <select
-          aria-label={pick("تغيير حالة الطلب", "Change order status")}
+          aria-label={pick("حالة الطلب", "Order status")}
           value={o.status}
+          disabled={!stageNext}
           onChange={(e) => onStatus(e.target.value)}
-          className="rounded-full border border-border bg-background px-2 py-2.5 text-xs font-bold outline-none"
+          className="rounded-full border border-border bg-background px-2 py-2.5 text-xs font-bold outline-none disabled:opacity-60"
         >
           <option value={o.status}>{statusText(o.status, t as never)}</option>
-          {(ALLOWED[o.status] ?? []).map((s) => (
-            <option key={s} value={s}>
-              {statusText(s, t as never)}
-            </option>
-          ))}
+          {stageNext ? <option value={stageNext}>{statusText(stageNext, t as never)}</option> : null}
         </select>
+        {canCancel(o.status) ? (
+          <button
+            onClick={onCancel}
+            aria-label={pick("إلغاء الطلب", "Cancel order")}
+            className="inline-flex items-center gap-1.5 rounded-full border border-destructive/40 px-3 py-2.5 text-xs font-bold text-destructive transition hover:bg-destructive/10"
+          >
+            <XCircle className="h-3.5 w-3.5" aria-hidden />
+            {pick("إلغاء", "Cancel")}
+          </button>
+        ) : null}
       </div>
+
     </li>
   );
 }

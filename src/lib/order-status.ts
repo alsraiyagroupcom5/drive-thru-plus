@@ -72,7 +72,11 @@ export function nextStage(status: string): CustomerStage | null {
   }
 }
 
-/** Statuses that may still be cancelled. */
+/**
+ * Statuses that may still be cancelled. Mirrors the database transition
+ * guard: once an order is picked up or completed it can no longer be
+ * cancelled, only refunded.
+ */
 export function canCancel(status: string): boolean {
-  return !isCancelled(status) && status !== "COMPLETED";
+  return !isCancelled(status) && status !== "COMPLETED" && status !== "PICKED_UP";
 }

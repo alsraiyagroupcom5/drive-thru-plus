@@ -284,11 +284,7 @@ export const CONTACT = {
   hoursEn: "Daily 7AM – 12AM",
   email: "hello@qr-spring.app",
   instagram: "https://www.instagram.com/qrspring.app/",
-  branches: [
-    { ar: "سوق الدحيل الليلي", en: "Duhail Night Market", phone: "60020078" },
-    { ar: "أسباير داون تاون", en: "Aspire Downtown", phone: "66741689" },
-    { ar: "لوسيل مارينا", en: "Lusail Marina", phone: "51358247" },
-  ],
+  branches: [],
 };
 
 export const CONTACT_ICONS = { MapPin, Package, Bike };

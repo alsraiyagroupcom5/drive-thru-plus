@@ -384,11 +384,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
     email: "hello@qr-spring.app",
     instagram: "https://www.instagram.com/qrspring.app/",
     instagramLabel: "qrspring.app",
-    branches: [
-      { name: t("سوق الدحيل الليلي", "Duhail Night Market"), phone: "60020078" },
-      { name: t("أسباير داون تاون", "Aspire Downtown"), phone: "66741689" },
-      { name: t("لوسيل مارينا", "Lusail Marina"), phone: "51358247" },
-    ],
+    branches: [],
   },
   footer: {
     tagline: t(

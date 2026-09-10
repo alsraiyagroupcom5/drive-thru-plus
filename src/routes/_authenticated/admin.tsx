@@ -249,6 +249,32 @@ function AdminConsole() {
       items={navItems}
       active={tab}
       onSelect={(id) => setTab(id as (typeof TABS)[number]["id"])}
+      {...(tab === "restaurants"
+        ? {
+            secondaryTitle: pick("المطاعم", "Restaurants"),
+            secondary: (
+              <nav className="flex gap-2 overflow-x-auto xl:flex-col xl:gap-1 xl:overflow-visible">
+                {(clientCards.data ?? []).map((c) => (
+                  <Link
+                    key={c.id}
+                    to="/admin/clients/$clientId"
+                    params={{ clientId: c.id }}
+                    className="flex shrink-0 items-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-semibold text-muted-foreground transition hover:bg-accent hover:text-foreground xl:shrink"
+                  >
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-[image:var(--gradient-brass)] text-[11px] font-black text-primary-foreground">
+                      {pick(c.name_ar, c.name_en).trim().charAt(0)}
+                    </span>
+                    <span className="truncate">{pick(c.name_ar, c.name_en)}</span>
+                    <ChevronRight className="ms-auto hidden h-3.5 w-3.5 rtl:rotate-180 xl:block" aria-hidden />
+                  </Link>
+                ))}
+                {clientCards.data && clientCards.data.length === 0 ? (
+                  <p className="px-2 text-xs text-muted-foreground">{pick("لا يوجد عملاء بعد.", "No clients yet.")}</p>
+                ) : null}
+              </nav>
+            ),
+          }
+        : {})}
       quickLinks={[
         { to: "/owner", label: pick("المنيو والفروع", "Menu & branches") },
         { to: "/live", label: pick("الطلبات المباشرة", "Live orders") },
@@ -470,11 +496,41 @@ function AdminConsole() {
 
       {tab === "restaurants" && (
         <section className="space-y-5">
-          <div className="surface rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold">
-              {rest.id ? pick("تعديل مطعم", "Edit restaurant") : pick("مطعم جديد", "New restaurant")}
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-bold">{pick("العملاء", "Clients")}</h2>
+              <p className="text-xs text-muted-foreground">
+                {pick("اضغط على العميل لإدارة منيوه وفروعه وفريقه.", "Open a client to manage its menu, branches and staff.")}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setRest({ id: "", slug: "", name_en: "", name_ar: "", currency: "QAR", org_en: "", org_ar: "", organizationId: "" });
+                setRestOpen(true);
+              }}
+              className="inline-flex items-center gap-2 rounded-full bg-[image:var(--gradient-brass)] px-5 py-3 font-display text-sm font-bold text-primary-foreground shadow-lift"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              {pick("مطعم جديد", "New restaurant")}
+            </button>
+          </div>
+
+          <Modal
+            open={restOpen}
+            onClose={() => setRestOpen(false)}
+            title={rest.id ? pick("تعديل مطعم", "Edit restaurant") : pick("مطعم جديد", "New restaurant")}
+            subtitle={pick("بيانات المطعم والمجموعة والعملة.", "Restaurant, group and currency details.")}
+            footer={
+              <button
+                onClick={() => saveRest.mutate()}
+                disabled={saveRest.isPending || !rest.slug || !rest.name_en || !rest.name_ar}
+                className="w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
+              >
+                {pick("حفظ", "Save")}
+              </button>
+            }
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
               <input className={input} placeholder={pick("اسم المطعم (عربي)", "Name (Arabic)")} value={rest.name_ar} onChange={(e) => setRest({ ...rest, name_ar: e.target.value })} />
               <input className={input} dir="ltr" placeholder="Name (English)" value={rest.name_en} onChange={(e) => setRest({ ...rest, name_en: e.target.value })} />
               <input className={input} dir="ltr" placeholder={pick("المعرّف (slug)", "Slug")} value={rest.slug} onChange={(e) => setRest({ ...rest, slug: e.target.value })} />
@@ -498,31 +554,10 @@ function AdminConsole() {
                 </>
               )}
             </div>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => saveRest.mutate()}
-                disabled={saveRest.isPending || !rest.slug || !rest.name_en || !rest.name_ar}
-                className="rounded-full bg-[image:var(--gradient-brass)] px-6 py-3 font-display text-sm font-bold text-primary-foreground disabled:opacity-50"
-              >
-                {pick("حفظ", "Save")}
-              </button>
-              {rest.id && (
-                <button
-                  onClick={() => setRest({ id: "", slug: "", name_en: "", name_ar: "", currency: "QAR", org_en: "", org_ar: "", organizationId: "" })}
-                  className="rounded-full border border-border px-6 py-3 text-sm"
-                >
-                  {pick("إلغاء", "Cancel")}
-                </button>
-              )}
-            </div>
-          </div>
+          </Modal>
 
           <div>
-            <h2 className="font-display text-lg font-bold">{pick("العملاء", "Clients")}</h2>
-            <p className="text-xs text-muted-foreground">
-              {pick("اضغط على العميل لإدارة منيوه وفروعه وفريقه.", "Open a client to manage its menu, branches and staff.")}
-            </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {(clientCards.data ?? []).map((c) => (
                 <Link
                   key={c.id}

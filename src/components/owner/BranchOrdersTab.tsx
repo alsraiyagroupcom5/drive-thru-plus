@@ -637,12 +637,15 @@ export function LatestOrdersGrid({
               </div>
 
               <div className="flex items-end justify-between gap-3 border-t border-border pt-3">
-                <button
-                  onClick={() => setDetail(order)}
-                  className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
-                >
-                  {pick("التفاصيل", "Details")}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setDetail(order)}
+                    className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                  >
+                    {pick("التفاصيل", "Details")}
+                  </button>
+                  <CustomerPageActions orderId={order["id"] as string} />
+                </div>
                 <span className="font-display text-lg font-bold text-primary" dir="ltr">{money(Number(order["total"]), lang)}</span>
               </div>
             </article>

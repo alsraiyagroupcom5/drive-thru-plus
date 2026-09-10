@@ -103,12 +103,14 @@ function SiteSlides({ slides, logoUrl, brandName }: {
   }, [dir, slides.length]);
 
   const onTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.changedTouches[0].screenX;
+    touchStartX.current = e.changedTouches[0]?.screenX ?? null;
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current == null) return;
-    const diff = touchStartX.current - e.changedTouches[0].screenX;
+    const endX = e.changedTouches[0]?.screenX;
+    if (endX == null) return;
+    const diff = touchStartX.current - endX;
     if (Math.abs(diff) > 40) diff > 0 ? next() : prev();
     touchStartX.current = null;
   };

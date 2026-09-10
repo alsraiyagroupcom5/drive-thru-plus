@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
-import { Check, Car, ChefHat, PackageCheck, Receipt, MapPin, Navigation } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Car, ChefHat, PackageCheck, Receipt, MapPin, Navigation, Shield } from "lucide-react";
 import { useArrivalTracker } from "@/components/customer/useArrivalTracker";
 import {
   ReadyAlertOverlay,
@@ -16,6 +16,7 @@ import { AppShell } from "@/components/customer/AppShell";
 import { useI18n, money } from "@/lib/i18n";
 import { useCustomerAuth } from "@/lib/customer-auth";
 import { announceArrival, getOrder } from "@/lib/customer.functions";
+import { getOrderForStaff } from "@/lib/staff.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -37,31 +38,63 @@ const STEPS = ["RECEIVED", "PREPARING", "READY", "COMPLETED"] as const;
 function TrackPage() {
   const { orderId } = Route.useParams();
   const { t, pick, lang } = useI18n();
-  const { session, ready, signOut } = useCustomerAuth();
+  const { session, ready: customerReady, signOut } = useCustomerAuth();
   const queryClient = useQueryClient();
 
+  const [staffUser, setStaffUser] = useState<{ id: string } | null>(null);
+  const [staffReady, setStaffReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (!mounted) return;
+      if (!error && data.user) setStaffUser({ id: data.user.id });
+      setStaffReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      if (event === "SIGNED_IN" && session?.user) setStaffUser({ id: session.user.id });
+      if (event === "SIGNED_OUT") setStaffUser(null);
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  const isCustomer = !!session?.token;
+  const isStaff = !!staffUser && !isCustomer;
+  const canFetch = (customerReady && isCustomer) || (staffReady && isStaff);
+
   const order = useQuery({
-    queryKey: ["order", orderId],
-    queryFn: () => getOrder({ data: { token: session!.token, orderId } }),
-    enabled: !!session?.token,
+    queryKey: ["order", orderId, isStaff ? "staff" : "customer"],
+    queryFn: async () => {
+      if (isCustomer) return getOrder({ data: { token: session.token, orderId } });
+      if (isStaff) return getOrderForStaff({ data: { orderId } });
+      throw new Error("NO_SESSION");
+    },
+    enabled: canFetch,
     retry: false,
     refetchInterval: 4_000,
     refetchOnWindowFocus: true,
   });
 
+  // Realtime by actual UUID so short codes work too.
+  const orderUuid = order.data?.id as string | undefined;
   useEffect(() => {
+    if (!orderUuid) return;
     const channel = supabase
-      .channel(`order-${orderId}`)
+      .channel(`order-${orderUuid}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` },
+        { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderUuid}` },
         () => queryClient.invalidateQueries({ queryKey: ["order", orderId] }),
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [orderId, queryClient]);
+  }, [orderUuid, orderId, queryClient]);
 
   const arrive = useMutation({
     mutationFn: () => announceArrival({ data: { token: session!.token, orderId } }),
@@ -76,7 +109,7 @@ function TrackPage() {
     !!orderStatus && ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "READY"].includes(orderStatus);
 
   const tracker = useArrivalTracker({
-    enabled: trackable && !!session?.token,
+    enabled: trackable && !!session?.token && !isStaff,
     token: session?.token,
     orderId,
     onArrived: () => {
@@ -85,7 +118,7 @@ function TrackPage() {
     },
   });
 
-  const readyAlert = useReadyAlert(orderId, orderStatus);
+  const readyAlert = useReadyAlert(orderUuid ?? orderId, orderStatus);
 
   const statusLabel = (status: string) => {
     if (["RECEIVED", "PAID", "ACCEPTED"].includes(status)) return t("received");
@@ -114,14 +147,12 @@ function TrackPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderStatus]);
 
-
-
   const expired =
     order.isError &&
     order.error instanceof Error &&
-    /UNAUTHENTICATED|ORDER_NOT_FOUND/.test(order.error.message);
+    /UNAUTHENTICATED|ORDER_NOT_FOUND|NO_SESSION/.test(order.error.message);
 
-  if ((ready && !session) || expired) {
+  if ((customerReady && !session && staffReady && !staffUser) || expired) {
     return (
       <AppShell>
         <div className="px-5 py-24 text-center">
@@ -193,7 +224,15 @@ function TrackPage() {
     <AppShell
       header={
         <header className="border-b border-border px-5 pb-3 pt-6">
-          <h1 className="font-display text-2xl font-bold">{t("trackOrder")}</h1>
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="font-display text-2xl font-bold">{t("trackOrder")}</h1>
+            {isStaff && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                <Shield className="h-3.5 w-3.5" aria-hidden />
+                {pick("عرض الموظف", "Staff view")}
+              </span>
+            )}
+          </div>
         </header>
       }
     >
@@ -213,7 +252,7 @@ function TrackPage() {
         )}
       </section>
 
-      {!cancelled && o.status !== "COMPLETED" ? (
+      {!cancelled && o.status !== "COMPLETED" && !isStaff ? (
         <div className="mt-3 flex justify-center px-5">
           <ReadySoundToggle
             soundOn={readyAlert.soundOn}
@@ -223,7 +262,6 @@ function TrackPage() {
           />
         </div>
       ) : null}
-
 
       <section className="mx-5 mt-6 overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-lift)]">
         <div className="px-5 pt-5">
@@ -382,16 +420,18 @@ function TrackPage() {
             </p>
           ) : null}
 
-          <div className="px-5 pb-5 pt-1">
-            <button
-              onClick={() => arrive.mutate()}
-              disabled={o.customer_arrived || arrive.isPending}
-              className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary py-3.5 font-display text-base font-bold text-primary disabled:opacity-60"
-            >
-              <Car className="h-5 w-5" aria-hidden />
-              {o.customer_arrived ? t("arrivalNotified") : t("imHere")}
-            </button>
-          </div>
+          {!isStaff && (
+            <div className="px-5 pb-5 pt-1">
+              <button
+                onClick={() => arrive.mutate()}
+                disabled={o.customer_arrived || arrive.isPending}
+                className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary py-3.5 font-display text-base font-bold text-primary disabled:opacity-60"
+              >
+                <Car className="h-5 w-5" aria-hidden />
+                {o.customer_arrived ? t("arrivalNotified") : t("imHere")}
+              </button>
+            </div>
+          )}
         </section>
       ) : null}
 
@@ -433,6 +473,5 @@ function TrackPage() {
         orderNumber={o.order_number}
       />
     </AppShell>
-
   );
 }

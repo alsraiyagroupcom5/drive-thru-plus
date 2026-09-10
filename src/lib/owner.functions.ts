@@ -700,3 +700,93 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
     return { ok: true, status: data.status };
   });
+
+/* ------------------------------ branding ------------------------------ */
+
+const LOGO_TYPES: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "image/svg+xml": "svg",
+};
+
+function decodeBase64(b64: string) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+/** Upload a logo image and return the public URL that serves it. */
+export const uploadLogo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Scoped & { dataUrl: string }) => d)
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    const match = /^data:([^;]+);base64,(.+)$/.exec(data.dataUrl ?? "");
+    if (!match) throw new Error("INVALID_IMAGE");
+    const type = match[1]!;
+    const ext = LOGO_TYPES[type];
+    if (!ext) throw new Error("UNSUPPORTED_IMAGE_TYPE");
+    const bytes = decodeBase64(match[2]!);
+    if (bytes.byteLength > 3_000_000) throw new Error("IMAGE_TOO_LARGE");
+
+    const path = `${rid}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const db = await admin();
+    const { error } = await db.storage
+      .from("brand-logos")
+      .upload(path, bytes, { contentType: type, upsert: true });
+    if (error) throw new Error(error.message);
+    return { url: `/api/public/brand-logo/${path}` };
+  });
+
+/** Set the restaurant logo, optionally copying it to every branch. */
+export const setRestaurantLogo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Scoped & { logoUrl: string | null; applyToBranches?: boolean }) => d)
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    const db = await admin();
+    const url = data.logoUrl?.trim() ? data.logoUrl.trim() : null;
+    const { error } = await db.from("restaurants").update({ logo_url: url }).eq("id", rid);
+    if (error) throw new Error(error.message);
+    if (data.applyToBranches) {
+      const { error: bErr } = await db
+        .from("branches")
+        .update({ logo_url: url })
+        .eq("restaurant_id", rid);
+      if (bErr) throw new Error(bErr.message);
+    }
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "restaurant.logo",
+      entity: "restaurants",
+      entity_id: rid,
+      details: { logo_url: url, applied_to_branches: !!data.applyToBranches },
+    });
+    return { ok: true };
+  });
+
+/** Set (or clear) a single branch logo. */
+export const setBranchLogo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Scoped & { branchId: string; logoUrl: string | null }) => d)
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    const db = await admin();
+    const url = data.logoUrl?.trim() ? data.logoUrl.trim() : null;
+    const { error } = await db
+      .from("branches")
+      .update({ logo_url: url })
+      .eq("id", data.branchId)
+      .eq("restaurant_id", rid);
+    if (error) throw new Error(error.message);
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "branch.logo",
+      entity: "branches",
+      entity_id: data.branchId,
+      details: { logo_url: url },
+    });
+    return { ok: true };
+  });

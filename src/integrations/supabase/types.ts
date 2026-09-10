@@ -1100,6 +1100,13 @@ export type Database = {
     }
     Functions: {
       admin_reset_order: { Args: { _order_id: string }; Returns: undefined }
+      check_login_allowed: {
+        Args: { _email_hash: string; _ip_hash: string }
+        Returns: {
+          allowed: boolean
+          locked_until: string
+        }[]
+      }
       clear_login_failures: {
         Args: { _email_hash: string; _ip_hash: string }
         Returns: undefined

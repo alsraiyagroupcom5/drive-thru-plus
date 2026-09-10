@@ -127,6 +127,13 @@
       "when": 1789078706285,
       "tag": "0017_secure_login_and_tenant_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1789078750554,
+      "tag": "0018_enforce_login_lock_and_safe_order_updates",
+      "breakpoints": true
     }
   ]
 }

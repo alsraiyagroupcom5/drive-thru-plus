@@ -681,19 +681,22 @@ function OrderCard({
         >
           {t("details")}
         </button>
-        <button
-          onClick={onAdvance}
-          className="flex-1 rounded-full bg-primary py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
-        >
-          {statusText(next, t as never)}
-        </button>
+        {next ? (
+          <button
+            onClick={onAdvance}
+            className="flex-1 rounded-full bg-primary py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+          >
+            {statusText(next, t as never)}
+          </button>
+        ) : null}
         <select
           aria-label={pick("تغيير حالة الطلب", "Change order status")}
           value={o.status}
           onChange={(e) => onStatus(e.target.value)}
           className="rounded-full border border-border bg-background px-2 py-2.5 text-xs font-bold outline-none"
         >
-          {FLOW.map((s) => (
+          <option value={o.status}>{statusText(o.status, t as never)}</option>
+          {(ALLOWED[o.status] ?? []).map((s) => (
             <option key={s} value={s}>
               {statusText(s, t as never)}
             </option>

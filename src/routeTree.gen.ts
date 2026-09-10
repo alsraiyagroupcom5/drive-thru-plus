@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RestaurantRouteImport } from './routes/$restaurant'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as SiteRouteImport } from './routes/_site'
 import { Route as AppRouteImport } from './routes/app'
@@ -18,6 +19,8 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as MenuRouteImport } from './routes/menu'
 import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as RestaurantIndexRouteImport } from './routes/$restaurant.index'
+import { Route as RestaurantBranchRouteImport } from './routes/$restaurant.$branch'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedKitchenRouteImport } from './routes/_authenticated/kitchen'
 import { Route as AuthenticatedLiveRouteImport } from './routes/_authenticated/live'
@@ -32,6 +35,11 @@ import { Route as ProductProductIdRouteImport } from './routes/product.$productI
 import { Route as AuthenticatedAdminClientsClientIdRouteImport } from './routes/_authenticated/admin_.clients.$clientId'
 import { Route as ApiPublicBrandLogoSplatRouteImport } from './routes/api/public/brand-logo.$'
 
+const RestaurantRoute = RestaurantRouteImport.update({
+  id: '/$restaurant',
+  path: '/$restaurant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -74,6 +82,16 @@ const OrdersRoute = OrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
   getParentRoute: () => rootRouteImport,
+} as any)
+const RestaurantIndexRoute = RestaurantIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => RestaurantRoute,
+} as any)
+const RestaurantBranchRoute = RestaurantBranchRouteImport.update({
+  id: '/$branch',
+  path: '/$branch',
+  getParentRoute: () => RestaurantRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
@@ -144,6 +162,7 @@ const ApiPublicBrandLogoSplatRoute = ApiPublicBrandLogoSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
+  '/$restaurant': typeof RestaurantRouteWithChildren
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/business': typeof BusinessRouteWithChildren
@@ -151,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/menu': typeof MenuRoute
   '/orders': typeof OrdersRoute
+  '/$restaurant/$branch': typeof RestaurantBranchRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/kitchen': typeof AuthenticatedKitchenRoute
   '/live': typeof AuthenticatedLiveRoute
@@ -161,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/business/$': typeof BusinessSplatRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/$restaurant/': typeof RestaurantIndexRoute
   '/admin/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
   '/api/public/brand-logo/$': typeof ApiPublicBrandLogoSplatRoute
 }
@@ -173,6 +194,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/menu': typeof MenuRoute
   '/orders': typeof OrdersRoute
+  '/$restaurant/$branch': typeof RestaurantBranchRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/kitchen': typeof AuthenticatedKitchenRoute
   '/live': typeof AuthenticatedLiveRoute
@@ -183,12 +205,14 @@ export interface FileRoutesByTo {
   '/business/$': typeof BusinessSplatRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/$restaurant': typeof RestaurantIndexRoute
   '/admin/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
   '/api/public/brand-logo/$': typeof ApiPublicBrandLogoSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/$restaurant': typeof RestaurantRouteWithChildren
   '/_site': typeof SiteRouteWithChildren
   '/app': typeof AppRoute
   '/auth': typeof AuthRoute
@@ -197,6 +221,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/menu': typeof MenuRoute
   '/orders': typeof OrdersRoute
+  '/$restaurant/$branch': typeof RestaurantBranchRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/kitchen': typeof AuthenticatedKitchenRoute
   '/_authenticated/live': typeof AuthenticatedLiveRoute
@@ -207,6 +232,7 @@ export interface FileRoutesById {
   '/business/$': typeof BusinessSplatRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/$restaurant/': typeof RestaurantIndexRoute
   '/_site/': typeof SiteIndexRoute
   '/_authenticated/admin_/clients/$clientId': typeof AuthenticatedAdminClientsClientIdRoute
   '/api/public/brand-logo/$': typeof ApiPublicBrandLogoSplatRoute
@@ -215,6 +241,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$restaurant'
     | '/app'
     | '/auth'
     | '/business'
@@ -222,6 +249,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/menu'
     | '/orders'
+    | '/$restaurant/$branch'
     | '/admin'
     | '/kitchen'
     | '/live'
@@ -232,6 +260,7 @@ export interface FileRouteTypes {
     | '/business/$'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/$restaurant/'
     | '/admin/clients/$clientId'
     | '/api/public/brand-logo/$'
   fileRoutesByTo: FileRoutesByTo
@@ -244,6 +273,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/menu'
     | '/orders'
+    | '/$restaurant/$branch'
     | '/admin'
     | '/kitchen'
     | '/live'
@@ -254,11 +284,13 @@ export interface FileRouteTypes {
     | '/business/$'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/$restaurant'
     | '/admin/clients/$clientId'
     | '/api/public/brand-logo/$'
   id:
     | '__root__'
     | '/_authenticated'
+    | '/$restaurant'
     | '/_site'
     | '/app'
     | '/auth'
@@ -267,6 +299,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/menu'
     | '/orders'
+    | '/$restaurant/$branch'
     | '/_authenticated/admin'
     | '/_authenticated/kitchen'
     | '/_authenticated/live'
@@ -277,6 +310,7 @@ export interface FileRouteTypes {
     | '/business/$'
     | '/order/$orderId'
     | '/product/$productId'
+    | '/$restaurant/'
     | '/_site/'
     | '/_authenticated/admin_/clients/$clientId'
     | '/api/public/brand-logo/$'
@@ -284,6 +318,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  RestaurantRoute: typeof RestaurantRouteWithChildren
   SiteRoute: typeof SiteRouteWithChildren
   AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRoute
@@ -299,6 +334,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/$restaurant': {
+      id: '/$restaurant'
+      path: '/$restaurant'
+      fullPath: '/$restaurant'
+      preLoaderRoute: typeof RestaurantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -361,6 +403,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/orders'
       preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/$restaurant/': {
+      id: '/$restaurant/'
+      path: '/'
+      fullPath: '/$restaurant/'
+      preLoaderRoute: typeof RestaurantIndexRouteImport
+      parentRoute: typeof RestaurantRoute
+    }
+    '/$restaurant/$branch': {
+      id: '/$restaurant/$branch'
+      path: '/$branch'
+      fullPath: '/$restaurant/$branch'
+      preLoaderRoute: typeof RestaurantBranchRouteImport
+      parentRoute: typeof RestaurantRoute
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -476,6 +532,20 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface RestaurantRouteChildren {
+  RestaurantBranchRoute: typeof RestaurantBranchRoute
+  RestaurantIndexRoute: typeof RestaurantIndexRoute
+}
+
+const RestaurantRouteChildren: RestaurantRouteChildren = {
+  RestaurantBranchRoute: RestaurantBranchRoute,
+  RestaurantIndexRoute: RestaurantIndexRoute,
+}
+
+const RestaurantRouteWithChildren = RestaurantRoute._addFileChildren(
+  RestaurantRouteChildren,
+)
+
 interface SiteRouteChildren {
   SiteContactRoute: typeof SiteContactRoute
   SiteFeaturesRoute: typeof SiteFeaturesRoute
@@ -506,6 +576,7 @@ const BusinessRouteWithChildren = BusinessRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  RestaurantRoute: RestaurantRouteWithChildren,
   SiteRoute: SiteRouteWithChildren,
   AppRoute: AppRoute,
   AuthRoute: AuthRoute,

@@ -129,7 +129,10 @@ export function ClientAccessDialog({
               <QrCode className="h-4 w-4" aria-hidden />
               {pick("رابط المطعم", "Restaurant link")}
             </p>
-            <LinkRow url={`${origin}/app`} title={title} />
+            <LinkRow
+              url={`${origin}/${access.data?.restaurant.slug ?? "app"}`}
+              title={title}
+            />
           </div>
 
           <div className="space-y-3">
@@ -138,7 +141,7 @@ export function ClientAccessDialog({
               {pick("الفروع والحسابات", "Branches & accounts")}
             </p>
             {(access.data?.branches ?? []).map((b) => {
-              const branchUrl = `${origin}/app?branch=${encodeURIComponent(b.code)}`;
+              const branchUrl = `${origin}/${access.data?.restaurant.slug}/${encodeURIComponent(b.code)}`;
               return (
                 <div key={b.id} className="rounded-2xl border border-border p-3">
                   <LinkRow url={branchUrl} title={pick(b.name_ar, b.name_en)} />

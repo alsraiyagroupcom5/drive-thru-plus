@@ -437,6 +437,9 @@ export const listClientCards = createServerFn({ method: "POST" })
         activeOrders: day.filter((o) =>
           ["RECEIVED", "ACCEPTED", "PREPARING", "QUALITY_CHECK", "ARRIVING"].includes(o.status as string),
         ).length,
+        // Brand-new orders waiting for the team — drives the red glow on the
+        // restaurant card until the first status change flips it to orange.
+        newOrders: day.filter((o) => o.status === "RECEIVED").length,
         readyOrders: day.filter((o) => o.status === "READY").length,
         completedOrders: day.filter((o) => ["COMPLETED", "PICKED_UP"].includes(o.status as string)).length,
         cancelledOrders: day.filter((o) => o.status === "CANCELLED").length,

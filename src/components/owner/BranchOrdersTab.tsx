@@ -29,7 +29,7 @@ import {
   resetOrder,
   updateOrderStatus,
 } from "@/lib/owner.functions";
-import { canCancel, isCancelled, nextStage, orderStatusLabel } from "@/lib/order-status";
+import { canCancel, isCancelled, nextStage, orderGlow, orderStatusLabel } from "@/lib/order-status";
 import {
   Select,
   SelectContent,
@@ -550,10 +550,17 @@ export function LatestOrdersGrid({
         {rows.map((order) => {
           const status = order["status"] as string;
           const items = (order["order_items"] as Row[]) ?? [];
+          // Brand-new orders glow red; once the team moves them forward the
+          // halo turns warm orange until the order is closed. Live status comes
+          // from the realtime-refetched `orders` prop, so the color flips
+          // without a refresh.
           return (
             <article
               key={order["id"] as string}
-              className="surface flex min-h-44 flex-col rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+              className={cn(
+                "surface flex min-h-44 flex-col rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lift",
+                orderGlow(status),
+              )}
             >
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border pb-3">
                 <div className="min-w-0">
@@ -901,7 +908,10 @@ export function BranchOrdersTab({
             return (
               <article
                 key={o["id"] as string}
-                className="surface flex min-h-44 flex-col rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+                className={cn(
+                  "surface flex min-h-44 flex-col rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lift",
+                  orderGlow(status),
+                )}
               >
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border pb-3">
                   <div className="min-w-0">

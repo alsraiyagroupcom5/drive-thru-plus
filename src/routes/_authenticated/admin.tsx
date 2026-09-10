@@ -284,7 +284,10 @@ function AdminConsole() {
                     key={c.id}
                     to="/admin/clients/$clientId"
                     params={{ clientId: c.id }}
-                    className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground shadow-sm transition hover:border-primary/40 hover:text-foreground"
+                    className={cn(
+                      "flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground shadow-sm transition hover:border-primary/40 hover:text-foreground",
+                      (c.newOrders ?? 0) > 0 ? "order-glow-new" : (c.activeOrders ?? 0) > 0 ? "order-glow-progress" : "",
+                    )}
                   >
                     <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-[image:var(--gradient-brass)] text-[11px] font-black text-primary-foreground">
                       {pick(c.name_ar, c.name_en).trim().charAt(0)}
@@ -583,7 +586,12 @@ function AdminConsole() {
                   key={c.id}
                   to="/admin/clients/$clientId"
                   params={{ clientId: c.id }}
-                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lift"
+                  className={cn(
+                    "group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lift",
+                    // Red halo while the restaurant has brand-new orders; it
+                    // softens to orange once every order has moved forward.
+                    (c.newOrders ?? 0) > 0 ? "order-glow-new" : (c.activeOrders ?? 0) > 0 ? "order-glow-progress" : "",
+                  )}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3.5">

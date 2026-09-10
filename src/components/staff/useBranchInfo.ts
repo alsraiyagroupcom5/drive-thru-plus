@@ -16,6 +16,7 @@ export type BranchInfo = {
   is_open: boolean;
   avg_prep_minutes: number;
   maps_url: string | null;
+  logo_url: string | null;
   restaurants: {
     id: string;
     name_en: string;
@@ -34,7 +35,7 @@ export function useBranchInfo(branchId: string | null | undefined) {
       const { data, error } = await supabase
         .from("branches")
         .select(
-          "id, code, name_en, name_ar, address_en, address_ar, city_en, city_ar, phone, opens_at, closes_at, is_open, avg_prep_minutes, maps_url, restaurants(id, name_en, name_ar, logo_url, currency)",
+          "id, code, name_en, name_ar, address_en, address_ar, city_en, city_ar, phone, opens_at, closes_at, is_open, avg_prep_minutes, maps_url, logo_url, restaurants(id, name_en, name_ar, logo_url, currency)",
         )
         .eq("id", branchId!)
         .maybeSingle();

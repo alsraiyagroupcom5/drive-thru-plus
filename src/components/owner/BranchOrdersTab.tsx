@@ -164,10 +164,11 @@ function TimingLine({ order }: { order: Row }) {
   );
 }
 
-/** Copy / open icons for the customer tracking page. */
-function CustomerPageActions({ orderId }: { orderId: string }) {
+/** Copy / open icons for the customer tracking page. Uses the short code when available. */
+function CustomerPageActions({ orderId, shortCode }: { orderId: string; shortCode?: string | null }) {
   const { pick } = useI18n();
-  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/order/${orderId}`;
+  const code = shortCode?.trim() || orderId;
+  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/order/${code}`;
   return (
     <div className="flex items-center gap-1.5">
       <button
@@ -185,7 +186,7 @@ function CustomerPageActions({ orderId }: { orderId: string }) {
         <Copy className="h-3.5 w-3.5" aria-hidden />
       </button>
       <a
-        href={`/order/${orderId}`}
+        href={`/order/${code}`}
         target="_blank"
         rel="noreferrer"
         title={pick("فتح صفحة العميل", "Open customer page")}

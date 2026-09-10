@@ -83,6 +83,12 @@ function AdminConsole() {
 
   const data = useQuery({ queryKey: ["admin-clients"], queryFn: () => listClients(), enabled });
   const overview = useQuery({ queryKey: ["admin-overview"], queryFn: () => adminOverview(), enabled });
+  const ordersFeed = useQuery({
+    queryKey: ["admin-orders-feed"],
+    queryFn: () => adminOrdersFeed(),
+    enabled: enabled && tab === "overview",
+    refetchInterval: 30_000,
+  });
   const restaurants = useQuery({
     queryKey: ["admin-restaurants"],
     queryFn: () => listRestaurants(),

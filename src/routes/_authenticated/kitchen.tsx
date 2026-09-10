@@ -628,14 +628,36 @@ function KitchenPage() {
               <p className="rounded-xl bg-warning/10 p-2.5 text-xs text-warning">{detail.notes}</p>
             ) : null}
 
-            {nextOf(detail.status) ? (
+            {isCancelled(detail.status) ? (
               <button
-                onClick={() => advance(detail, nextOf(detail.status)!)}
-                className="w-full rounded-full bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+                onClick={() => reactivate(detail)}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
               >
-                {statusText(nextOf(detail.status)!, t)}
+                <RefreshCcw className="h-4 w-4" aria-hidden />
+                {pick("إعادة تفعيل الطلب", "Re-enable order")}
               </button>
-            ) : null}
+            ) : (
+              <div className="space-y-2">
+                {nextOf(detail.status) ? (
+                  <button
+                    onClick={() => advance(detail, nextOf(detail.status)!)}
+                    className="w-full rounded-full bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+                  >
+                    {statusText(nextOf(detail.status)!, t)}
+                  </button>
+                ) : null}
+                {canCancel(detail.status) ? (
+                  <button
+                    onClick={() => cancel(detail)}
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-destructive/40 py-3 text-sm font-bold text-destructive transition hover:bg-destructive/10"
+                  >
+                    <XCircle className="h-4 w-4" aria-hidden />
+                    {pick("إلغاء الطلب", "Cancel order")}
+                  </button>
+                ) : null}
+              </div>
+            )}
+
           </div>
         ) : null}
       </Modal>

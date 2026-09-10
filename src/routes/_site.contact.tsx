@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Instagram, Mail, Phone } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, useSite } from "@/lib/site-content";
 import { SectionTitle } from "@/components/marketing/SiteChrome";
@@ -33,11 +33,6 @@ export const Route = createFileRoute("/_site/contact")({
             url: "https://drive-thru-plus.lovable.app/",
             email: site.contact.email,
             areaServed: "QA",
-            contactPoint: site.contact.branches.map((b) => ({
-              "@type": "ContactPoint",
-              telephone: `+974${b.phone}`,
-              contactType: "customer service",
-            })),
           }),
         },
       ],
@@ -61,28 +56,6 @@ function ContactPage() {
           />
 
           <div className="mt-8 grid gap-3">
-            {site.contact.branches.map((b) => (
-              <div key={b.phone} className="surface flex items-center justify-between rounded-2xl p-4">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10">
-                    <MapPin className="h-4 w-4 text-primary" aria-hidden />
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold">{pick(b.name.ar, b.name.en)}</p>
-                    <p className="text-xs text-muted-foreground" dir="ltr">
-                      +974 {b.phone}
-                    </p>
-                  </div>
-                </div>
-                <a
-                  href={`tel:+974${b.phone}`}
-                  className="rounded-full border border-primary px-4 py-2 text-xs font-bold text-primary"
-                >
-                  {pick("اتصال", "Call")}
-                </a>
-              </div>
-            ))}
-
             <div className="surface flex items-center gap-3 rounded-2xl p-4">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10">
                 <Clock className="h-4 w-4 text-primary" aria-hidden />

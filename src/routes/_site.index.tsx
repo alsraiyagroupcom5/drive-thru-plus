@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Clock } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, siteIcon, useSite } from "@/lib/site-content";
@@ -46,6 +47,165 @@ export const Route = createFileRoute("/_site/")({
   },
   component: BusinessHome,
 });
+
+function SiteSlides({ slides, logoUrl, brandName }: {
+  slides: typeof DEFAULT_SITE_CONTENT.slides;
+  logoUrl?: string | null;
+  brandName: { ar: string; en: string };
+}) {
+  const { pick, dir } = useI18n();
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+
+  const scrollTo = useCallback((index: number) => {
+    const track = trackRef.current;
+    if (!track || !track.children[index]) return;
+    const card = track.children[index] as HTMLElement;
+    const gap = 16;
+    const scrollLeft = dir === "rtl"
+      ? track.scrollWidth - card.offsetLeft - card.offsetWidth - gap * index
+      : card.offsetLeft + gap * index;
+    track.scrollTo({ left: scrollLeft, behavior: "smooth" });
+    setActive(index);
+  }, [dir]);
+
+  const next = useCallback(() => {
+    const nextIndex = (active + 1) % slides.length;
+    scrollTo(nextIndex);
+  }, [active, slides.length, scrollTo]);
+
+  const prev = useCallback(() => {
+    const prevIndex = (active - 1 + slides.length) % slides.length;
+    scrollTo(prevIndex);
+  }, [active, slides.length, scrollTo]);
+
+  useEffect(() => {
+    if (slides.length <= 1 || isHovering) return;
+    const id = setInterval(next, 5000);
+    return () => clearInterval(id);
+  }, [next, slides.length, isHovering]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const onScroll = () => {
+      const card = track.children[0] as HTMLElement | undefined;
+      if (!card) return;
+      const gap = 16;
+      const scrollPos = dir === "rtl" ? track.scrollWidth - track.scrollLeft - track.clientWidth : track.scrollLeft;
+      const approxIndex = Math.round(scrollPos / (card.offsetWidth + gap));
+      setActive(Math.max(0, Math.min(slides.length - 1, approxIndex)));
+    };
+    track.addEventListener("scroll", onScroll, { passive: true });
+    return () => track.removeEventListener("scroll", onScroll);
+  }, [dir, slides.length]);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.changedTouches[0]?.screenX ?? null;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current == null) return;
+    const endX = e.changedTouches[0]?.screenX;
+    if (endX == null) return;
+    const diff = touchStartX.current - endX;
+    if (Math.abs(diff) > 40) diff > 0 ? next() : prev();
+    touchStartX.current = null;
+  };
+
+  if (!slides.length) return null;
+
+  return (
+    <section className="border-y border-border bg-card/50 py-10">
+      <div className="mx-auto max-w-6xl px-5">
+        <div
+          className="group relative"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          <button
+            type="button"
+            onClick={prev}
+            aria-label={pick("الشريحة السابقة", "Previous slide")}
+            className={cn(
+              "absolute -start-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-border bg-card/90 text-foreground shadow-[var(--shadow-soft)] backdrop-blur transition hover:scale-105 hover:bg-card active:scale-95 md:-start-5",
+              dir === "rtl" && "right-auto left-0 -start-0 md:-start-5"
+            )}
+          >
+            <ChevronLeft className={cn("h-5 w-5", dir === "rtl" && "rotate-180")} aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            aria-label={pick("الشريحة التالية", "Next slide")}
+            className={cn(
+              "absolute -end-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-border bg-card/90 text-foreground shadow-[var(--shadow-soft)] backdrop-blur transition hover:scale-105 hover:bg-card active:scale-95 md:-end-5",
+              dir === "rtl" && "left-auto right-0 -end-0 md:-end-5"
+            )}
+          >
+            <ChevronRight className={cn("h-5 w-5", dir === "rtl" && "rotate-180")} aria-hidden />
+          </button>
+
+          <div
+            ref={trackRef}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+            className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3"
+          >
+            {slides.map((s, i) => (
+              <article
+                key={i}
+                className="surface group/card relative w-[85%] shrink-0 snap-center overflow-hidden rounded-3xl sm:w-[60%] lg:w-[48%]"
+              >
+                <div className="relative">
+                  {s.imageUrl ? (
+                    <img
+                      src={s.imageUrl}
+                      alt={pick(s.title.ar, s.title.en)}
+                      className="h-56 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-56 w-full bg-[image:var(--gradient-brass)]" />
+                  )}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent"
+                    aria-hidden
+                  />
+                  <img
+                    src={logoUrl ?? qrSpringLogo}
+                    alt={pick(brandName.ar, brandName.en)}
+                    className="absolute left-1/2 top-4 h-12 w-auto -translate-x-1/2 object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover/card:scale-105"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="font-display text-lg font-bold">{pick(s.title.ar, s.title.en)}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{pick(s.text.ar, s.text.en)}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-4 flex justify-center gap-2">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => scrollTo(i)}
+                aria-label={pick(`انتقل إلى الشريحة ${i + 1}`, `Go to slide ${i + 1}`)}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300",
+                  active === i ? "w-6 bg-primary" : "w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function BusinessHome() {
   const { pick, dir } = useI18n();
@@ -104,43 +264,7 @@ function BusinessHome() {
 
       {/* Slides */}
       {site.slides.length ? (
-        <section className="border-y border-border bg-card/50 py-10">
-          <div className="mx-auto max-w-6xl px-5">
-            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3">
-              {site.slides.map((s, i) => (
-                <article
-                  key={i}
-                  className="surface group relative w-[85%] shrink-0 snap-center overflow-hidden rounded-3xl sm:w-[60%] lg:w-[48%]"
-                >
-                  <div className="relative">
-                    {s.imageUrl ? (
-                      <img
-                        src={s.imageUrl}
-                        alt={pick(s.title.ar, s.title.en)}
-                        className="h-56 w-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-56 w-full bg-[image:var(--gradient-brass)]" />
-                    )}
-                    <div
-                      className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent"
-                      aria-hidden
-                    />
-                    <img
-                      src={site.brand.logoUrl ?? qrSpringLogo}
-                      alt={pick(site.brand.name.ar, site.brand.name.en)}
-                      className="absolute left-1/2 top-4 h-12 w-auto -translate-x-1/2 object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-display text-lg font-bold">{pick(s.title.ar, s.title.en)}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{pick(s.text.ar, s.text.en)}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
+        <SiteSlides slides={site.slides} logoUrl={site.brand.logoUrl} brandName={site.brand.name} />
       ) : null}
 
       {/* Features preview */}

@@ -147,9 +147,27 @@ function KitchenPage() {
     }
     try {
       await setOrderStatus(order.id, next);
+      // Move the card to its new column immediately, then reconcile with the server.
+      queryClient.setQueryData<LiveOrder[]>(["live-orders", branchId], (prev) =>
+        prev
+          ? prev.map((o) =>
+              o.id === order.id
+                ? {
+                    ...o,
+                    status: next,
+                    ready_at: next === "READY" ? new Date().toISOString() : o.ready_at,
+                  }
+                : o,
+            )
+          : prev,
+      );
       queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
+      queryClient.invalidateQueries({ queryKey: ["owner-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["client-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders-feed"] });
       setDetail((d) => (d && d.id === order.id ? { ...d, status: next } : d));
       toast.success(pick("تم تحديث حالة الطلب", "Order status updated"));
+
     } catch (e) {
       const msg = (e as { message?: string })?.message ?? "";
       toast.error(

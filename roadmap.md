@@ -8,6 +8,7 @@
 - Owner console: team accounts + privileges, branch address/map/coordinates, menu design (section order/visibility, item order, popular/new)
 - Product website at `/` with Features, Pricing, Contact; `/business` redirects to `/`
 - Admin client menu: branch cards opening a dedicated menu for each branch
+- Owner and admin menus: branch-first box view with menu-item card grids
 - Admin client menu layout: category cards opening a category submenu with product layout controls
 
 ## Open

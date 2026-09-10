@@ -29,6 +29,7 @@ import { BranchOrdersTab } from "@/components/owner/BranchOrdersTab";
 import { useI18n, money, formatDateTime } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { effectivePrice, hasDiscount, todayISO } from "@/lib/pricing";
+import { foodImage } from "@/lib/food-images";
 import { clientSummary } from "@/lib/admin.functions";
 import { saveRestaurant } from "@/lib/admin.functions";
 import {
@@ -529,17 +530,24 @@ function MenuTab({
         />
       </Modal>
 
-      <div className="space-y-2">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {branchProducts.map((p) => {
           const id = p["id"] as string;
           const price = Number(p["price"]);
           const dp = Number(p["discount_percent"] ?? 0);
           const serving = branchIdsOf(id);
           return (
-            <div key={id} className="rounded-2xl border border-border p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+            <article key={id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-lift">
+              <div className="relative aspect-[16/9] overflow-hidden bg-elevated">
+                <img src={foodImage(p["image_url"] as string)} alt={pick(p["name_ar"] as string, p["name_en"] as string)} className="h-full w-full object-cover transition duration-500 hover:scale-105" loading="lazy" />
+                <span className={cn("absolute end-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold backdrop-blur", p["is_available"] ? "bg-success/90 text-success-foreground" : "bg-destructive/90 text-destructive-foreground")}>
+                  {p["is_available"] ? pick("متاح", "Available") : pick("موقوف", "Paused")}
+                </span>
+              </div>
+              <div className="p-4">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                 <div className="min-w-0">
-                  <p className="font-semibold">{pick(p["name_ar"] as string, p["name_en"] as string)}</p>
+                  <p className="truncate font-semibold">{pick(p["name_ar"] as string, p["name_en"] as string)}</p>
                   <p className="text-xs text-muted-foreground">
                     {hasDiscount(p as never) ? (
                       <>
@@ -551,7 +559,11 @@ function MenuTab({
                     )}
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <button onClick={() => { setCreating(false); setEditing(p); }} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary/40 hover:text-primary" aria-label={pick("تعديل الصنف", "Edit item")}>
+                  <UtensilsCrossed className="h-3.5 w-3.5" aria-hidden />
+                </button>
+              </div>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
                   <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     {pick("خصم %", "Discount %")}
                     <input
@@ -575,19 +587,9 @@ function MenuTab({
                   >
                     {p["is_available"] ? pick("متاح", "Available") : pick("موقوف", "Paused")}
                   </button>
-                  <button
-                    onClick={() => {
-                      setCreating(false);
-                      setEditing(p);
-                    }}
-                    className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold"
-                  >
-                    {pick("تعديل", "Edit")}
-                  </button>
                 </div>
-              </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
                 {branches.map((b) => {
                   const bid = b["id"] as string;
                   const on = serving.includes(bid);
@@ -623,11 +625,12 @@ function MenuTab({
                   );
                 })}
               </div>
-            </div>
+              </div>
+            </article>
           );
         })}
         {!branchProducts.length ? (
-          <div className="rounded-2xl border border-dashed border-border py-16 text-center">
+          <div className="rounded-2xl border border-dashed border-border py-16 text-center sm:col-span-2 xl:col-span-3">
             <Coffee className="mx-auto h-7 w-7 text-muted-foreground" aria-hidden />
             <p className="mt-3 text-sm font-semibold">{pick("لا توجد أصناف في هذا الفرع", "No items in this branch")}</p>
             <p className="mt-1 text-xs text-muted-foreground">{pick("أضف أول صنف لبدء منيو الفرع.", "Add the first item to start this branch menu.")}</p>

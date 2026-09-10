@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Search, ShoppingBag } from "lucide-react";
 import { AppShell, LanguageToggle } from "@/components/customer/AppShell";
 import { ProductCard } from "@/components/customer/ProductCard";
+import { ProductCustomizer } from "@/components/customer/ProductCustomizer";
+import type { Product } from "@/lib/menu-data";
 import { branchAvailabilityQuery, categoriesQuery, productsQuery } from "@/lib/menu-data";
 import { todayISO } from "@/lib/pricing";
 import { useI18n, money } from "@/lib/i18n";
@@ -31,6 +33,7 @@ function MenuPage() {
   const { count, subtotal, branchId } = useCart();
   const [active, setActive] = useState<string>("all");
   const [term, setTerm] = useState("");
+  const [selected, setSelected] = useState<Product | null>(null);
 
   const categories = useQuery(categoriesQuery);
   const products = useQuery(productsQuery);

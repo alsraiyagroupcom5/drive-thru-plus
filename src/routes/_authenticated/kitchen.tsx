@@ -1,7 +1,21 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Car, Clock, LogOut, Navigation, Phone, Wallet } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Car,
+  CheckCircle2,
+  ChefHat,
+  Clock,
+  LogOut,
+  MapPin,
+  Navigation,
+  PackageCheck,
+  Phone,
+  Timer,
+  Wallet,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 import { formatKm } from "@/lib/geo";
 import { Modal } from "@/components/console/Modal";
 import { toast } from "sonner";
@@ -12,6 +26,7 @@ import {
   minutesSince,
   type LiveOrder,
 } from "@/components/staff/useLiveOrders";
+import { useBranchInfo } from "@/components/staff/useBranchInfo";
 import { useI18n, money } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,36 +45,53 @@ export const Route = createFileRoute("/_authenticated/kitchen")({
   component: KitchenPage,
 });
 
+const FLOW = ["RECEIVED", "PREPARING", "READY", "COMPLETED"] as const;
+
 const COLUMNS = [
-  { status: "RECEIVED", next: "PREPARING" },
-  { status: "PREPARING", next: "READY" },
-  { status: "READY", next: "COMPLETED" },
+  { status: "RECEIVED", next: "PREPARING", accent: "text-primary", dot: "bg-primary" },
+  { status: "PREPARING", next: "READY", accent: "text-warning", dot: "bg-warning" },
+  { status: "READY", next: "COMPLETED", accent: "text-success", dot: "bg-success" },
 ] as const;
+
+function en(n: number | string) {
+  return String(n);
+}
 
 function KitchenPage() {
   const { t, pick, lang } = useI18n();
   const staff = useStaffBranch();
   const branchId = staff.data?.branch_id ?? null;
   const orders = useLiveOrders(branchId);
+  const branch = useBranchInfo(branchId);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [, tick] = useState(0);
+  const [now, setNow] = useState(() => new Date());
+  const [online, setOnline] = useState(true);
   const [detail, setDetail] = useState<LiveOrder | null>(null);
 
   useEffect(() => {
-    const id = window.setInterval(() => tick((n) => n + 1), 30_000);
-    return () => window.clearInterval(id);
+    const id = window.setInterval(() => setNow(new Date()), 15_000);
+    const up = () => setOnline(true);
+    const down = () => setOnline(false);
+    setOnline(navigator.onLine);
+    window.addEventListener("online", up);
+    window.addEventListener("offline", down);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("online", up);
+      window.removeEventListener("offline", down);
+    };
   }, []);
 
   const advance = async (order: LiveOrder, next: string) => {
     try {
       await setOrderStatus(order.id, next);
       queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
+      setDetail((d) => (d && d.id === order.id ? { ...d, status: next } : d));
     } catch (e) {
       toast.error(e instanceof Error && e.message ? e.message : t("somethingWrong"));
     }
   };
-
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -68,145 +100,266 @@ function KitchenPage() {
     navigate({ to: "/auth", replace: true });
   };
 
+  const all = orders.data ?? [];
+  const startOfDay = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }, [now]);
+
+  const doneToday = all.filter(
+    (o) => o.status === "COMPLETED" && new Date(o.created_at).getTime() >= startOfDay,
+  );
+  const active = all.filter((o) => o.status !== "COMPLETED" && o.status !== "CANCELLED");
+  const arrived = active.filter((o) => o.customer_arrived).length;
+  const avgPrep = (() => {
+    const done = doneToday.filter((o) => o.ready_at);
+    if (!done.length) return null;
+    const sum = done.reduce(
+      (acc, o) =>
+        acc + (new Date(o.ready_at!).getTime() - new Date(o.created_at).getTime()) / 60_000,
+      0,
+    );
+    return Math.max(0, Math.round(sum / done.length));
+  })();
+  const salesToday = doneToday.reduce((acc, o) => acc + Number(o.total ?? 0), 0);
+
+  const rest = branch.data?.restaurants ?? null;
+  const clock = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  const day = now.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+  const live = online && !orders.isError;
+
   return (
-    <div className="min-h-screen bg-console-canvas">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold">{t("kitchen")}</h1>
-          <p className="text-xs text-muted-foreground">
-            {pick(staff.data?.branches?.name_ar, staff.data?.branches?.name_en) ?? t("branch")}
-          </p>
+    <div className="min-h-screen bg-console-canvas p-3 sm:p-5">
+      {/* Header */}
+      <header className="overflow-hidden rounded-[28px] bg-console-rail text-console-rail-foreground shadow-lift">
+        <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-7">
+          <div className="flex items-center gap-4">
+            <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white/10">
+              {rest?.logo_url ? (
+                <img
+                  src={rest.logo_url}
+                  alt={pick(rest.name_ar, rest.name_en)}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <ChefHat className="h-6 w-6" aria-hidden />
+              )}
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">
+                {t("kitchen")}
+              </p>
+              <h1 className="font-display text-2xl font-bold leading-tight">
+                {rest ? pick(rest.name_ar, rest.name_en) : "—"}
+              </h1>
+              <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs opacity-75">
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" aria-hidden />
+                  {branch.data
+                    ? pick(branch.data.name_ar, branch.data.name_en)
+                    : (pick(staff.data?.branches?.name_ar, staff.data?.branches?.name_en) ??
+                      t("branch"))}
+                </span>
+                {branch.data?.code ? (
+                  <span dir="ltr" className="rounded-full bg-white/10 px-2 py-0.5 font-mono">
+                    {branch.data.code}
+                  </span>
+                ) : null}
+                {branch.data?.phone ? (
+                  <a
+                    href={`tel:${branch.data.phone}`}
+                    dir="ltr"
+                    className="inline-flex items-center gap-1 hover:opacity-100"
+                  >
+                    <Phone className="h-3.5 w-3.5" aria-hidden />
+                    {branch.data.phone}
+                  </a>
+                ) : null}
+                {branch.data ? (
+                  <span dir="ltr" className="inline-flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" aria-hidden />
+                    {branch.data.opens_at?.slice(0, 5)} – {branch.data.closes_at?.slice(0, 5)}
+                  </span>
+                ) : null}
+              </p>
+              {branch.data?.address_en || branch.data?.address_ar ? (
+                <p className="mt-1 text-[11px] opacity-60">
+                  {pick(branch.data.address_ar, branch.data.address_en)}
+                  {branch.data.city_en || branch.data.city_ar
+                    ? ` · ${pick(branch.data.city_ar, branch.data.city_en)}`
+                    : ""}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl bg-white/10 px-4 py-2 text-right">
+              <p dir="ltr" className="font-display text-2xl font-bold leading-none">
+                {clock}
+              </p>
+              <p dir="ltr" className="mt-1 text-[10px] opacity-70">
+                {day}
+              </p>
+            </div>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold",
+                live ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive",
+              )}
+            >
+              {live ? (
+                <Wifi className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <WifiOff className="h-3.5 w-3.5" aria-hidden />
+              )}
+              {live ? pick("متصل مباشر", "Live") : pick("غير متصل", "Offline")}
+            </span>
+            <LanguageToggle />
+            <button
+              onClick={signOut}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/20"
+            >
+              <LogOut className="h-3.5 w-3.5" aria-hidden />
+              {t("signOut")}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <LanguageToggle />
-          <button
-            onClick={signOut}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:bg-accent"
-          >
-            <LogOut className="h-3.5 w-3.5" aria-hidden />
-            {t("signOut")}
-          </button>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-px bg-white/10 sm:grid-cols-5">
+          {[
+            { label: pick("طلبات نشطة", "Active"), value: en(active.length), icon: ChefHat },
+            {
+              label: pick("جاهز للاستلام", "Ready"),
+              value: en(all.filter((o) => o.status === "READY").length),
+              icon: PackageCheck,
+            },
+            { label: pick("العميل وصل", "Arrived"), value: en(arrived), icon: Car },
+            {
+              label: pick("مكتمل اليوم", "Done today"),
+              value: en(doneToday.length),
+              icon: CheckCircle2,
+            },
+            {
+              label: pick("متوسط التحضير", "Avg prep"),
+              value: avgPrep == null ? "—" : `${en(avgPrep)}m`,
+              icon: Timer,
+            },
+          ].map((s) => (
+            <div key={s.label} className="bg-console-rail px-5 py-3">
+              <p className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider opacity-60">
+                <s.icon className="h-3.5 w-3.5" aria-hidden />
+                {s.label}
+              </p>
+              <p dir="ltr" className="mt-1 font-display text-xl font-bold">
+                {s.value}
+              </p>
+            </div>
+          ))}
         </div>
       </header>
 
-      <div className="grid gap-4 p-4 md:grid-cols-3">
+      {/* Board */}
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {COLUMNS.map((col) => {
-          const items = (orders.data ?? []).filter((o) => o.status === col.status);
+          const items = active.filter((o) => o.status === col.status);
           return (
-            <section key={col.status} className="rounded-2xl bg-elevated/60 p-3">
-              <div className="mb-3 flex items-center justify-between px-1">
-                <h2 className="font-display text-sm font-bold uppercase tracking-wide">
+            <section
+              key={col.status}
+              className="rounded-[26px] border border-border/60 bg-card/70 p-3 shadow-sm backdrop-blur"
+            >
+              <div className="mb-3 flex items-center justify-between px-2 pt-1">
+                <h2
+                  className={cn(
+                    "inline-flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wide",
+                    col.accent,
+                  )}
+                >
+                  <span className={cn("h-2 w-2 rounded-full", col.dot)} aria-hidden />
                   {col.status === "RECEIVED"
                     ? t("received")
                     : col.status === "PREPARING"
                       ? t("preparing")
                       : t("ready")}
                 </h2>
-                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold text-primary">
-                  {items.length}
+                <span
+                  dir="ltr"
+                  className="rounded-full bg-foreground/5 px-2.5 py-0.5 text-xs font-bold"
+                >
+                  {en(items.length)}
                 </span>
               </div>
               <ul className="space-y-3">
-                {items.map((o) => {
-                  const age = minutesSince(o.created_at);
-                  const target = o.target_prep_minutes ?? 8;
-                  const urgency = age >= target ? "late" : age >= target - 2 ? "soon" : "ok";
-                  return (
-                    <li
-                      key={o.id}
-                      className={cn(
-                        "surface rounded-2xl border-2 p-3",
-                        urgency === "late"
-                          ? "border-destructive"
-                          : urgency === "soon"
-                            ? "border-warning"
-                            : "border-transparent",
-                      )}
-                    >
-                      <div
-                        className="flex cursor-pointer items-center justify-between"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setDetail(o)}
-                        onKeyDown={(e) => e.key === "Enter" && setDetail(o)}
-                      >
-                        <span className="font-display text-lg font-bold underline-offset-4 hover:underline">
-                          {o.order_number}
-                        </span>
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1 text-xs font-bold",
-                            urgency === "late" ? "text-destructive" : "text-muted-foreground",
-                          )}
-                        >
-                          <Clock className="h-3.5 w-3.5" aria-hidden />
-                          {age} {t("minutes")}
-                        </span>
-                      </div>
-                      {o.customer_arrived ? (
-                        <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold text-success">
-                          <Car className="h-3 w-3" aria-hidden />
-                          {t("customerArrived")}
-                        </p>
-                      ) : o.distance_km != null ? (
-                        <p
-                          dir="ltr"
-                          className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary"
-                        >
-                          <Navigation className="h-3 w-3" aria-hidden />
-                          {formatKm(Number(o.distance_km), lang === "ar" ? "ar" : "en")} ·{" "}
-                          {o.eta_minutes ?? "—"} {t("minutes")}
-                        </p>
-                      ) : null}
-                      <ul className="mt-2 space-y-1 text-sm">
-                        {o.order_items.map((item) => (
-                          <li key={item.id}>
-                            <span className="font-bold text-primary">{item.quantity}×</span>{" "}
-                            {pick(item.name_ar, item.name_en)}
-                            {item.order_item_modifiers.length ? (
-                              <span className="block text-[11px] text-muted-foreground">
-                                {item.order_item_modifiers
-                                  .map((m) => pick(m.name_ar, m.name_en))
-                                  .join(" • ")}
-                              </span>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                      {o.notes ? (
-                        <p className="mt-2 rounded-lg bg-warning/10 p-2 text-[11px] text-warning">
-                          {o.notes}
-                        </p>
-                      ) : null}
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => setDetail(o)}
-                          className="rounded-full border border-border bg-background py-2.5 text-sm font-bold hover:bg-accent"
-                        >
-                          {t("details")}
-                        </button>
-                        <button
-                          onClick={() => advance(o, col.next)}
-                          className="rounded-full bg-primary py-2.5 text-sm font-bold text-primary-foreground"
-                        >
-                          {col.next === "PREPARING"
-                            ? t("preparing")
-                            : col.next === "READY"
-                              ? t("ready")
-                              : t("pickedUp")}
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
+                {items.map((o) => (
+                  <OrderCard
+                    key={o.id}
+                    order={o}
+                    next={col.next}
+                    onDetails={() => setDetail(o)}
+                    onAdvance={() => advance(o, col.next)}
+                    onStatus={(s) => advance(o, s)}
+                  />
+                ))}
                 {!items.length && (
-                  <li className="py-10 text-center text-xs text-muted-foreground">—</li>
+                  <li className="rounded-2xl border border-dashed border-border/70 py-12 text-center text-xs text-muted-foreground">
+                    {pick("لا توجد طلبات", "No orders")}
+                  </li>
                 )}
               </ul>
             </section>
           );
         })}
       </div>
+
+      {/* Completed today */}
+      <section className="mt-4 rounded-[26px] border border-border/60 bg-card/70 p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="inline-flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            <CheckCircle2 className="h-4 w-4 text-success" aria-hidden />
+            {pick("طلبات مكتملة اليوم", "Completed today")}
+          </h2>
+          <span dir="ltr" className="text-xs font-bold text-muted-foreground">
+            {en(doneToday.length)} · {money(salesToday, lang)}
+          </span>
+        </div>
+        {doneToday.length ? (
+          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {doneToday
+              .slice()
+              .reverse()
+              .map((o) => (
+                <li key={o.id}>
+                  <button
+                    onClick={() => setDetail(o)}
+                    className="flex w-full items-center justify-between gap-2 rounded-2xl border border-border/60 bg-background px-3 py-2.5 text-start transition hover:border-success/40 hover:bg-accent"
+                  >
+                    <span>
+                      <span className="block font-display text-sm font-bold">{o.order_number}</span>
+                      <span dir="ltr" className="block text-[11px] text-muted-foreground">
+                        {new Date(o.created_at).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </span>
+                    <span className="text-xs font-bold text-success">{money(o.total, lang)}</span>
+                  </button>
+                </li>
+              ))}
+          </ul>
+        ) : (
+          <p className="py-8 text-center text-xs text-muted-foreground">
+            {pick("لا توجد طلبات مكتملة بعد", "No completed orders yet")}
+          </p>
+        )}
+      </section>
 
       <Modal
         open={!!detail}
@@ -216,18 +369,20 @@ function KitchenPage() {
       >
         {detail ? (
           <div className="space-y-4">
+            <StatusFlow status={detail.status} />
+
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-2xl bg-elevated/60 p-3">
                 <p className="text-[11px] font-bold text-muted-foreground">{t("timeSinceOrder")}</p>
-                <p className="mt-1 font-display text-lg font-bold">
-                  {minutesSince(detail.created_at)} {t("minutes")}
+                <p dir="ltr" className="mt-1 font-display text-lg font-bold">
+                  {en(minutesSince(detail.created_at))} {t("minutes")}
                 </p>
               </div>
               <div className="rounded-2xl bg-elevated/60 p-3">
                 <p className="text-[11px] font-bold text-muted-foreground">{t("waitingAtBranch")}</p>
                 <p className="mt-1 font-display text-lg font-bold">
                   {detail.arrived_at
-                    ? `${minutesSince(detail.arrived_at)} ${t("minutes")}`
+                    ? `${en(minutesSince(detail.arrived_at))} ${t("minutes")}`
                     : t("notArrivedYet")}
                 </p>
               </div>
@@ -245,9 +400,8 @@ function KitchenPage() {
                   : detail.payment_method === "APPLE_PAY"
                     ? t("applePay")
                     : t("card")}{" "}
-                ·{" "}
-                {detail.payment_status === "PAID" ? t("paid") : t("pending")} ·{" "}
-                {t("subtotal")} {money(detail.subtotal, lang)} + {t("tax")} {money(detail.tax, lang)}
+                · {detail.payment_status === "PAID" ? t("paid") : t("pending")} · {t("subtotal")}{" "}
+                {money(detail.subtotal, lang)} + {t("tax")} {money(detail.tax, lang)}
               </p>
             </div>
 
@@ -294,7 +448,7 @@ function KitchenPage() {
             <ul className="space-y-1.5 rounded-2xl bg-elevated/60 p-3 text-sm">
               {detail.order_items.map((item) => (
                 <li key={item.id}>
-                  <span className="font-bold text-primary">{item.quantity}×</span>{" "}
+                  <span className="font-bold text-primary">{en(item.quantity)}×</span>{" "}
                   {pick(item.name_ar, item.name_en)}
                   {item.order_item_modifiers.length ? (
                     <span className="block text-[11px] text-muted-foreground">
@@ -308,9 +462,195 @@ function KitchenPage() {
             {detail.notes ? (
               <p className="rounded-xl bg-warning/10 p-2.5 text-xs text-warning">{detail.notes}</p>
             ) : null}
+
+            {nextOf(detail.status) ? (
+              <button
+                onClick={() => advance(detail, nextOf(detail.status)!)}
+                className="w-full rounded-full bg-primary py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+              >
+                {statusText(nextOf(detail.status)!, t)}
+              </button>
+            ) : null}
           </div>
         ) : null}
       </Modal>
     </div>
+  );
+}
+
+function nextOf(status: string): string | null {
+  const i = FLOW.indexOf(status as (typeof FLOW)[number]);
+  if (i < 0 || i >= FLOW.length - 1) return null;
+  return FLOW[i + 1] ?? null;
+}
+
+function statusText(s: string, t: (k: never) => string) {
+  const tt = t as unknown as (k: string) => string;
+  return s === "RECEIVED"
+    ? tt("received")
+    : s === "PREPARING"
+      ? tt("preparing")
+      : s === "READY"
+        ? tt("ready")
+        : tt("pickedUp");
+}
+
+function StatusFlow({ status, compact = false }: { status: string; compact?: boolean }) {
+  const { t } = useI18n();
+  const idx = Math.max(0, FLOW.indexOf(status as (typeof FLOW)[number]));
+  return (
+    <ol className={cn("flex items-center gap-1.5", compact ? "" : "rounded-2xl bg-elevated/60 p-3")}>
+      {FLOW.map((s, i) => {
+        const done = i <= idx;
+        return (
+          <li key={s} className="flex flex-1 items-center gap-1.5">
+            <div className="flex-1">
+              <div
+                className={cn(
+                  "h-1.5 rounded-full transition-colors",
+                  done ? (i === idx ? "bg-primary" : "bg-primary/50") : "bg-foreground/10",
+                )}
+              />
+              {compact ? null : (
+                <p
+                  className={cn(
+                    "mt-1.5 text-[10px] font-bold",
+                    done ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {statusText(s, t as never)}
+                </p>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function OrderCard({
+  order: o,
+  next,
+  onDetails,
+  onAdvance,
+  onStatus,
+}: {
+  order: LiveOrder;
+  next: string;
+  onDetails: () => void;
+  onAdvance: () => void;
+  onStatus: (s: string) => void;
+}) {
+  const { t, pick, lang } = useI18n();
+  const age = minutesSince(o.created_at);
+  const target = o.target_prep_minutes ?? 8;
+  const urgency = age >= target ? "late" : age >= target - 2 ? "soon" : "ok";
+
+  return (
+    <li
+      className={cn(
+        "group rounded-[22px] border bg-card p-3.5 shadow-sm transition hover:shadow-lift",
+        urgency === "late"
+          ? "border-destructive/60"
+          : urgency === "soon"
+            ? "border-warning/60"
+            : "border-border/60",
+      )}
+    >
+      <div
+        className="flex cursor-pointer items-start justify-between gap-2"
+        role="button"
+        tabIndex={0}
+        onClick={onDetails}
+        onKeyDown={(e) => e.key === "Enter" && onDetails()}
+      >
+        <div>
+          <span className="font-display text-lg font-bold">{o.order_number}</span>
+          {o.customer_name ? (
+            <span className="block text-[11px] text-muted-foreground">{o.customer_name}</span>
+          ) : null}
+        </div>
+        <span
+          dir="ltr"
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold",
+            urgency === "late"
+              ? "bg-destructive/10 text-destructive"
+              : urgency === "soon"
+                ? "bg-warning/10 text-warning"
+                : "bg-foreground/5 text-muted-foreground",
+          )}
+        >
+          <Clock className="h-3.5 w-3.5" aria-hidden />
+          {age} {t("minutes")}
+        </span>
+      </div>
+
+      <div className="mt-2.5">
+        <StatusFlow status={o.status} compact />
+      </div>
+
+      {o.customer_arrived ? (
+        <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold text-success">
+          <Car className="h-3 w-3" aria-hidden />
+          {t("customerArrived")}
+        </p>
+      ) : o.distance_km != null ? (
+        <p
+          dir="ltr"
+          className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary"
+        >
+          <Navigation className="h-3 w-3" aria-hidden />
+          {formatKm(Number(o.distance_km), lang === "ar" ? "ar" : "en")} · {o.eta_minutes ?? "—"}{" "}
+          {t("minutes")}
+        </p>
+      ) : null}
+
+      <ul className="mt-2.5 space-y-1 text-sm">
+        {o.order_items.map((item) => (
+          <li key={item.id}>
+            <span className="font-bold text-primary">{item.quantity}×</span>{" "}
+            {pick(item.name_ar, item.name_en)}
+            {item.order_item_modifiers.length ? (
+              <span className="block text-[11px] text-muted-foreground">
+                {item.order_item_modifiers.map((m) => pick(m.name_ar, m.name_en)).join(" • ")}
+              </span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+
+      {o.notes ? (
+        <p className="mt-2 rounded-lg bg-warning/10 p-2 text-[11px] text-warning">{o.notes}</p>
+      ) : null}
+
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          onClick={onDetails}
+          className="rounded-full border border-border bg-background px-3 py-2.5 text-xs font-bold transition hover:bg-accent"
+        >
+          {t("details")}
+        </button>
+        <button
+          onClick={onAdvance}
+          className="flex-1 rounded-full bg-primary py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+        >
+          {statusText(next, t as never)}
+        </button>
+        <select
+          aria-label={pick("تغيير حالة الطلب", "Change order status")}
+          value={o.status}
+          onChange={(e) => onStatus(e.target.value)}
+          className="rounded-full border border-border bg-background px-2 py-2.5 text-xs font-bold outline-none"
+        >
+          {FLOW.map((s) => (
+            <option key={s} value={s}>
+              {statusText(s, t as never)}
+            </option>
+          ))}
+        </select>
+      </div>
+    </li>
   );
 }

@@ -430,6 +430,49 @@ function MenuTab({
 
   return (
     <div className="space-y-4">
+      <nav
+        aria-label={pick("التنقل بين الفروع", "Branch navigation")}
+        className="-mx-1 flex gap-2 overflow-x-auto border-b border-border px-1 pb-4"
+      >
+        {branches.map((branch) => {
+          const branchId = branch["id"] as string;
+          const active = branchId === selectedBranchId;
+          const itemCount = products.filter((product) =>
+            branchIdsOf(product["id"] as string).includes(branchId),
+          ).length;
+          return (
+            <button
+              key={branchId}
+              onClick={() => setSelectedBranchId(branchId)}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex shrink-0 items-center gap-3 rounded-xl border px-4 py-2.5 text-start transition",
+                active
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+              )}
+            >
+              <span
+                className={cn(
+                  "grid h-8 w-8 place-items-center rounded-lg",
+                  active ? "bg-primary-foreground/15" : "bg-elevated",
+                )}
+              >
+                <Store className="h-4 w-4" aria-hidden />
+              </span>
+              <span className="min-w-0">
+                <span className="block max-w-40 truncate text-xs font-bold">
+                  {pick(branch["name_ar"] as string, branch["name_en"] as string)}
+                </span>
+                <span className={cn("block text-[10px]", active ? "text-primary-foreground/75" : "text-muted-foreground")}>
+                  <span dir="ltr">{itemCount}</span> {pick("صنف", "items")}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
         <div className="flex min-w-0 items-center gap-3">
           <button

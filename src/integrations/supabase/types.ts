@@ -313,6 +313,30 @@ export type Database = {
           },
         ]
       }
+      login_security_state: {
+        Row: {
+          failed_count: number
+          last_failed_at: string
+          locked_until: string | null
+          principal_hash: string
+          window_started_at: string
+        }
+        Insert: {
+          failed_count?: number
+          last_failed_at?: string
+          locked_until?: string | null
+          principal_hash: string
+          window_started_at?: string
+        }
+        Update: {
+          failed_count?: number
+          last_failed_at?: string
+          locked_until?: string | null
+          principal_hash?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
       modifier_options: {
         Row: {
           id: string
@@ -923,6 +947,51 @@ export type Database = {
           },
         ]
       }
+      security_alerts: {
+        Row: {
+          alert_type: string
+          attempt_count: number
+          attempted_email: string | null
+          created_at: string
+          details: Json
+          email_sent_at: string | null
+          id: string
+          ip_hash: string | null
+          message: string
+          read_at: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          alert_type: string
+          attempt_count?: number
+          attempted_email?: string | null
+          created_at?: string
+          details?: Json
+          email_sent_at?: string | null
+          id?: string
+          ip_hash?: string | null
+          message: string
+          read_at?: string | null
+          severity?: string
+          title: string
+        }
+        Update: {
+          alert_type?: string
+          attempt_count?: number
+          attempted_email?: string | null
+          created_at?: string
+          details?: Json
+          email_sent_at?: string | null
+          id?: string
+          ip_hash?: string | null
+          message?: string
+          read_at?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: []
+      }
       signup_requests: {
         Row: {
           branches_count: number
@@ -990,18 +1059,21 @@ export type Database = {
         Row: {
           branch_id: string | null
           id: string
+          restaurant_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           branch_id?: string | null
           id?: string
+          restaurant_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           branch_id?: string | null
           id?: string
+          restaurant_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
@@ -1013,6 +1085,13 @@ export type Database = {
             referencedRelation: "branches"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_roles_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -1021,7 +1100,19 @@ export type Database = {
     }
     Functions: {
       admin_reset_order: { Args: { _order_id: string }; Returns: undefined }
+      clear_login_failures: {
+        Args: { _email_hash: string; _ip_hash: string }
+        Returns: undefined
+      }
       generate_order_short_code: { Args: { _length?: number }; Returns: string }
+      has_branch_access: {
+        Args: { _branch_id: string; _user_id: string }
+        Returns: boolean
+      }
+      has_restaurant_access: {
+        Args: { _restaurant_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1031,6 +1122,19 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       next_order_number: { Args: never; Returns: string }
+      register_login_failure: {
+        Args: {
+          _email: string
+          _email_hash: string
+          _ip_hash: string
+          _user_agent: string
+        }
+        Returns: {
+          alert_created: boolean
+          failed_count: number
+          locked_until: string
+        }[]
+      }
     }
     Enums: {
       app_role:

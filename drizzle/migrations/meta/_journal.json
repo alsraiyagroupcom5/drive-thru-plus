@@ -120,6 +120,13 @@
       "when": 1789065880663,
       "tag": "0016_site_content",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789078706285,
+      "tag": "0017_secure_login_and_tenant_permissions",
+      "breakpoints": true
     }
   ]
 }

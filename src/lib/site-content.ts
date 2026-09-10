@@ -381,9 +381,9 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       "Our team is ready to answer your questions and set up your restaurant account.",
     ),
     hours: t("يومياً ٧ صباحاً – ١٢ منتصف الليل", "Daily 7AM – 12AM"),
-    email: "hello@origami.qa",
-    instagram: "https://www.instagram.com/origami.qa/",
-    instagramLabel: "origami.qa",
+    email: "hello@qr-spring.app",
+    instagram: "https://www.instagram.com/qrspring.app/",
+    instagramLabel: "qrspring.app",
     branches: [
       { name: t("سوق الدحيل الليلي", "Duhail Night Market"), phone: "60020078" },
       { name: t("أسباير داون تاون", "Aspire Downtown"), phone: "66741689" },

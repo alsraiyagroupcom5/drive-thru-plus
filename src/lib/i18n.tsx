@@ -11,11 +11,11 @@ import {
 export type Lang = "ar" | "en";
 
 const dict = {
-  brand: { ar: "أوريغامي", en: "ORIGAMI" },
-  brandFull: { ar: "أوريغامي قطر", en: "Origami Qatar" },
+  brand: { ar: "كيو آر سبرينغ", en: "QR-Spring" },
+  brandFull: { ar: "كيو آر سبرينغ", en: "QR-Spring" },
   tagline: {
-    ar: "قهوة مختصة وآيس كريم وحلويات",
-    en: "Specialty Coffee, Ice Cream & Desserts",
+    ar: "طلب ذكي عبر الدرايف ثرو",
+    en: "Smart drive-thru ordering",
   },
   openHours: { ar: "يومياً ٧ صباحاً – ١٢ منتصف الليل", en: "Daily 7AM – 12AM" },
   callBranch: { ar: "اتصل بالفرع", en: "Call branch" },
@@ -180,17 +180,17 @@ const fallbackCtx: Ctx = {
 // Keep a single context instance across HMR reloads so components rendered by a
 // stale module copy still resolve the provider value.
 const globalStore = globalThis as unknown as {
-  __origamiLangContext?: React.Context<Ctx>;
+  __qrspringLangContext?: React.Context<Ctx>;
 };
 const LangContext: React.Context<Ctx> =
-  globalStore.__origamiLangContext ?? createContext<Ctx>(fallbackCtx);
-globalStore.__origamiLangContext = LangContext;
+  globalStore.__qrspringLangContext ?? createContext<Ctx>(fallbackCtx);
+globalStore.__qrspringLangContext = LangContext;
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>("ar");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("origami.lang");
+    const stored = window.localStorage.getItem("qrspring.lang");
     if (stored === "en" || stored === "ar") setLang(stored);
   }, []);
 
@@ -202,7 +202,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback(() => {
     setLang((prev) => {
       const next = prev === "ar" ? "en" : "ar";
-      window.localStorage.setItem("origami.lang", next);
+      window.localStorage.setItem("qrspring.lang", next);
       return next;
     });
   }, []);

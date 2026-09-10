@@ -10,7 +10,7 @@ type Ctx = {
 };
 
 const AuthContext = createContext<Ctx | null>(null);
-const KEY = "origami.session";
+const KEY = "qrspring.session";
 const LEGACY_KEY = "masar.session";
 
 export function CustomerAuthProvider({ children }: { children: ReactNode }) {

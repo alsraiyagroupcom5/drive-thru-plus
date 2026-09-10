@@ -16,13 +16,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/menu")({
   head: () => ({
     meta: [
-      { title: "Menu — Origami Qatar" },
+      { title: "Menu — QR-Spring" },
       {
         name: "description",
         content: "Burgers, chicken, meals, sides, drinks and desserts. Order ahead and collect.",
       },
-      { property: "og:title", content: "Menu — Origami Qatar" },
-      { property: "og:description", content: "Browse the full Origami Qatar menu." },
+      { property: "og:title", content: "Menu — QR-Spring" },
+      { property: "og:description", content: "Browse the full menu." },
     ],
   }),
   component: MenuPage,

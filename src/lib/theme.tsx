@@ -14,7 +14,7 @@ type Ctx = { theme: Theme; toggle: () => void };
 
 const ThemeContext = createContext<Ctx | null>(null);
 
-const STORAGE_KEY = "origami.theme";
+const STORAGE_KEY = "qrspring.theme";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");

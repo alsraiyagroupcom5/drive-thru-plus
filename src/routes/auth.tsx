@@ -11,9 +11,9 @@ import { BrandMark, LanguageToggle } from "@/components/customer/AppShell";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Staff sign in — Origami Qatar" },
+      { title: "Staff sign in — QR-Spring" },
       { name: "description", content: "Kitchen and branch team access to live drive-thru orders." },
-      { property: "og:title", content: "Staff sign in — Origami Qatar" },
+      { property: "og:title", content: "Staff sign in — QR-Spring" },
       { property: "og:description", content: "Team access to live drive-thru orders." },
       { name: "robots", content: "noindex" },
     ],
@@ -87,7 +87,7 @@ function StaffAuth() {
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             dir="ltr"
-            placeholder="staff@origami.qa"
+            placeholder="staff@example.com"
             aria-label="Email"
             className="h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2"
           />

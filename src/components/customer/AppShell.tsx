@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useCart } from "@/lib/cart";
 import { cn } from "@/lib/utils";
-import logo from "@/assets/origami-logo.jpg.asset.json";
+import logo from "@/assets/qr-spring-logo.png.asset.json";
 
 export function BrandMark({ className }: { className?: string }) {
   const { t } = useI18n();
@@ -13,7 +13,7 @@ export function BrandMark({ className }: { className?: string }) {
     <div className={cn("flex items-center gap-2.5", className)}>
       <img
         src={logo.url}
-        alt="Origami Qatar"
+        alt="QR-Spring"
         width={40}
         height={40}
         className="h-10 w-10 rounded-xl border border-border bg-white object-contain p-0.5"

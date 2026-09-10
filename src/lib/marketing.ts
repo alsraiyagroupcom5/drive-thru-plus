@@ -282,8 +282,8 @@ export const STEPS = [
 export const CONTACT = {
   hoursAr: "يومياً ٧ صباحاً – ١٢ منتصف الليل",
   hoursEn: "Daily 7AM – 12AM",
-  email: "hello@origami.qa",
-  instagram: "https://www.instagram.com/origami.qa/",
+  email: "hello@qr-spring.app",
+  instagram: "https://www.instagram.com/qrspring.app/",
   branches: [
     { ar: "سوق الدحيل الليلي", en: "Duhail Night Market", phone: "60020078" },
     { ar: "أسباير داون تاون", en: "Aspire Downtown", phone: "66741689" },

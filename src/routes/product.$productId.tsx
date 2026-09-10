@@ -14,9 +14,9 @@ import { effectivePrice } from "@/lib/pricing";
 export const Route = createFileRoute("/product/$productId")({
   head: () => ({
     meta: [
-      { title: "Product — Origami Qatar" },
+      { title: "Product — QR-Spring" },
       { name: "description", content: "Customise your item and add it to your drive-thru order." },
-      { property: "og:title", content: "Product — Origami Qatar" },
+      { property: "og:title", content: "Product — QR-Spring" },
       { property: "og:description", content: "Customise your item and add it to your order." },
     ],
   }),

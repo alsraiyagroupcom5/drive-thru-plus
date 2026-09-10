@@ -44,9 +44,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/kitchen")({
   head: () => ({
     meta: [
-      { title: "Kitchen display — Origami Qatar" },
+      { title: "Kitchen display — QR-Spring" },
       { name: "description", content: "Live kitchen display for drive-thru order preparation." },
-      { property: "og:title", content: "Kitchen display — Origami Qatar" },
+      { property: "og:title", content: "Kitchen display — QR-Spring" },
       { property: "og:description", content: "Live kitchen display for order preparation." },
       { name: "robots", content: "noindex" },
     ],

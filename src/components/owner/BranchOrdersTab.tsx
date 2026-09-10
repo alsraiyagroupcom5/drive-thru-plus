@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NEXT_STATUSES, orderControlSettings, updateOrderStatus } from "@/lib/owner.functions";
+import { NEXT_STATUSES, orderControlSettings, resetOrder, updateOrderStatus } from "@/lib/owner.functions";
 import {
   Select,
   SelectContent,

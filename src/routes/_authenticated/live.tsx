@@ -3,7 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { Car, LogOut, Timer, TrendingUp, Utensils } from "lucide-react";
+import { Car, LogOut, Navigation, Timer, TrendingUp, Utensils } from "lucide-react";
+import { formatKm } from "@/lib/geo";
 import {
   useLiveOrders,
   useStaffBranch,
@@ -72,6 +73,9 @@ function LivePage() {
   };
 
   const arrivals = (orders.data ?? []).filter((o) => o.customer_arrived && o.status !== "COMPLETED");
+  const approaching = (orders.data ?? []).filter(
+    (o) => !o.customer_arrived && o.status !== "COMPLETED" && o.distance_km != null,
+  );
 
   return (
     <div className="min-h-screen bg-console-canvas">

@@ -230,9 +230,10 @@ function OrderStatusControl({ order }: { order: Row }) {
   });
 
 
-  if (!settings.data?.canChangeStatus) return null;
-  const options = NEXT_STATUSES[current] ?? [];
-  if (!options.length) return null;
+  const canReset = settings.data?.isSuperAdmin === true;
+  if (!settings.data?.canChangeStatus && !canReset) return null;
+  const options = settings.data?.canChangeStatus ? (NEXT_STATUSES[current] ?? []) : [];
+  if (!options.length && !canReset) return null;
 
   return (
     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">

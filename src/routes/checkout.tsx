@@ -16,6 +16,7 @@ import {
   updateProfile,
   verifyOtp,
 } from "@/lib/customer.functions";
+import { getCurrentPosition } from "@/components/customer/useArrivalTracker";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { cn } from "@/lib/utils";
 
@@ -109,6 +110,7 @@ function CheckoutPage() {
         });
         vid = v.id;
       }
+      const fix = await getCurrentPosition();
       return placeOrder({
         data: {
           token,
@@ -120,6 +122,8 @@ function CheckoutPage() {
             quantity: l.quantity,
             options: l.options,
           })),
+          lat: fix?.lat ?? null,
+          lng: fix?.lng ?? null,
         },
       });
     },

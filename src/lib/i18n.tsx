@@ -11,8 +11,8 @@ import {
 export type Lang = "ar" | "en";
 
 const dict = {
-  brand: { ar: "أوريغامي", en: "ORIGAMI" },
-  brandFull: { ar: "أوريغامي قطر", en: "QR-Spring" },
+  brand: { ar: "كيو آر سبرينغ", en: "QR-Spring" },
+  brandFull: { ar: "كيو آر سبرينغ", en: "QR-Spring" },
   tagline: {
     ar: "قهوة مختصة وآيس كريم وحلويات",
     en: "Specialty Coffee, Ice Cream & Desserts",

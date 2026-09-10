@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useCart } from "@/lib/cart";
 import { cn } from "@/lib/utils";
-import logo from "@/assets/origami-logo.jpg.asset.json";
+import logo from "@/assets/qr-spring-logo.png.asset.json";
 
 export function BrandMark({ className }: { className?: string }) {
   const { t } = useI18n();

@@ -551,7 +551,8 @@ function statusText(s: string, t: (k: never) => string) {
   if (s === "PICKED_UP") return tt("pickedUp");
   const extra = EXTRA_LABELS[s];
   if (!extra) return s;
-  return document?.documentElement?.lang === "en" ? extra.en : extra.ar;
+  const en = typeof document !== "undefined" && document.documentElement.lang === "en";
+  return en ? extra.en : extra.ar;
 }
 
 function StatusFlow({ status, compact = false }: { status: string; compact?: boolean }) {

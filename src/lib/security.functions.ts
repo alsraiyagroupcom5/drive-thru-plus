@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { createClient } from "@supabase/supabase-js";
-import { createHash } from "crypto";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
@@ -11,8 +10,9 @@ const loginSchema = z.object({
   password: z.string().min(6).max(256),
 });
 
-function digest(value: string) {
-  return createHash("sha256").update(value).digest("hex");
+async function digest(value: string) {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 async function requireAdmin(context: { supabase: unknown; userId: string }) {
@@ -30,8 +30,7 @@ export const secureStaffSignIn = createServerFn({ method: "POST" })
     const email = data.email.toLowerCase();
     const forwarded = getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim();
     const ip = forwarded || getRequestHeader("cf-connecting-ip") || "unknown";
-    const emailHash = digest(email);
-    const ipHash = digest(ip);
+    const [emailHash, ipHash] = await Promise.all([digest(email), digest(ip)]);
 
     const { data: gate, error: gateError } = await supabaseAdmin
       .rpc("check_login_allowed", { _email_hash: emailHash, _ip_hash: ipHash })

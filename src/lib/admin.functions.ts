@@ -161,9 +161,17 @@ export const createClientAccount = createServerFn({ method: "POST" })
         { onConflict: "id" },
       );
 
+    const { data: roleBranch } = await db
+      .from("branches")
+      .select("restaurant_id")
+      .eq("id", branchId)
+      .single();
     const { error: roleError } = await db
       .from("user_roles")
-      .upsert({ user_id: userId, role: data.role, branch_id: branchId }, { onConflict: "user_id,role" });
+      .upsert(
+        { user_id: userId, role: data.role, branch_id: branchId, restaurant_id: roleBranch?.restaurant_id ?? null },
+        { onConflict: "user_id,role" },
+      );
     if (roleError) {
       await db.auth.admin.deleteUser(userId);
       throw new Error(roleError.message);
@@ -389,9 +397,12 @@ export const setAccountRole = createServerFn({ method: "POST" })
     await assertSuperAdmin(context.supabase, context.userId);
     if (!STAFF_ROLES.includes(data.role)) throw new Error("INVALID_ROLE");
     const db = await admin();
+    const { data: branch } = data.branchId
+      ? await db.from("branches").select("restaurant_id").eq("id", data.branchId).maybeSingle()
+      : { data: null };
     const { error } = await db
       .from("user_roles")
-      .update({ role: data.role, branch_id: data.branchId })
+      .update({ role: data.role, branch_id: data.branchId, restaurant_id: branch?.restaurant_id ?? null })
       .eq("id", data.roleRowId);
     if (error) throw new Error(error.message);
     return { ok: true };

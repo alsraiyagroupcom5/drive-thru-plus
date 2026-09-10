@@ -83,6 +83,15 @@ function TrackPage() {
     },
   });
 
+  const readyAlert = useReadyAlert(orderId, orderStatus);
+
+  useEffect(() => {
+    if (orderStatus === "READY") toast.success(t("readyToast"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderStatus]);
+
+
+
   const expired =
     order.isError &&
     order.error instanceof Error &&

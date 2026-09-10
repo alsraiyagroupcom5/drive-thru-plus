@@ -135,12 +135,28 @@ function KitchenPage() {
   }, []);
 
   const advance = async (order: LiveOrder, next: string) => {
+    if (next === order.status) return;
+    if (!(ALLOWED[order.status] ?? []).includes(next)) {
+      toast.error(
+        pick(
+          `لا يمكن تحويل الطلب من ${statusText(order.status, t as never)} إلى ${statusText(next, t as never)}`,
+          `Cannot move this order from ${statusText(order.status, t as never)} to ${statusText(next, t as never)}`,
+        ),
+      );
+      return;
+    }
     try {
       await setOrderStatus(order.id, next);
       queryClient.invalidateQueries({ queryKey: ["live-orders", branchId] });
       setDetail((d) => (d && d.id === order.id ? { ...d, status: next } : d));
+      toast.success(pick("تم تحديث حالة الطلب", "Order status updated"));
     } catch (e) {
-      toast.error(e instanceof Error && e.message ? e.message : t("somethingWrong"));
+      const msg = (e as { message?: string })?.message ?? "";
+      toast.error(
+        /transition/i.test(msg)
+          ? pick("لا يمكن تنفيذ هذا التغيير للحالة", "That status change is not allowed")
+          : msg || t("somethingWrong"),
+      );
     }
   };
 

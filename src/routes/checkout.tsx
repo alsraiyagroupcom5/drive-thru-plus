@@ -52,6 +52,8 @@ function CheckoutPage() {
   const [carColor, setCarColor] = useState("");
   const [method, setMethod] = useState<Method>("CARD");
   const [vehicleId, setVehicleId] = useState<string | null>(null);
+  const [prepPreference, setPrepPreference] = useState<"ASAP" | "SCHEDULED">("ASAP");
+  const [prepDelay, setPrepDelay] = useState(15);
 
   const me = useQuery({
     queryKey: ["me", session?.token],

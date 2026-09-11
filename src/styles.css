@@ -124,7 +124,7 @@
   --spring-line: oklch(0.91 0.008 160);
   background: var(--spring-paper);
   color: var(--spring-ink);
-  font-family: "Hind", "Tajawal", sans-serif;
+  font-family: "Inter", "Tajawal", sans-serif;
 }
 .spring-shell { width: min(100% - 40px, 1280px); margin-inline: auto; }
 .spring-display { font-family: "Instrument Serif", "Tajawal", serif; font-weight: 400; letter-spacing: 0; text-wrap: balance; }
@@ -189,7 +189,7 @@
 .spring-feature-card:hover { transform: translateY(-5px); border-color: color-mix(in oklab, var(--spring-accent) 32%, var(--spring-line)); box-shadow: 0 24px 58px -42px color-mix(in oklab, var(--spring-ink) 38%, transparent); }
 .spring-feature-icon { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 14px; background: var(--spring-accent-soft); color: var(--spring-accent-hover); }
 .spring-feature-icon svg { width: 22px; height: 22px; }
-.spring-feature-card h2, .spring-feature-card h3 { margin-top: 26px; font-family: "Archivo Black", "Tajawal", sans-serif; font-size: 17px; font-weight: 400; }
+.spring-feature-card h2, .spring-feature-card h3 { margin-top: 26px; font-family: "Outfit", "Tajawal", sans-serif; font-size: 18px; font-weight: 700; }
 .spring-feature-card p { margin-top: 12px; color: var(--spring-copy); line-height: 1.65; }
 
 .spring-workflow-grid { display: grid; gap: 72px; }
@@ -198,7 +198,7 @@
 .spring-workflow ol { border-top: 1px solid var(--spring-line); }
 .spring-workflow li { display: grid; grid-template-columns: 56px 1fr auto; gap: 20px; align-items: center; padding-block: 26px; border-bottom: 1px solid var(--spring-line); }
 .spring-workflow li > span { color: var(--spring-accent); font-weight: 700; }
-.spring-workflow h3 { font-family: "Archivo Black", "Tajawal", sans-serif; font-size: 18px; font-weight: 400; }
+.spring-workflow h3 { font-family: "Outfit", "Tajawal", sans-serif; font-size: 18px; font-weight: 700; }
 .spring-workflow li p { margin-top: 5px; color: var(--spring-copy); }
 .spring-workflow li > svg { width: 22px; color: var(--spring-accent); }
 .spring-cta-band { display: flex; align-items: end; justify-content: space-between; gap: 44px; border-radius: 28px; padding: clamp(34px, 5vw, 66px); background: var(--spring-accent); color: var(--spring-paper); }
@@ -222,10 +222,10 @@
 .spring-price-card { display: flex; min-height: 510px; flex-direction: column; border: 1px solid var(--spring-line); border-radius: 26px; padding: 32px; background: var(--spring-paper); }
 .spring-price-card.is-featured { background: var(--spring-ink); color: var(--spring-paper); }
 .spring-price-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.spring-price-head h2 { font-family: "Archivo Black", "Tajawal", sans-serif; font-size: 17px; font-weight: 400; }
+.spring-price-head h2 { font-family: "Outfit", "Tajawal", sans-serif; font-size: 18px; font-weight: 700; }
 .spring-price-head span { border-radius: 999px; padding: 6px 9px; background: var(--spring-accent); color: var(--spring-paper); font-size: 10px; font-weight: 700; }
 .spring-price { margin-top: 30px; font: 400 56px/1 "Instrument Serif", serif; }
-.spring-price span { margin-inline-start: 6px; font: 600 13px/1 "Hind", sans-serif; color: var(--spring-copy); }
+.spring-price span { margin-inline-start: 6px; font: 600 13px/1 "Inter", sans-serif; color: var(--spring-copy); }
 .spring-price-card.is-featured .spring-price span, .spring-price-card.is-featured .spring-price-period { color: color-mix(in oklab, var(--spring-paper) 55%, transparent); }
 .spring-price-period { color: var(--spring-copy); }
 .spring-price-card ul { display: grid; flex: 1; align-content: start; gap: 13px; margin-block: 28px; }
@@ -237,7 +237,7 @@
 .spring-faq-grid article { padding: 28px 0; border-top: 1px solid var(--spring-line); }
 .spring-faq-grid article:nth-child(odd) { padding-inline-end: 36px; }
 .spring-faq-grid article:nth-child(even) { padding-inline-start: 36px; border-inline-start: 1px solid var(--spring-line); }
-.spring-faq-grid h3 { font-family: "Archivo Black", "Tajawal", sans-serif; font-size: 16px; font-weight: 400; }
+.spring-faq-grid h3 { font-family: "Outfit", "Tajawal", sans-serif; font-size: 17px; font-weight: 700; }
 .spring-faq-grid p { margin-top: 10px; color: var(--spring-copy); line-height: 1.65; }
 .spring-form-layout, .spring-contact-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(520px, 1.1fr); gap: clamp(52px, 8vw, 110px); align-items: start; }
 .spring-form-layout .spring-display, .spring-contact-layout .spring-display { max-width: 12ch; margin-top: 20px; font-size: clamp(3rem, 5.4vw, 5.8rem); line-height: .95; }

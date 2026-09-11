@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, useSite } from "@/lib/site-content";
-import { SectionTitle } from "@/components/marketing/SiteChrome";
+import { SiteLink } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 
 export const Route = createFileRoute("/_site/pricing")({
@@ -60,89 +60,93 @@ function PricingPage() {
   const site = useSite();
 
   return (
-    <>
-      <section className="mx-auto max-w-6xl px-5 py-14">
-        <SectionTitle
-          eyebrow={pick(site.pricing.eyebrow.ar, site.pricing.eyebrow.en)}
-          title={pick(site.pricing.title.ar, site.pricing.title.en)}
-          subtitle={pick(site.pricing.subtitle.ar, site.pricing.subtitle.en)}
-        />
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
+    <div className="spring-page">
+      <section className="spring-page-hero spring-page-hero-centered">
+        <div className="spring-shell">
+          <span className="spring-kicker">{pick(site.pricing.eyebrow.ar, site.pricing.eyebrow.en)}</span>
+          <h1 className="spring-display">{pick(site.pricing.title.ar, site.pricing.title.en)}</h1>
+          <p className="spring-lead">{pick(site.pricing.subtitle.ar, site.pricing.subtitle.en)}</p>
+        </div>
+      </section>
+
+      <section className="spring-section spring-soft-band">
+        <div className="spring-shell spring-pricing-grid">
           {site.pricing.plans.map((p) => (
-            <div
+            <article
               key={p.name.en}
               className={cn(
-                "surface flex flex-col rounded-3xl p-6",
-                p.highlight && "ring-2 ring-primary shadow-[var(--shadow-lift)]",
+                "spring-price-card",
+                p.highlight && "is-featured",
               )}
             >
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-lg font-bold">{pick(p.name.ar, p.name.en)}</h3>
+              <div className="spring-price-head">
+                <h2>{pick(p.name.ar, p.name.en)}</h2>
                 {p.highlight ? (
-                  <span className="rounded-full bg-primary/15 px-2.5 py-1 text-[10px] font-bold text-primary">
+                  <span>
                     {pick("الأكثر اختياراً", "Most popular")}
                   </span>
                 ) : null}
               </div>
-              <p className="mt-3 font-display text-4xl font-bold">
+              <p className="spring-price">
                 {p.price}
-                <span className="ms-1 text-sm font-semibold text-muted-foreground">
+                <span>
                   {p.price === "—" ? "" : pick("ر.ق", "QAR")}
                 </span>
               </p>
-              <p className="text-xs text-muted-foreground">{pick(p.per.ar, p.per.en)}</p>
-              <ul className="mt-5 flex-1 space-y-2 text-sm">
+              <p className="spring-price-period">{pick(p.per.ar, p.per.en)}</p>
+              <ul>
                 {p.features.map((f) => (
-                  <li key={f.en} className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  <li key={f.en}>
+                    <Check aria-hidden />
                     {pick(f.ar, f.en)}
                   </li>
                 ))}
               </ul>
-              <Link
+              <SiteLink
                 to="/contact"
                 className={cn(
-                  "mt-6 rounded-full py-3 text-center text-sm font-bold",
-                  p.highlight
-                    ? "bg-[image:var(--gradient-brass)] text-primary-foreground"
-                    : "border border-border",
+                  "spring-button",
+                  p.highlight ? "spring-button-primary" : "spring-button-secondary",
                 )}
               >
                 {pick("اختر هذه الباقة", "Choose this plan")}
-              </Link>
-            </div>
+              </SiteLink>
+            </article>
           ))}
         </div>
       </section>
 
-      <section className="border-y border-border bg-card/50 py-14">
-        <div className="mx-auto max-w-4xl px-5">
-          <SectionTitle title={pick("أسئلة شائعة", "Frequently asked")} />
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
+      <section className="spring-section">
+        <div className="spring-shell spring-faq-layout">
+          <h2 className="spring-display">{pick("أسئلة شائعة", "Frequently asked")}</h2>
+          <div className="spring-faq-grid">
             {FAQ.map((f) => (
-              <div key={f.qEn} className="surface rounded-2xl p-5">
-                <p className="font-display text-sm font-bold">{pick(f.qAr, f.qEn)}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{pick(f.aAr, f.aEn)}</p>
-              </div>
+              <article key={f.qEn}>
+                <h3>{pick(f.qAr, f.qEn)}</h3>
+                <p>{pick(f.aAr, f.aEn)}</p>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-5 py-14">
-        <div className="surface rounded-3xl p-6 md:p-8">
-          <h2 className="font-display text-2xl font-bold">{pick("ابدأ الآن", "Get started")}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+      <section className="spring-section spring-dark-band">
+        <div className="spring-shell spring-form-layout">
+          <div>
+            <span className="spring-kicker">{pick("ابدأ الآن", "Get started")}</span>
+            <h2 className="spring-display">{pick(site.request.title.ar, site.request.title.en)}</h2>
+            <p>
             {pick(
               "اختر الباقة وأرسل بياناتك، ونتولى الباقي.",
               "Pick a plan, send your details, and we handle the rest.",
             )}
-          </p>
-          <div className="mt-6">
+            </p>
+          </div>
+          <div className="spring-form-panel">
             <RequestForm />
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

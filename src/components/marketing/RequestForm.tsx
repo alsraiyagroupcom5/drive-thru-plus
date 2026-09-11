@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { PLANS } from "@/lib/marketing";
 import { submitSignupRequest } from "@/lib/admin.functions";
+import { Button } from "@/components/ui/button";
 
-const input =
-  "h-11 w-full rounded-xl border border-border bg-elevated px-3 text-sm outline-none ring-ring/40 focus:ring-2";
+const input = "spring-input";
 
 export function RequestForm({ defaultPlan = "growth" }: { defaultPlan?: string }) {
   const { pick } = useI18n();
@@ -35,7 +35,7 @@ export function RequestForm({ defaultPlan = "growth" }: { defaultPlan?: string }
 
   if (sent) {
     return (
-      <div className="rounded-2xl border border-primary/30 bg-primary/10 p-8 text-center">
+      <div className="spring-form-success">
         <CheckCircle2 className="mx-auto h-8 w-8 text-primary" aria-hidden />
         <p className="mt-3 font-display text-lg font-bold">{pick("تم استلام طلبك", "Request received")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -92,18 +92,19 @@ export function RequestForm({ defaultPlan = "growth" }: { defaultPlan?: string }
         </select>
       </div>
       <textarea
-        className="mt-3 min-h-24 w-full rounded-xl border border-border bg-elevated p-3 text-sm outline-none ring-ring/40 focus:ring-2"
+        className="spring-input mt-3 min-h-28 py-3"
         placeholder={pick("أخبرنا عن مطعمك", "Tell us about your restaurant")}
         value={form.message}
         onChange={(e) => setForm({ ...form, message: e.target.value })}
       />
-      <button
+      <Button
+        type="button"
         onClick={() => submit.mutate()}
         disabled={!valid || submit.isPending}
-        className="mt-5 w-full rounded-full bg-[image:var(--gradient-brass)] py-3.5 font-display font-bold text-primary-foreground disabled:opacity-50"
+        className="spring-button spring-button-primary mt-5 w-full"
       >
         {submit.isPending ? pick("جارٍ الإرسال…", "Sending…") : pick("إرسال الطلب", "Send request")}
-      </button>
+      </Button>
     </div>
   );
 }

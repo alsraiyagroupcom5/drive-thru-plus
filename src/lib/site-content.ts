@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import {
   BarChart3,
   Car,
@@ -459,6 +459,5 @@ export const siteContentQuery = queryOptions({
 
 /** Website content for marketing pages, with defaults until the query resolves. */
 export function useSite(): SiteContent {
-  const { data } = useQuery(siteContentQuery);
-  return data ?? DEFAULT_SITE_CONTENT;
+  return useSuspenseQuery(siteContentQuery).data;
 }

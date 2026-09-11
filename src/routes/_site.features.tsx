@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { ArrowRight, Check } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, siteIcon, useSite } from "@/lib/site-content";
-import { SectionTitle, SiteLink } from "@/components/marketing/SiteChrome";
+import { SiteLink } from "@/components/marketing/SiteChrome";
 
 export const Route = createFileRoute("/_site/features")({
   loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
@@ -27,87 +28,80 @@ export const Route = createFileRoute("/_site/features")({
 });
 
 function FeaturesPage() {
-  const { pick } = useI18n();
+  const { pick, dir } = useI18n();
   const site = useSite();
 
   return (
-    <>
-      <section className="mx-auto max-w-6xl px-5 py-14">
-        <SectionTitle
-          eyebrow={pick(site.features.eyebrow.ar, site.features.eyebrow.en)}
-          title={pick(site.features.title.ar, site.features.title.en)}
-          subtitle={pick(site.features.subtitle.ar, site.features.subtitle.en)}
-        />
-        <div className="mt-10 grid gap-4 md:grid-cols-2">
+    <div className="spring-page">
+      <section className="spring-page-hero">
+        <div className="spring-shell">
+          <span className="spring-kicker">{pick(site.features.eyebrow.ar, site.features.eyebrow.en)}</span>
+          <h1 className="spring-display">{pick(site.features.title.ar, site.features.title.en)}</h1>
+          <p className="spring-lead">{pick(site.features.subtitle.ar, site.features.subtitle.en)}</p>
+        </div>
+      </section>
+
+      <section className="spring-section spring-soft-band">
+        <div className="spring-shell spring-feature-grid spring-feature-grid-wide">
           {site.features.items.map((f) => {
             const Icon = siteIcon(f.icon);
             return (
-              <div key={f.title.en} className="surface rounded-3xl p-6">
-                <div className="flex items-start gap-4">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" aria-hidden />
-                  </span>
-                  <div>
-                    <h3 className="font-display text-base font-bold">{pick(f.title.ar, f.title.en)}</h3>
-                    <p className="mt-1.5 text-sm text-muted-foreground">{pick(f.desc.ar, f.desc.en)}</p>
-                  </div>
-                </div>
-              </div>
+              <article key={f.title.en} className="spring-feature-card">
+                <span className="spring-feature-icon"><Icon aria-hidden /></span>
+                <h2>{pick(f.title.ar, f.title.en)}</h2>
+                <p>{pick(f.desc.ar, f.desc.en)}</p>
+              </article>
             );
           })}
         </div>
       </section>
 
-      <section className="border-y border-border bg-card/50 py-14">
-        <div className="mx-auto max-w-6xl px-5">
-          <SectionTitle
-            eyebrow={pick("الصلاحيات", "Permissions")}
-            title={pick(site.roles.title.ar, site.roles.title.en)}
-          />
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
+      <section className="spring-section spring-dark-band">
+        <div className="spring-shell">
+          <div className="spring-section-heading">
+            <div>
+              <span className="spring-kicker">{pick("صلاحيات دقيقة", "Precise access")}</span>
+              <h2 className="spring-display">{pick(site.roles.title.ar, site.roles.title.en)}</h2>
+            </div>
+            <p>{pick(site.roles.subtitle.ar, site.roles.subtitle.en)}</p>
+          </div>
+          <div className="spring-role-grid">
             {site.roles.items.map((r) => {
               const Icon = siteIcon(r.icon);
               return (
-                <div key={r.title.en} className="surface flex flex-col rounded-3xl p-6">
-                  <Icon className="h-6 w-6 text-primary" aria-hidden />
-                  <h3 className="mt-3 font-display text-lg font-bold">{pick(r.title.ar, r.title.en)}</h3>
-                  <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
+                <article key={r.title.en}>
+                  <Icon aria-hidden />
+                  <h3>{pick(r.title.ar, r.title.en)}</h3>
+                  <ul>
                     {r.points.map((p) => (
-                      <li key={p.en} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                      <li key={p.en}>
+                        <Check aria-hidden />
                         {pick(p.ar, p.en)}
                       </li>
                     ))}
                   </ul>
                   <SiteLink
                     to={r.to}
-                    className="mt-6 rounded-full border border-primary px-5 py-2.5 text-center text-sm font-bold text-primary"
+                    className="spring-text-link"
                   >
                     {pick(r.linkLabel.ar, r.linkLabel.en)}
+                    <ArrowRight className={cn("h-4 w-4", dir === "rtl" && "rotate-180")} aria-hidden />
                   </SiteLink>
-                </div>
+                </article>
               );
             })}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-5 py-14 text-center">
-        <h2 className="font-display text-2xl font-bold">
-          {pick("جاهز لتشغيل مطعمك على المنصة؟", "Ready to run your restaurant on the platform?")}
-        </h2>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link
-            to="/contact"
-            className="rounded-full bg-[image:var(--gradient-brass)] px-6 py-3.5 font-display text-sm font-bold text-primary-foreground"
-          >
+      <section className="spring-section">
+        <div className="spring-shell spring-cta-band">
+          <h2 className="spring-display">{pick("جاهز لتشغيل مطعمك على المنصة؟", "Ready to run your restaurant on the platform?")}</h2>
+          <SiteLink to="/contact" className="spring-button spring-button-light">
             {pick("اطلب حسابك", "Request your account")}
-          </Link>
-          <Link to="/pricing" className="rounded-full border border-border px-6 py-3.5 text-sm font-semibold">
-            {pick("عرض الأسعار", "View pricing")}
-          </Link>
+          </SiteLink>
         </div>
       </section>
-    </>
+    </div>
   );
 }

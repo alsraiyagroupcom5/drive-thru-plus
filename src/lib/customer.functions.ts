@@ -289,6 +289,12 @@ export const placeOrder = createServerFn({ method: "POST" })
       distanceKm != null &&
       distanceKm <= tracking.arrivalRadiusKm;
 
+    const prepPreference = data.prepPreference === "SCHEDULED" ? "SCHEDULED" : "ASAP";
+    const prepDelay =
+      prepPreference === "SCHEDULED"
+        ? Math.min(240, Math.max(5, Math.round(data.prepDelayMinutes ?? 15)))
+        : 0;
+
     const { data: seq } = await db.rpc("next_order_number" as never).single();
     const orderNumber =
       (seq as unknown as string) ?? `A${Math.floor(1000 + Math.random() * 9000)}`;

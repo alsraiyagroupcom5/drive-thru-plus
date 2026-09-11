@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { ChevronDown, Instagram, Mail, Menu, Moon, Phone, Sun, X } from "lucide-react";
@@ -32,7 +32,6 @@ export function SiteHeader() {
   const [openAccess, setOpenAccess] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const logoUrl = site.brand.logoUrl ?? logo.url;
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const luxury = site.theme === "luxury";
 
   useEffect(() => {
@@ -185,7 +184,6 @@ export function SiteFooter() {
   const { pick } = useI18n();
   const site = useSite();
   const logoUrl = site.brand.logoUrl ?? logo.url;
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const luxury = site.theme === "luxury";
   return (
     <footer className={cn("border-t", luxury ? "spring-footer" : "border-border bg-card/40")}>

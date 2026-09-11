@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Clock, Instagram, Mail, Phone } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { DEFAULT_SITE_CONTENT, siteContentQuery, useSite } from "@/lib/site-content";
-import { SectionTitle } from "@/components/marketing/SiteChrome";
+import { SiteLink } from "@/components/marketing/SiteChrome";
 import { RequestForm } from "@/components/marketing/RequestForm";
 
 export const Route = createFileRoute("/_site/contact")({
@@ -46,75 +46,60 @@ function ContactPage() {
   const site = useSite();
 
   return (
-    <>
-      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-2">
-        <div>
-          <SectionTitle
-            eyebrow={pick("تواصل معنا", "Contact")}
-            title={pick(site.contact.title.ar, site.contact.title.en)}
-            subtitle={pick(site.contact.subtitle.ar, site.contact.subtitle.en)}
-          />
+    <div className="spring-page">
+      <section className="spring-section spring-contact-band">
+        <div className="spring-shell spring-contact-layout">
+          <div>
+            <span className="spring-kicker">{pick("تواصل معنا", "Contact")}</span>
+            <h1 className="spring-display">{pick(site.contact.title.ar, site.contact.title.en)}</h1>
+            <p className="spring-lead">{pick(site.contact.subtitle.ar, site.contact.subtitle.en)}</p>
 
-          <div className="mt-8 grid gap-3">
-            <div className="surface flex items-center gap-3 rounded-2xl p-4">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10">
-                <Clock className="h-4 w-4 text-primary" aria-hidden />
-              </span>
-              <p className="text-sm font-semibold">{pick(site.contact.hours.ar, site.contact.hours.en)}</p>
+            <div className="spring-contact-list">
+            <div>
+              <span><Clock aria-hidden /></span>
+              <p>{pick(site.contact.hours.ar, site.contact.hours.en)}</p>
             </div>
 
-            <a href={`mailto:${site.contact.email}`} className="surface flex items-center gap-3 rounded-2xl p-4">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10">
-                <Mail className="h-4 w-4 text-primary" aria-hidden />
-              </span>
-              <p className="text-sm font-semibold" dir="ltr">
-                {site.contact.email}
-              </p>
+            <a href={`mailto:${site.contact.email}`}>
+              <span><Mail aria-hidden /></span>
+              <p dir="ltr">{site.contact.email}</p>
             </a>
 
             <a
               href={site.contact.instagram}
               target="_blank"
               rel="noreferrer"
-              className="surface flex items-center gap-3 rounded-2xl p-4"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10">
-                <Instagram className="h-4 w-4 text-primary" aria-hidden />
-              </span>
-              <p className="text-sm font-semibold" dir="ltr">
-                @{site.contact.instagramLabel}
-              </p>
+              <span><Instagram aria-hidden /></span>
+              <p dir="ltr">@{site.contact.instagramLabel}</p>
             </a>
 
-            <div className="surface flex items-center gap-3 rounded-2xl p-4">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10">
-                <Phone className="h-4 w-4 text-primary" aria-hidden />
-              </span>
-              <p className="text-sm text-muted-foreground">
-                {pick("للمبيعات وطلبات المنصة", "For sales and platform requests")}
-              </p>
+            <div>
+              <span><Phone aria-hidden /></span>
+              <p>{pick("للمبيعات وطلبات المنصة", "For sales and platform requests")}</p>
             </div>
           </div>
         </div>
 
-        <div className="surface h-fit rounded-3xl p-6 md:p-8">
-          <h2 className="font-display text-2xl font-bold">
+        <div className="spring-form-panel">
+          <h2>
             {pick(site.request.title.ar, site.request.title.en)}
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p>
             {pick(site.request.subtitle.ar, site.request.subtitle.en)}
           </p>
-          <div className="mt-6">
+          <div className="spring-form-body">
             <RequestForm />
           </div>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+          <p className="spring-login-note">
             {pick("لديك حساب بالفعل؟", "Already have an account?")}{" "}
-            <Link to="/auth" className="text-primary underline underline-offset-4">
+            <SiteLink to="/auth">
               {pick("دخول الفريق", "Team login")}
-            </Link>
+            </SiteLink>
           </p>
         </div>
+        </div>
       </section>
-    </>
+    </div>
   );
 }

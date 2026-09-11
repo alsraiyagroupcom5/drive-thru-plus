@@ -45,6 +45,7 @@
   --color-console-rail: var(--console-rail);
   --color-console-rail-foreground: var(--console-rail-foreground);
   --color-console-rail-muted: var(--console-rail-muted);
+  --color-admin-accent: var(--admin-accent);
   --color-site-ivory: var(--site-ivory);
   --color-site-sand: var(--site-sand);
   --color-site-teal: var(--site-teal);
@@ -94,6 +95,7 @@
   --console-rail: oklch(0.335 0.095 268);
   --console-rail-foreground: oklch(0.985 0.004 280);
   --console-rail-muted: oklch(0.78 0.045 278);
+  --admin-accent: oklch(0.56 0.075 210);
   --site-ivory: oklch(0.985 0.004 95);
   --site-sand: oklch(0.945 0.008 90);
   --site-teal: oklch(0.505 0.083 205);
@@ -320,6 +322,7 @@
   --console-rail: oklch(0.245 0.035 268);
   --console-rail-foreground: oklch(0.975 0.004 280);
   --console-rail-muted: oklch(0.72 0.025 275);
+  --admin-accent: oklch(0.72 0.075 210);
   --site-ivory: oklch(0.185 0.014 252);
   --site-sand: oklch(0.232 0.016 252);
   --site-teal: oklch(0.72 0.085 205);
@@ -327,6 +330,57 @@
   --site-ink-foreground: oklch(0.965 0.004 240);
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.4), 0 12px 32px -18px oklch(0 0 0 / 0.7);
   --shadow-lift: 0 24px 60px -28px oklch(0 0 0 / 0.85);
+}
+
+/* Admin-only executive workspace. Owner, kitchen, customer, and public pages keep their own design. */
+.admin-console {
+  --console-canvas: oklch(0.97 0.006 225);
+  --console-rail: oklch(0.24 0.035 225);
+  --console-rail-foreground: oklch(0.985 0.003 220);
+  --console-rail-muted: oklch(0.78 0.022 220);
+  --primary: oklch(0.56 0.075 210);
+  --primary-glow: oklch(0.68 0.07 210);
+  --ring: oklch(0.56 0.075 210);
+  font-family: "Figtree", "Tajawal", ui-sans-serif, system-ui, sans-serif;
+}
+
+.admin-console h1,
+.admin-console h2,
+.admin-console h3,
+.admin-console .font-display {
+  font-family: "Outfit", "Tajawal", ui-sans-serif, system-ui, sans-serif;
+}
+
+.admin-metric-card {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 20px;
+  background: var(--color-card);
+  box-shadow: 0 12px 30px -24px color-mix(in oklab, var(--console-rail) 32%, transparent);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.admin-metric-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--primary) 38%, var(--border));
+  box-shadow: 0 18px 36px -25px color-mix(in oklab, var(--console-rail) 42%, transparent);
+}
+
+.admin-section-frame {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 20px;
+  background: var(--color-card);
+  box-shadow: 0 12px 30px -26px color-mix(in oklab, var(--console-rail) 28%, transparent);
+}
+
+@media (max-width: 640px) {
+  .admin-section-frame { padding: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-metric-card { transition: none; }
+  .admin-metric-card:hover { transform: none; }
 }
 
 

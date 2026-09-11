@@ -783,6 +783,19 @@ function OrderCard({
         <StatusFlow status={o.status} compact />
       </div>
 
+      {o.prep_preference === "SCHEDULED" ? (
+        <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-bold text-warning">
+          <Clock className="h-3 w-3" aria-hidden />
+          {pick("التحضير بعد", "Prepare in")}{" "}
+          <span dir="ltr">{o.prep_delay_minutes ?? 0}</span> {t("minutes")}
+        </p>
+      ) : (
+        <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+          <Car className="h-3 w-3" aria-hidden />
+          {pick("في الطريق — تحضير فوري", "On the way — prepare now")}
+        </p>
+      )}
+
       {o.customer_arrived ? (
         <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold text-success">
           <Car className="h-3 w-3" aria-hidden />

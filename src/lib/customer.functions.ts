@@ -202,6 +202,8 @@ export const placeOrder = createServerFn({ method: "POST" })
       notes?: string;
       lat?: number | null;
       lng?: number | null;
+      prepPreference?: "ASAP" | "SCHEDULED";
+      prepDelayMinutes?: number;
     }) => d,
   )
   .handler(async ({ data }) => {
@@ -287,6 +289,12 @@ export const placeOrder = createServerFn({ method: "POST" })
       distanceKm != null &&
       distanceKm <= tracking.arrivalRadiusKm;
 
+    const prepPreference = data.prepPreference === "SCHEDULED" ? "SCHEDULED" : "ASAP";
+    const prepDelay =
+      prepPreference === "SCHEDULED"
+        ? Math.min(240, Math.max(5, Math.round(data.prepDelayMinutes ?? 15)))
+        : 0;
+
     const { data: seq } = await db.rpc("next_order_number" as never).single();
     const orderNumber =
       (seq as unknown as string) ?? `A${Math.floor(1000 + Math.random() * 9000)}`;
@@ -313,6 +321,12 @@ export const placeOrder = createServerFn({ method: "POST" })
           ? { plate: vehicle.plate, make: vehicle.make, model: vehicle.model, color: vehicle.color }
           : null,
         target_prep_minutes: maxPrep,
+        prep_preference: prepPreference,
+        prep_delay_minutes: prepDelay,
+        prepare_at:
+          prepPreference === "SCHEDULED"
+            ? new Date(Date.now() + prepDelay * 60_000).toISOString()
+            : null,
         notes: data.notes?.slice(0, 300) ?? null,
         customer_lat: hasFix ? (data.lat as number) : null,
         customer_lng: hasFix ? (data.lng as number) : null,

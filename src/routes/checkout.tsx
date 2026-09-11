@@ -301,6 +301,91 @@ function CheckoutPage() {
           )}
         </section>
 
+        {/* Prep timing */}
+        <section className="surface rounded-2xl p-4">
+          <h2 className="flex items-center gap-2 font-display text-base font-semibold">
+            <Clock className="h-4 w-4 text-primary" aria-hidden />
+            {pick("وقت التحضير", "Preparation timing")}
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {pick(
+              "أخبر الفرع متى تريد أن يبدأ التحضير حتى يصلك الطلب ساخناً.",
+              "Tell the branch when to start cooking so your order is fresh on arrival.",
+            )}
+          </p>
+
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <button
+              onClick={() => setPrepPreference("ASAP")}
+              className={cn(
+                "rounded-2xl border px-4 py-3 text-start transition",
+                prepPreference === "ASAP"
+                  ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/0.35)]"
+                  : "border-border bg-elevated hover:border-primary/50",
+              )}
+            >
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                <Zap className="h-4 w-4 text-primary" aria-hidden />
+                {pick("أنا في الطريق", "I'm on the way")}
+              </span>
+              <span className="mt-1 block text-[11px] text-muted-foreground">
+                {pick("ابدأوا التحضير حالاً", "Start preparing right away")}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setPrepPreference("SCHEDULED")}
+              className={cn(
+                "rounded-2xl border px-4 py-3 text-start transition",
+                prepPreference === "SCHEDULED"
+                  ? "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/0.35)]"
+                  : "border-border bg-elevated hover:border-primary/50",
+              )}
+            >
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                <Timer className="h-4 w-4 text-primary" aria-hidden />
+                {pick("جهّزوه لاحقاً", "Prepare later")}
+              </span>
+              <span className="mt-1 block text-[11px] text-muted-foreground">
+                {pick("ابدأوا التحضير بعد وقت محدد", "Start after a chosen delay")}
+              </span>
+            </button>
+          </div>
+
+          {prepPreference === "SCHEDULED" && (
+            <div className="mt-3">
+              <p className="text-xs text-muted-foreground">
+                {pick("ابدأوا التحضير بعد", "Start preparing in")}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[10, 15, 20, 30, 45, 60].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setPrepDelay(m)}
+                    className={cn(
+                      "min-w-16 rounded-full border px-4 py-2 text-sm font-semibold transition",
+                      prepDelay === m
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-elevated hover:border-primary/50",
+                    )}
+                  >
+                    <span dir="ltr">{m}</span> {pick("د", "min")}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-[11px] text-primary">
+                {pick("موعد بدء التحضير التقريبي: ", "Kitchen starts around ")}
+                <span dir="ltr">
+                  {new Date(Date.now() + prepDelay * 60_000).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </p>
+            </div>
+          )}
+        </section>
+
         {/* Payment */}
         <section className="surface rounded-2xl p-4">
           <h2 className="font-display text-base font-semibold">{t("payment")}</h2>

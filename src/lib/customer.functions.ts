@@ -202,6 +202,8 @@ export const placeOrder = createServerFn({ method: "POST" })
       notes?: string;
       lat?: number | null;
       lng?: number | null;
+      prepPreference?: "ASAP" | "SCHEDULED";
+      prepDelayMinutes?: number;
     }) => d,
   )
   .handler(async ({ data }) => {

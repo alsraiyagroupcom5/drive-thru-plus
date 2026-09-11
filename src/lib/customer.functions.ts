@@ -315,6 +315,12 @@ export const placeOrder = createServerFn({ method: "POST" })
           ? { plate: vehicle.plate, make: vehicle.make, model: vehicle.model, color: vehicle.color }
           : null,
         target_prep_minutes: maxPrep,
+        prep_preference: prepPreference,
+        prep_delay_minutes: prepDelay,
+        prepare_at:
+          prepPreference === "SCHEDULED"
+            ? new Date(Date.now() + prepDelay * 60_000).toISOString()
+            : null,
         notes: data.notes?.slice(0, 300) ?? null,
         customer_lat: hasFix ? (data.lat as number) : null,
         customer_lng: hasFix ? (data.lng as number) : null,

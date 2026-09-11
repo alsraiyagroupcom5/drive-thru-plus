@@ -1,6 +1,6 @@
-import { ArrowRight, BarChart3, Check, Clock3, MapPin, QrCode, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, BarChart3, Check, MapPin, QrCode, Sparkles, Zap } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import type { SiteContent } from "@/lib/site-content";
+import { siteIcon, type SiteContent } from "@/lib/site-content";
 import { cn } from "@/lib/utils";
 import { SiteLink } from "@/components/marketing/SiteChrome";
 import heroImage from "@/assets/business-hero.jpg";
@@ -88,7 +88,7 @@ export function LuxuryHome({ site }: { site: SiteContent }) {
           </div>
           <div className="spring-feature-grid">
             {site.features.items.slice(0, 6).map((feature) => {
-              const Icon = feature.icon === "clock" ? Clock3 : feature.icon === "qr" ? QrCode : BarChart3;
+              const Icon = siteIcon(feature.icon);
               return (
                 <article key={feature.title.en} className="spring-feature-card">
                   <span className="spring-feature-icon"><Icon aria-hidden /></span>

@@ -53,6 +53,11 @@
   --color-luxury-ground: var(--luxury-ground);
   --color-luxury-ink: var(--luxury-ink);
   --color-luxury-hairline: var(--luxury-hairline);
+  --color-spring-accent: var(--spring-accent);
+  --color-spring-accent-soft: var(--spring-accent-soft);
+  --color-spring-ink: var(--spring-ink);
+  --color-spring-paper: var(--spring-paper);
+  --color-spring-mist: var(--spring-mist);
   --font-display: "Outfit", "Tajawal", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Tajawal", "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
@@ -97,172 +102,191 @@
   --luxury-ground: oklch(0.31 0.055 205);
   --luxury-ink: oklch(1 0 0);
   --luxury-hairline: oklch(0.72 0.12 85 / 0.32);
+  --spring-accent: oklch(0.56 0.16 160);
+  --spring-accent-soft: oklch(0.96 0.035 158);
+  --spring-ink: oklch(0.16 0.02 165);
+  --spring-paper: oklch(1 0 0);
+  --spring-mist: oklch(0.975 0.004 160);
   --gradient-brass: linear-gradient(135deg, var(--primary), var(--primary-glow));
   --shadow-soft: 0 1px 2px oklch(0.4 0.03 250 / 0.06), 0 12px 30px -20px oklch(0.4 0.03 250 / 0.3);
   --shadow-lift: 0 22px 50px -26px oklch(0.45 0.06 250 / 0.45);
 }
 
-/* Selectable QR-Spring luxury public-site theme. Scoped to avoid dashboard changes. */
-.luxury-shell {
-  width: 100%;
-  max-width: 1440px;
-  margin-inline: auto;
-  padding-inline: clamp(20px, 4.4vw, 56px);
+/* Selectable QR-Spring public-site theme. Scoped so operational screens never inherit it. */
+.spring-public {
+  --spring-accent: oklch(0.56 0.16 160);
+  --spring-accent-hover: oklch(0.49 0.145 160);
+  --spring-accent-soft: oklch(0.96 0.035 158);
+  --spring-ink: oklch(0.16 0.02 165);
+  --spring-copy: oklch(0.42 0.018 165);
+  --spring-paper: oklch(1 0 0);
+  --spring-mist: oklch(0.975 0.004 160);
+  --spring-line: oklch(0.91 0.008 160);
+  background: var(--spring-paper);
+  color: var(--spring-ink);
+  font-family: "Hind", "Tajawal", sans-serif;
 }
+.spring-shell { width: min(100% - 40px, 1280px); margin-inline: auto; }
+.spring-display { font-family: "Instrument Serif", "Tajawal", serif; font-weight: 400; letter-spacing: 0; text-wrap: balance; }
+.spring-section { padding-block: clamp(76px, 9vw, 132px); }
+.spring-soft-band { background: var(--spring-mist); }
+.spring-dark-band { background: var(--spring-ink); color: var(--spring-paper); }
+.spring-dark-band .spring-kicker { background: color-mix(in oklab, var(--spring-accent) 16%, transparent); color: oklch(0.78 0.13 160); }
+.spring-kicker { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 13px; background: var(--spring-accent-soft); color: var(--spring-accent-hover); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.spring-kicker svg { width: 14px; height: 14px; }
+.spring-lead { max-width: 62ch; color: var(--spring-copy); font-size: clamp(17px, 1.4vw, 20px); line-height: 1.7; }
 
-.luxury-nav {
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: 50;
-  border-bottom: 1px solid transparent;
-  color: #fff;
-  transition: background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
+.spring-nav { position: sticky; inset-block-start: 0; z-index: 50; border-bottom: 1px solid var(--spring-line); background: color-mix(in oklab, var(--spring-paper) 88%, transparent); color: var(--spring-ink); backdrop-filter: blur(16px) saturate(140%); transition: box-shadow .3s ease, background-color .3s ease; }
+.spring-nav.is-scrolled { background: var(--spring-paper); box-shadow: 0 12px 36px -28px color-mix(in oklab, var(--spring-ink) 38%, transparent); }
+.spring-nav-logo { max-height: 52px; max-width: min(180px, 31vw); }
+.spring-nav-links { margin-inline: auto; gap: clamp(18px, 2.6vw, 38px); }
+.spring-nav-link { position: relative; color: var(--spring-copy); font-size: 14px; font-weight: 600; transition: color .2s ease; }
+.spring-nav-link:hover { color: var(--spring-accent-hover); }
+.spring-nav-link::after { content: ""; position: absolute; inset-inline: 0; bottom: -9px; height: 2px; background: var(--spring-accent); transform: scaleX(0); transition: transform .25s ease; }
+.spring-nav-link:hover::after { transform: scaleX(1); }
+.spring-nav-cta { border-radius: 999px; background: var(--spring-ink); color: var(--spring-paper); box-shadow: none; }
+.spring-nav-cta:hover { background: var(--spring-accent-hover); }
+.spring-icon-button { border-color: var(--spring-line); background: var(--spring-paper); color: var(--spring-ink); }
+.spring-access-menu, .spring-mobile-sheet { border: 1px solid var(--spring-line); background: var(--spring-paper); color: var(--spring-ink); box-shadow: 0 24px 60px -34px color-mix(in oklab, var(--spring-ink) 40%, transparent); }
 
-.luxury-nav.is-scrolled {
-  border-bottom-color: rgba(201, 162, 39, 0.12);
-  background: rgba(6, 22, 26, 0.7);
-  backdrop-filter: blur(18px) saturate(130%);
-}
+.spring-hero { padding-block: clamp(52px, 6vw, 92px); }
+.spring-hero-grid { display: grid; align-items: center; gap: clamp(42px, 6vw, 92px); min-height: min(760px, calc(100svh - 78px)); }
+.spring-hero-copy { animation: spring-rise .7s cubic-bezier(.22,1,.36,1) both; }
+.spring-hero-title { max-width: 13ch; margin-top: 24px; font-size: clamp(3.35rem, 6.2vw, 6.8rem); line-height: .92; }
+.spring-hero-title em { display: block; color: var(--spring-accent); font-weight: 400; }
+.spring-hero-copy .spring-lead { margin-top: 28px; }
+.spring-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+.spring-button { display: inline-flex; min-height: 50px; align-items: center; justify-content: center; gap: 9px; border-radius: 999px; padding: 12px 26px; font-size: 15px; font-weight: 700; transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease; }
+.spring-button:hover { transform: translateY(-2px); }
+.spring-button-primary { background: var(--spring-accent); color: var(--spring-paper); box-shadow: 0 16px 30px -20px color-mix(in oklab, var(--spring-accent) 70%, transparent); }
+.spring-button-primary:hover { background: var(--spring-accent-hover); }
+.spring-button-secondary { border: 1px solid var(--spring-line); background: var(--spring-paper); color: var(--spring-ink); }
+.spring-button-light { background: var(--spring-paper); color: var(--spring-ink); }
+.spring-proof-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 50px; padding-top: 25px; border-top: 1px solid var(--spring-line); }
+.spring-proof-row strong { display: block; color: var(--spring-accent-hover); font: 400 30px/1 "Instrument Serif", serif; }
+.spring-proof-row span { display: block; margin-top: 7px; color: var(--spring-copy); font-size: 12px; }
+.spring-hero-visual { position: relative; overflow: hidden; border-radius: 30px; animation: spring-rise .8s cubic-bezier(.22,1,.36,1) .1s both; }
+.spring-hero-visual > img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; transition: transform .7s cubic-bezier(.22,1,.36,1); }
+.spring-hero-visual:hover > img { transform: scale(1.025); }
+.spring-live-card { position: absolute; inset-inline: 22px; bottom: 22px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 3px 16px; border: 1px solid color-mix(in oklab, var(--spring-paper) 35%, transparent); border-radius: 18px; padding: 18px 20px; background: color-mix(in oklab, var(--spring-paper) 88%, transparent); color: var(--spring-ink); backdrop-filter: blur(18px); }
+.spring-live-card > span { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; }
+.spring-live-card strong { grid-row: span 2; font: 400 30px/1 "Instrument Serif", serif; }
+.spring-live-card small { color: var(--spring-copy); }
+.spring-live-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--spring-accent); box-shadow: 0 0 0 5px color-mix(in oklab, var(--spring-accent) 16%, transparent); }
 
-.luxury-nav-logo { max-height: 46px; }
-.luxury-nav-links { margin-inline: auto; gap: clamp(20px, 3vw, 44px); }
-.luxury-nav-link {
-  position: relative;
-  color: rgba(255, 255, 255, 0.94);
-  font: 500 15px "Inter", sans-serif;
-  text-shadow: 0 1px 14px rgba(2, 10, 10, 0.6);
-}
-.luxury-nav-link::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  bottom: -6px;
-  height: 1.5px;
-  background: #c9a227;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.luxury-nav-link:hover::after { transform: scaleX(1); }
-.luxury-nav-cta {
-  border-radius: 10px;
-  background: #c9a227;
-  color: #0c2226;
-  box-shadow: 0 1px 2px rgba(3, 10, 10, 0.3);
-}
-.luxury-access-menu,
-.luxury-mobile-sheet {
-  border: 1px solid rgba(201, 162, 39, 0.22);
-  background: rgba(6, 24, 28, 0.94);
-  color: #fff;
-  backdrop-filter: blur(20px) saturate(130%);
-}
+.spring-proof-band { padding-block: 64px; background: var(--spring-ink); color: var(--spring-paper); }
+.spring-proof-band h2 { max-width: 26ch; margin-inline: auto; text-align: center; font: 400 clamp(2rem, 3.5vw, 3.7rem)/1.04 "Instrument Serif", serif; }
+.spring-proof-items { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); margin-top: 44px; border-block: 1px solid color-mix(in oklab, var(--spring-paper) 14%, transparent); }
+.spring-proof-items div { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 22px 10px; color: color-mix(in oklab, var(--spring-paper) 72%, transparent); font-size: 14px; font-weight: 600; }
+.spring-proof-items svg { width: 20px; color: oklch(0.78 0.13 160); }
 
-.luxury-hero {
-  --luxury-gold: #c9a227;
-  --luxury-leaf: #6fa15a;
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  min-height: 100svh;
-  flex-direction: column;
-  overflow: hidden;
-  padding-top: calc(76px + clamp(40px, 9vh, 96px));
-  padding-bottom: clamp(28px, 5vh, 52px);
-  color: #fff;
-  background: radial-gradient(120% 90% at 50% 0%, #0f3a41 0%, #041416 70%);
-  font-family: "Inter", "Tajawal", sans-serif;
-}
-.luxury-hero-field { position: absolute; inset: 0; z-index: -1; }
-.luxury-hero-mesh {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(46% 38% at 18% 20%, rgba(201, 162, 39, 0.14) 0%, rgba(201, 162, 39, 0) 70%),
-    radial-gradient(50% 42% at 84% 12%, rgba(111, 161, 90, 0.10) 0%, rgba(111, 161, 90, 0) 70%);
-}
-.luxury-hero-dots {
-  position: absolute;
-  inset: 0;
-  opacity: 0.16;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(80% 60% at 50% 30%, #000 0%, transparent 75%);
-}
-.luxury-hero-body {
-  position: relative;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-.luxury-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  border: 1px solid rgba(201, 162, 39, 0.22);
-  border-radius: 999px;
-  padding: 8px 18px 8px 9px;
-  background: rgba(8, 30, 34, 0.62);
-  box-shadow: 0 1px 2px rgba(2, 10, 10, 0.3);
-  font-size: 14px;
-  font-weight: 500;
-  backdrop-filter: blur(14px) saturate(120%);
-  animation: luxury-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-[dir="rtl"] .luxury-pill { padding: 8px 9px 8px 18px; }
-.luxury-pill-icon { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 999px; background: rgba(201, 162, 39, 0.16); }
-.luxury-pill-icon svg { width: 13px; height: 13px; color: var(--luxury-gold); }
-.luxury-title {
-  max-width: 15ch;
-  margin-top: clamp(20px, 3.2vh, 34px);
-  color: #fff;
-  font-family: "Fraunces", "Georgia", "Tajawal", serif;
-  font-size: clamp(2.8rem, 5.4vw, 4.9rem);
-  font-weight: 600;
-  line-height: 1.02;
-  text-wrap: balance;
-  text-shadow: 0 2px 36px rgba(2, 10, 10, 0.5);
-  animation: luxury-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
-}
-.luxury-title span { display: block; color: var(--luxury-gold); font-style: italic; }
-.luxury-subtitle {
-  max-width: 50ch;
-  margin-top: clamp(16px, 2.4vh, 26px);
-  color: rgba(236, 244, 243, 0.88);
-  font-size: clamp(0.94rem, 1.1vw, 1.02rem);
-  line-height: 1.7;
-  text-shadow: 0 1px 18px rgba(2, 10, 10, 0.55);
-  animation: luxury-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both;
-}
-.luxury-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 13px; margin-top: clamp(24px, 3.6vh, 38px); animation: luxury-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both; }
-.luxury-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border-radius: 12px; padding: 15px 32px; font-size: 15px; font-weight: 600; transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s; }
-.luxury-button:hover { transform: translateY(-1px); }
-.luxury-button-solid { background: var(--luxury-gold); color: #0c2226; box-shadow: 0 1px 2px rgba(3, 10, 10, 0.3); }
-.luxury-button-glass { border: 1px solid rgba(201, 162, 39, 0.22); background: rgba(6, 24, 28, 0.78); color: #fff; backdrop-filter: blur(14px) saturate(120%); }
-.luxury-fine { margin-top: clamp(18px, 2.6vh, 28px); color: rgba(224, 236, 234, 0.74); font-size: 13.5px; animation: luxury-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both; }
-.luxury-mascot { position: absolute; inset-inline-end: clamp(-40px, -2vw, 20px); bottom: 0; width: clamp(220px, 26vw, 380px); filter: drop-shadow(0 24px 48px rgba(2, 10, 10, 0.5)); animation: luxury-mascot-rise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both; }
-.luxury-partners { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; border-block: 1px solid rgba(201, 162, 39, 0.12); animation: luxury-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.42s both; }
-.luxury-partner { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px 12px; color: rgba(236, 244, 243, 0.88); font-size: 13px; font-weight: 500; }
-.luxury-partner svg { width: 18px; height: 18px; color: var(--luxury-gold); }
-.luxury-footer { border-color: rgba(201, 162, 39, 0.16); background: #06181c; color: #fff; }
-.luxury-footer .text-muted-foreground { color: rgba(222, 233, 232, 0.62); }
-@keyframes luxury-rise { from { opacity: 0; transform: translateY(18px); } }
-@keyframes luxury-mascot-rise { from { opacity: 0; transform: translateY(24px) scale(0.98); } }
+.spring-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 40px; margin-bottom: 52px; }
+.spring-section-heading .spring-display { max-width: 14ch; margin-top: 18px; font-size: clamp(2.8rem, 4.7vw, 5.2rem); line-height: .98; }
+.spring-section-heading > p { max-width: 48ch; color: color-mix(in oklab, currentColor 62%, transparent); }
+.spring-text-link { display: inline-flex; align-items: center; gap: 8px; color: var(--spring-accent); font-size: 15px; font-weight: 700; }
+.spring-feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.spring-feature-card { border: 1px solid var(--spring-line); border-radius: 22px; padding: 30px; background: var(--spring-paper); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.spring-feature-card:hover { transform: translateY(-5px); border-color: color-mix(in oklab, var(--spring-accent) 32%, var(--spring-line)); box-shadow: 0 24px 58px -42px color-mix(in oklab, var(--spring-ink) 38%, transparent); }
+.spring-feature-icon { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 14px; background: var(--spring-accent-soft); color: var(--spring-accent-hover); }
+.spring-feature-icon svg { width: 22px; height: 22px; }
+.spring-feature-card h2, .spring-feature-card h3 { margin-top: 26px; font-family: "Archivo Black", "Tajawal", sans-serif; font-size: 17px; font-weight: 400; }
+.spring-feature-card p { margin-top: 12px; color: var(--spring-copy); line-height: 1.65; }
 
-@media (max-width: 960px) {
-  .luxury-mascot { display: none; }
+.spring-workflow-grid { display: grid; gap: 72px; }
+.spring-workflow .spring-display { max-width: 13ch; margin-top: 18px; font-size: clamp(2.8rem, 4.7vw, 5.2rem); line-height: .98; }
+.spring-workflow .spring-lead { margin-top: 24px; }
+.spring-workflow ol { border-top: 1px solid var(--spring-line); }
+.spring-workflow li { display: grid; grid-template-columns: 56px 1fr auto; gap: 20px; align-items: center; padding-block: 26px; border-bottom: 1px solid var(--spring-line); }
+.spring-workflow li > span { color: var(--spring-accent); font-weight: 700; }
+.spring-workflow h3 { font-family: "Archivo Black", "Tajawal", sans-serif; font-size: 18px; font-weight: 400; }
+.spring-workflow li p { margin-top: 5px; color: var(--spring-copy); }
+.spring-workflow li > svg { width: 22px; color: var(--spring-accent); }
+.spring-cta-band { display: flex; align-items: end; justify-content: space-between; gap: 44px; border-radius: 28px; padding: clamp(34px, 5vw, 66px); background: var(--spring-accent); color: var(--spring-paper); }
+.spring-cta-band .spring-kicker { padding-inline: 0; background: transparent; color: color-mix(in oklab, var(--spring-paper) 76%, transparent); }
+.spring-cta-band .spring-display { max-width: 17ch; margin-top: 16px; font-size: clamp(2.6rem, 4.4vw, 4.8rem); line-height: .98; }
+.spring-cta-band p { margin-top: 16px; color: color-mix(in oklab, var(--spring-paper) 78%, transparent); }
+
+.spring-page { background: var(--spring-paper); color: var(--spring-ink); }
+.spring-page-hero { padding-block: clamp(88px, 10vw, 150px); text-align: center; }
+.spring-page-hero .spring-display { max-width: 15ch; margin: 22px auto 0; font-size: clamp(3.7rem, 7vw, 7.4rem); line-height: .9; }
+.spring-page-hero .spring-lead { margin: 28px auto 0; }
+.spring-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); border-top: 1px solid color-mix(in oklab, var(--spring-paper) 15%, transparent); }
+.spring-role-grid article { padding: 36px; border-bottom: 1px solid color-mix(in oklab, var(--spring-paper) 15%, transparent); }
+.spring-role-grid article:nth-child(odd) { border-inline-end: 1px solid color-mix(in oklab, var(--spring-paper) 15%, transparent); }
+.spring-role-grid article > svg { width: 25px; color: oklch(0.78 0.13 160); }
+.spring-role-grid h3 { margin-top: 24px; font: 400 29px/1.1 "Instrument Serif", serif; }
+.spring-role-grid ul { display: grid; gap: 9px; margin-block: 22px; color: color-mix(in oklab, var(--spring-paper) 66%, transparent); }
+.spring-role-grid li { display: flex; gap: 9px; }
+.spring-role-grid li svg { width: 16px; color: oklch(0.78 0.13 160); }
+.spring-pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px; }
+.spring-price-card { display: flex; min-height: 510px; flex-direction: column; border: 1px solid var(--spring-line); border-radius: 26px; padding: 32px; background: var(--spring-paper); }
+.spring-price-card.is-featured { background: var(--spring-ink); color: var(--spring-paper); }
+.spring-price-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.spring-price-head h2 { font-family: "Archivo Black", "Tajawal", sans-serif; font-size: 17px; font-weight: 400; }
+.spring-price-head span { border-radius: 999px; padding: 6px 9px; background: var(--spring-accent); color: var(--spring-paper); font-size: 10px; font-weight: 700; }
+.spring-price { margin-top: 30px; font: 400 56px/1 "Instrument Serif", serif; }
+.spring-price span { margin-inline-start: 6px; font: 600 13px/1 "Hind", sans-serif; color: var(--spring-copy); }
+.spring-price-card.is-featured .spring-price span, .spring-price-card.is-featured .spring-price-period { color: color-mix(in oklab, var(--spring-paper) 55%, transparent); }
+.spring-price-period { color: var(--spring-copy); }
+.spring-price-card ul { display: grid; flex: 1; align-content: start; gap: 13px; margin-block: 28px; }
+.spring-price-card li { display: flex; align-items: start; gap: 9px; }
+.spring-price-card li svg { width: 17px; color: var(--spring-accent); }
+.spring-faq-layout { display: grid; gap: 64px; }
+.spring-faq-layout > .spring-display { font-size: clamp(3rem, 5vw, 5.4rem); }
+.spring-faq-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+.spring-faq-grid article { padding: 28px 0; border-top: 1px solid var(--spring-line); }
+.spring-faq-grid article:nth-child(odd) { padding-inline-end: 36px; }
+.spring-faq-grid article:nth-child(even) { padding-inline-start: 36px; border-inline-start: 1px solid var(--spring-line); }
+.spring-faq-grid h3 { font-family: "Archivo Black", "Tajawal", sans-serif; font-size: 16px; font-weight: 400; }
+.spring-faq-grid p { margin-top: 10px; color: var(--spring-copy); line-height: 1.65; }
+.spring-form-layout, .spring-contact-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(520px, 1.1fr); gap: clamp(52px, 8vw, 110px); align-items: start; }
+.spring-form-layout .spring-display, .spring-contact-layout .spring-display { max-width: 12ch; margin-top: 20px; font-size: clamp(3rem, 5.4vw, 5.8rem); line-height: .95; }
+.spring-form-layout > div > p { margin-top: 22px; color: color-mix(in oklab, var(--spring-paper) 62%, transparent); }
+.spring-form-panel { border: 1px solid var(--spring-line); border-radius: 26px; padding: clamp(26px, 4vw, 42px); background: var(--spring-paper); color: var(--spring-ink); }
+.spring-form-panel > h2 { font: 400 36px/1.05 "Instrument Serif", serif; }
+.spring-form-panel > p { margin-top: 10px; color: var(--spring-copy); }
+.spring-form-body { margin-top: 28px; }
+.spring-input { width: 100%; min-height: 48px; border: 1px solid var(--spring-line); border-radius: 12px; padding-inline: 14px; background: var(--spring-mist); color: var(--spring-ink); font-size: 14px; outline: none; transition: border-color .2s, box-shadow .2s; }
+.spring-input:focus { border-color: var(--spring-accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--spring-accent) 14%, transparent); }
+.spring-form-success { border: 1px solid color-mix(in oklab, var(--spring-accent) 30%, transparent); border-radius: 20px; padding: 32px; background: var(--spring-accent-soft); text-align: center; }
+.spring-contact-band { background: var(--spring-ink); color: var(--spring-paper); }
+.spring-contact-layout .spring-lead { margin-top: 25px; color: color-mix(in oklab, var(--spring-paper) 62%, transparent); }
+.spring-contact-list { display: grid; gap: 18px; margin-top: 44px; }
+.spring-contact-list > div, .spring-contact-list > a { display: flex; align-items: center; gap: 15px; color: color-mix(in oklab, var(--spring-paper) 82%, transparent); }
+.spring-contact-list span { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid color-mix(in oklab, var(--spring-paper) 18%, transparent); border-radius: 999px; color: oklch(0.78 0.13 160); }
+.spring-contact-list svg { width: 18px; }
+.spring-login-note { margin-top: 18px; text-align: center; color: var(--spring-copy); font-size: 12px; }
+.spring-login-note a { color: var(--spring-accent-hover); text-decoration: underline; text-underline-offset: 4px; }
+.spring-footer { border-color: var(--spring-line); background: var(--spring-paper); color: var(--spring-ink); }
+.spring-footer .text-muted-foreground { color: var(--spring-copy); }
+
+@keyframes spring-rise { from { opacity: 0; transform: translateY(20px); } }
+@media (min-width: 900px) {
+  .spring-hero-grid { grid-template-columns: minmax(0, 1.05fr) minmax(420px, .95fr); }
+  .spring-workflow-grid { grid-template-columns: minmax(0, .8fr) minmax(520px, 1.2fr); }
+}
+@media (max-width: 899px) {
+  .spring-feature-grid, .spring-pricing-grid { grid-template-columns: 1fr 1fr; }
+  .spring-form-layout, .spring-contact-layout { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
-  .luxury-hero { padding-top: calc(76px + 52px); }
-  .luxury-actions { width: 100%; max-width: 340px; flex-direction: column; align-items: stretch; }
-  .luxury-partners { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .spring-shell { width: min(100% - 32px, 1280px); }
+  .spring-section { padding-block: 72px; }
+  .spring-hero-grid { min-height: auto; }
+  .spring-hero-title { font-size: clamp(3rem, 15vw, 4.4rem); }
+  .spring-actions, .spring-actions .spring-button { width: 100%; }
+  .spring-proof-row { gap: 12px; }
+  .spring-proof-items { grid-template-columns: 1fr 1fr; }
+  .spring-section-heading, .spring-cta-band { align-items: start; flex-direction: column; }
+  .spring-feature-grid, .spring-role-grid, .spring-pricing-grid, .spring-faq-grid { grid-template-columns: 1fr; }
+  .spring-role-grid article:nth-child(odd), .spring-faq-grid article:nth-child(even) { border-inline: 0; }
+  .spring-faq-grid article:nth-child(odd), .spring-faq-grid article:nth-child(even) { padding-inline: 0; }
+  .spring-page-hero .spring-display { font-size: clamp(3.2rem, 16vw, 5rem); }
+  .spring-price-card { min-height: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .luxury-pill, .luxury-title, .luxury-subtitle, .luxury-actions, .luxury-fine, .luxury-mascot, .luxury-partners { animation: none; }
+  .spring-hero-copy, .spring-hero-visual { animation: none; }
+  .spring-button:hover, .spring-feature-card:hover, .spring-hero-visual:hover > img { transform: none; }
 }
 
 .dark {

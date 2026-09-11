@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { useSite } from "@/lib/site-content";
+import { Button } from "@/components/ui/button";
 import logo from "@/assets/qr-spring-logo.png.asset.json";
 
 type SiteLinkProps = {
@@ -32,7 +33,7 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const logoUrl = site.brand.logoUrl ?? logo.url;
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const luxury = site.theme === "luxury" && pathname === "/";
+  const luxury = site.theme === "luxury";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -48,8 +49,8 @@ export function SiteHeader() {
   }, [openNav]);
 
   return (
-    <header className={cn(luxury ? "luxury-nav" : "sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur", scrolled && luxury && "is-scrolled")}>
-      <div className={cn("flex items-center justify-between gap-3", luxury ? "luxury-shell min-h-[76px]" : "mx-auto max-w-6xl px-5 py-3")}>
+    <header className={cn(luxury ? "spring-nav" : "sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur", scrolled && luxury && "is-scrolled")}>
+      <div className={cn("flex items-center justify-between gap-3", luxury ? "spring-shell min-h-[78px]" : "mx-auto max-w-6xl px-5 py-3")}>
         <Link to="/" className="flex items-center gap-2">
           <img
             src={logoUrl}
@@ -57,7 +58,7 @@ export function SiteHeader() {
             width={site.brand.logoWidth}
             height={site.brand.logoHeight}
             style={{ width: site.brand.logoWidth, height: site.brand.logoHeight }}
-            className={cn("object-contain", luxury && "luxury-nav-logo")}
+            className={cn("object-contain", luxury && "spring-nav-logo")}
           />
           {site.brand.showName ? (
             <span className="font-display text-lg font-bold">
@@ -66,14 +67,14 @@ export function SiteHeader() {
           ) : null}
         </Link>
 
-        <nav className={cn("hidden items-center md:flex", luxury ? "luxury-nav-links" : "gap-1")}>
+        <nav className={cn("hidden items-center md:flex", luxury ? "spring-nav-links" : "gap-1")}>
           {site.nav.map((n) => (
             <SiteLink
               key={n.to}
               to={n.to}
               activeOptions={{ exact: n.to === "/" }}
               {...(!luxury ? { activeProps: { className: "bg-accent text-accent-foreground" } } : {})}
-              className={luxury ? "luxury-nav-link" : "rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"}
+              className={luxury ? "spring-nav-link" : "rounded-full px-3.5 py-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"}
             >
               {pick(n.label.ar, n.label.en)}
             </SiteLink>
@@ -81,35 +82,41 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
             onClick={toggleTheme}
             aria-label={theme === "light" ? "Dark mode" : "Light mode"}
-            className={cn("rounded-full border p-2", luxury ? "border-luxury-hairline text-luxury-ink" : "border-border")}
+            className={cn("rounded-full", luxury && "spring-icon-button")}
           >
             {theme === "light" ? (
               <Moon className="h-4 w-4" aria-hidden />
             ) : (
               <Sun className="h-4 w-4" aria-hidden />
             )}
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
             onClick={toggle}
-            className={cn("rounded-full border px-3 py-1.5 text-xs font-semibold", luxury ? "border-luxury-hairline text-luxury-ink" : "border-border")}
+            className={cn("rounded-full px-3 text-xs font-semibold", luxury && "spring-icon-button")}
           >
             {pick("English", "العربية")}
-          </button>
+          </Button>
 
           <div className="relative hidden sm:block">
-            <button
+            <Button
+              type="button"
               onClick={() => setOpenAccess((v) => !v)}
-              className={cn("inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold", luxury ? "luxury-nav-cta" : "rounded-full bg-[image:var(--gradient-brass)] text-primary-foreground")}
+              className={cn("inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold", luxury ? "spring-nav-cta" : "rounded-full bg-[image:var(--gradient-brass)] text-primary-foreground")}
             >
               {pick("دخول المنصة", "Sign in")}
               <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-            </button>
+            </Button>
             {openAccess ? (
               <div
-                className={cn("absolute end-0 mt-2 w-52 overflow-hidden p-1.5", luxury ? "luxury-access-menu" : "surface rounded-2xl")}
+                className={cn("absolute end-0 mt-2 w-52 overflow-hidden p-1.5", luxury ? "spring-access-menu" : "surface rounded-2xl")}
                 onMouseLeave={() => setOpenAccess(false)}
               >
                 {site.access.map((a) => (
@@ -126,18 +133,21 @@ export function SiteHeader() {
             ) : null}
           </div>
 
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
             onClick={() => setOpenNav((v) => !v)}
             aria-label="Menu"
-            className={cn("rounded-full border p-2 md:hidden", luxury ? "border-luxury-hairline text-luxury-ink" : "border-border")}
+            className={cn("rounded-full md:hidden", luxury && "spring-icon-button")}
           >
             {openNav ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
+          </Button>
         </div>
       </div>
 
       {openNav ? (
-        <div className={cn("px-5 py-3 md:hidden", luxury ? "luxury-mobile-sheet" : "border-t border-border")}>
+        <div className={cn("px-5 py-3 md:hidden", luxury ? "spring-mobile-sheet" : "border-t border-border")}>
           <div className="grid gap-1">
             {site.nav.map((n) => (
               <SiteLink
@@ -176,10 +186,10 @@ export function SiteFooter() {
   const site = useSite();
   const logoUrl = site.brand.logoUrl ?? logo.url;
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const luxury = site.theme === "luxury" && pathname === "/";
+  const luxury = site.theme === "luxury";
   return (
-    <footer className={cn("border-t", luxury ? "luxury-footer" : "border-border bg-card/40")}>
-      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-3">
+    <footer className={cn("border-t", luxury ? "spring-footer" : "border-border bg-card/40")}>
+      <div className={cn("mx-auto grid gap-8 px-5 py-12 md:grid-cols-3", luxury ? "spring-shell" : "max-w-6xl")}>
         <div>
           <div className="flex items-center">
             <img

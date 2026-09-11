@@ -126,6 +126,8 @@ function CheckoutPage() {
           })),
           lat: fix?.lat ?? null,
           lng: fix?.lng ?? null,
+          prepPreference,
+          prepDelayMinutes: prepDelay,
         },
       });
     },

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowUpRight, ChevronRight, CircleDollarSign, Inbox, LayoutDashboard, MapPin, Package, Plus, QrCode, ShieldAlert, ShoppingBag, SlidersHorizontal, Store, Users } from "lucide-react";
+import { Activity, ArrowUpRight, Building2, ChevronRight, CircleDollarSign, Clock3, Inbox, LayoutDashboard, MapPin, Package, Plus, QrCode, ShieldAlert, ShoppingBag, SlidersHorizontal, Store, UserRoundPlus, Users, UtensilsCrossed } from "lucide-react";
 import { Modal } from "@/components/console/Modal";
 import { ClientAccessDialog } from "@/components/console/ClientAccessDialog";
 
@@ -292,6 +292,7 @@ function AdminConsole() {
       onSelect={(id) => setTab(id as (typeof TABS)[number]["id"])}
       notificationCount={unreadSecurityAlerts}
       onNotificationsClick={() => setTab("security")}
+      variant="admin"
       {...(tab === "restaurants"
         ? {
             secondaryTitle: pick("المطاعم", "Restaurants"),
@@ -339,35 +340,71 @@ function AdminConsole() {
       {tab === "security" && <SecurityAlerts />}
 
       {tab === "overview" && (
-        <section className="space-y-5">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-primary">{pick("مركز العمليات", "Operations center")}</p>
+              <h2 className="mt-1 font-display text-xl font-bold">{pick("أداء المنصة اليوم", "Platform performance today")}</h2>
+            </div>
+            <p className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-2 w-2 rounded-full bg-success" />
+              {pick("البيانات المباشرة متصلة", "Live data connected")}
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              { ar: "المطاعم", en: "Restaurants", v: o?.restaurants ?? 0 },
-              { ar: "الفروع", en: "Branches", v: o?.branches ?? 0 },
-              { ar: "أصناف المنيو", en: "Menu items", v: o?.products ?? 0 },
-              { ar: "حسابات الفريق", en: "Team accounts", v: o?.accounts ?? 0 },
-              { ar: "طلبات آخر 24 ساعة", en: "Orders (24h)", v: o?.orders24h ?? 0 },
-              { ar: "قيد التنفيذ", en: "In progress", v: o?.inProgress ?? 0 },
-              { ar: "طلبات اشتراك جديدة", en: "New sign-up requests", v: o?.newLeads ?? 0 },
-              {
-                ar: "مبيعات 24 ساعة",
-                en: "Revenue (24h)",
-                v: money(Number(o?.revenue24h ?? 0), lang),
-              },
+              { ar: "مبيعات 24 ساعة", en: "Revenue (24h)", v: money(Number(o?.revenue24h ?? 0), lang), icon: CircleDollarSign, tone: "bg-success/10 text-success" },
+              { ar: "طلبات آخر 24 ساعة", en: "Orders (24h)", v: o?.orders24h ?? 0, icon: ShoppingBag, tone: "bg-primary/10 text-primary" },
+              { ar: "قيد التنفيذ الآن", en: "In progress now", v: o?.inProgress ?? 0, icon: Clock3, tone: "bg-warning/15 text-warning" },
+              { ar: "طلبات اشتراك جديدة", en: "New sign-up requests", v: o?.newLeads ?? 0, icon: UserRoundPlus, tone: "bg-destructive/10 text-destructive" },
             ].map((k) => (
-              <div key={k.en} className="surface rounded-2xl p-4">
-                <p className="text-xs text-muted-foreground">{pick(k.ar, k.en)}</p>
-                <p className="mt-1 font-display text-2xl font-bold">{k.v}</p>
+              <article key={k.en} className="admin-metric-card">
+                <div className={cn("grid h-11 w-11 place-items-center rounded-lg", k.tone)}>
+                  <k.icon className="h-5 w-5" aria-hidden />
+                </div>
+                <div className="mt-5">
+                  <p className="text-xs text-muted-foreground">{pick(k.ar, k.en)}</p>
+                  <p className="mt-1 font-display text-2xl font-bold" dir="ltr">{k.v}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">
+            {[
+              { ar: "المطاعم", en: "Restaurants", v: o?.restaurants ?? 0, icon: Building2 },
+              { ar: "الفروع", en: "Branches", v: o?.branches ?? 0, icon: Store },
+              { ar: "أصناف المنيو", en: "Menu items", v: o?.products ?? 0, icon: UtensilsCrossed },
+              { ar: "حسابات الفريق", en: "Team accounts", v: o?.accounts ?? 0, icon: Users },
+            ].map((k) => (
+              <div key={k.en} className="flex items-center gap-3 bg-card px-4 py-3.5">
+                <k.icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <div className="min-w-0">
+                  <p className="truncate text-[10px] text-muted-foreground">{pick(k.ar, k.en)}</p>
+                  <p className="font-display text-lg font-bold" dir="ltr">{k.v}</p>
+                </div>
               </div>
             ))}
           </div>
 
-          <OrdersTicker
-            orders={(ordersFeed.data?.orders ?? []) as Record<string, unknown>[]}
-            branches={(ordersFeed.data?.branches ?? []) as Record<string, unknown>[]}
-          />
+          <div className="admin-section-frame">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary" aria-hidden />
+                <h2 className="font-display text-base font-bold">{pick("الطلبات المباشرة", "Live orders")}</h2>
+              </div>
+              <button onClick={() => void ordersFeed.refetch()} className="text-xs font-semibold text-primary hover:underline">
+                {pick("تحديث", "Refresh")}
+              </button>
+            </div>
+            <OrdersTicker
+              orders={(ordersFeed.data?.orders ?? []) as Record<string, unknown>[]}
+              branches={(ordersFeed.data?.branches ?? []) as Record<string, unknown>[]}
+            />
+          </div>
 
-          <div className="surface rounded-3xl p-5">
+          <div className="admin-section-frame">
             <BranchOrdersTab
               branches={(ordersFeed.data?.branches ?? []) as Record<string, unknown>[]}
               orders={(ordersFeed.data?.orders ?? []) as Record<string, unknown>[]}

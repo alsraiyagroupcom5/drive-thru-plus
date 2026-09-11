@@ -1,7 +1,7 @@
 import { useState, type ComponentType, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Bell, Globe, LogOut, Menu, Search, X } from "lucide-react";
+import { Bell, Globe, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/customer/AppShell";
@@ -39,6 +39,7 @@ export function ConsoleShell({
   secondaryTitle,
   notificationCount = 0,
   onNotificationsClick,
+  variant = "default",
   children,
 }: {
   title: string;
@@ -58,10 +59,13 @@ export function ConsoleShell({
   secondaryTitle?: string;
   notificationCount?: number;
   onNotificationsClick?: () => void;
+  variant?: "default" | "admin";
   children: ReactNode;
 }) {
   const { pick } = useI18n();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const isAdmin = variant === "admin";
   const current = items.find((i) => i.id === active);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -74,15 +78,15 @@ export function ConsoleShell({
   };
 
   const rail = (
-    <div className="flex h-full flex-col items-stretch gap-6 px-3 py-6 text-console-rail-foreground">
-      <div className="px-2 text-center">
-        <div className="mx-auto grid h-11 w-11 place-items-center rounded-2xl bg-console-rail-foreground/12 font-display text-base font-black">
+    <div className={cn("flex h-full flex-col text-console-rail-foreground", isAdmin ? "gap-5 px-4 py-5" : "items-stretch gap-6 px-3 py-6")}>
+      <div className={cn("flex items-center", isAdmin && !collapsed ? "gap-3 px-2 text-start" : "flex-col px-2 text-center")}>
+        <div className={cn("grid shrink-0 place-items-center bg-console-rail-foreground/12 font-display font-black", isAdmin ? "h-10 w-10 rounded-lg" : "mx-auto h-11 w-11 rounded-2xl text-base")}>
           {title.trim().charAt(0)}
         </div>
-        <p className="mt-2 truncate text-[10px] font-semibold text-console-rail-muted">{title}</p>
+        {!isAdmin || !collapsed ? <p className={cn("truncate font-semibold", isAdmin ? "text-sm text-console-rail-foreground" : "mt-2 text-[10px] text-console-rail-muted")}>{title}</p> : null}
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto hide-scrollbar">
+      <nav className={cn("flex flex-1 flex-col overflow-y-auto hide-scrollbar", isAdmin ? "gap-1" : "gap-1.5")}>
         {items.map((item) => {
           const isActive = item.id === active;
           return (
@@ -95,14 +99,17 @@ export function ConsoleShell({
               aria-current={isActive ? "page" : undefined}
               title={item.label}
               className={cn(
-                "relative flex flex-col items-center gap-1.5 rounded-2xl px-1.5 py-3 text-[10px] font-semibold leading-tight transition",
+                "relative flex font-semibold leading-tight transition",
+                isAdmin
+                  ? cn("min-h-11 items-center rounded-lg px-3 py-2.5 text-xs", collapsed ? "justify-center" : "gap-3")
+                  : "flex-col items-center gap-1.5 rounded-2xl px-1.5 py-3 text-[10px]",
                 isActive
-                  ? "bg-console-rail-foreground text-console-rail shadow-lg"
+                  ? isAdmin ? "bg-console-rail-foreground/12 text-console-rail-foreground" : "bg-console-rail-foreground text-console-rail shadow-lg"
                   : "text-console-rail-muted hover:bg-console-rail-foreground/10 hover:text-console-rail-foreground",
               )}
             >
               <item.icon className="h-5 w-5" aria-hidden />
-              <span className="line-clamp-2 text-center">{item.label}</span>
+              {!isAdmin || !collapsed ? <span className={cn("line-clamp-2", isAdmin ? "text-start" : "text-center")}>{item.label}</span> : null}
               {item.badge ? (
                 <span
                   className="absolute top-1.5 rounded-full bg-primary px-1.5 text-[9px] font-bold text-primary-foreground ltr:right-1.5 rtl:left-1.5"
@@ -116,7 +123,7 @@ export function ConsoleShell({
         })}
       </nav>
 
-      {quickLinks.length ? (
+      {quickLinks.length && (!isAdmin || !collapsed) ? (
         <div className="space-y-1 border-t border-console-rail-foreground/15 pt-3">
           {quickLinks.map((q) => (
             <Link
@@ -130,21 +137,32 @@ export function ConsoleShell({
         </div>
       ) : null}
 
-      <button
-        onClick={() => void handleSignOut()}
-        title={pick("تسجيل الخروج", "Sign out")}
-        className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-console-rail-foreground/12 text-console-rail-foreground transition hover:bg-console-rail-foreground/25"
-      >
-        <LogOut className="h-4 w-4" aria-hidden />
-        <span className="sr-only">{pick("تسجيل الخروج", "Sign out")}</span>
-      </button>
+      <div className={cn("flex border-t border-console-rail-foreground/15 pt-3", isAdmin && !collapsed ? "justify-between" : "justify-center")}>
+        <button
+          onClick={() => void handleSignOut()}
+          title={pick("تسجيل الخروج", "Sign out")}
+          className={cn("flex h-10 items-center justify-center gap-2 rounded-lg bg-console-rail-foreground/10 px-3 text-console-rail-foreground transition hover:bg-console-rail-foreground/20", !isAdmin || collapsed ? "w-10" : "")}
+        >
+          <LogOut className="h-4 w-4" aria-hidden />
+          {isAdmin && !collapsed ? <span className="text-xs font-semibold">{pick("خروج", "Sign out")}</span> : <span className="sr-only">{pick("تسجيل الخروج", "Sign out")}</span>}
+        </button>
+        {isAdmin ? (
+          <button
+            onClick={() => setCollapsed((value) => !value)}
+            title={collapsed ? pick("توسيع القائمة", "Expand navigation") : pick("طي القائمة", "Collapse navigation")}
+            className="hidden h-10 w-10 place-items-center rounded-lg text-console-rail-muted transition hover:bg-console-rail-foreground/10 hover:text-console-rail-foreground lg:grid"
+          >
+            {collapsed ? <PanelLeftOpen className="h-4 w-4 rtl:-scale-x-100" /> : <PanelLeftClose className="h-4 w-4 rtl:-scale-x-100" />}
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-console-canvas p-0 lg:p-4">
-      <div className="flex gap-4">
-        <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-24 shrink-0 rounded-3xl bg-console-rail shadow-lift lg:block">
+    <div className={cn("min-h-screen bg-console-canvas", isAdmin ? "admin-console" : "p-0 lg:p-4")}>
+      <div className={cn("flex", isAdmin ? "min-h-screen" : "gap-4")}>
+        <aside className={cn("sticky hidden shrink-0 bg-console-rail transition-[width] duration-200 lg:block", isAdmin ? cn("top-0 h-screen border-e border-console-rail-foreground/10", collapsed ? "w-20" : "w-64") : "top-4 h-[calc(100vh-2rem)] w-24 rounded-3xl shadow-lift")}>
           {rail}
         </aside>
 
@@ -168,9 +186,9 @@ export function ConsoleShell({
           </div>
         ) : null}
 
-        <div className="min-w-0 flex-1 lg:flex lg:gap-4">
-          <main className="min-w-0 flex-1 rounded-none bg-card shadow-soft lg:rounded-3xl">
-            <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-4 sm:px-6">
+        <div className={cn("min-w-0 flex-1 lg:flex", isAdmin ? "" : "lg:gap-4")}>
+          <main className={cn("min-w-0 flex-1 bg-card", isAdmin ? "lg:bg-transparent" : "rounded-none shadow-soft lg:rounded-3xl")}>
+            <header className={cn("flex flex-wrap items-center gap-3 border-b border-border px-4 sm:px-6", isAdmin ? "min-h-20 bg-card/90 py-4 backdrop-blur-lg lg:px-8" : "py-4")}>
               <button
                 onClick={() => setOpen(true)}
                 aria-label={pick("القائمة", "Menu")}
@@ -185,7 +203,7 @@ export function ConsoleShell({
                     ← {backLabel ?? pick("رجوع", "Back")}
                   </Link>
                 ) : null}
-                <h1 className="truncate font-display text-lg font-bold leading-tight sm:text-xl">
+                <h1 className={cn("truncate font-display font-bold leading-tight", isAdmin ? "text-xl sm:text-2xl" : "text-lg sm:text-xl")}>
                   {current?.label ?? title}
                 </h1>
                 <p className="truncate text-[11px] text-muted-foreground">
@@ -247,7 +265,7 @@ export function ConsoleShell({
               </div>
             ) : null}
 
-            <div className="px-4 py-5 sm:px-6">{children}</div>
+            <div className={cn("px-4 py-5 sm:px-6", isAdmin && "lg:px-8 lg:py-7")}>{children}</div>
           </main>
 
           {aside ? (

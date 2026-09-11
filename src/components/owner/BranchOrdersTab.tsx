@@ -433,6 +433,14 @@ export function OrderDetail({
   const facts: { ar: string; en: string; value: string }[] = [
     { ar: "الفرع", en: "Branch", value: branchName },
     {
+      ar: "طلب العميل",
+      en: "Customer request",
+      value:
+        order["prep_preference"] === "SCHEDULED"
+          ? `${pick("التحضير بعد", "Prepare in")} ${String(order["prep_delay_minutes"] ?? 0)} ${pick("د", "min")}`
+          : pick("في الطريق — تحضير فوري", "On the way — prepare now"),
+    },
+    {
       ar: "وقت الطلب",
       en: "Placed at",
       value: formatDateTime(order["created_at"] as string, lang),

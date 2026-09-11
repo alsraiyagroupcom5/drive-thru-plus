@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { ChevronDown, Instagram, Mail, Menu, Moon, Phone, Sun, X } from "lucide-react";
+import { Instagram, LogIn, Mail, Menu, Moon, Phone, Sun, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,6 @@ export function SiteHeader() {
   const { theme, toggle: toggleTheme } = useTheme();
   const site = useSite();
   const [openNav, setOpenNav] = useState(false);
-  const [openAccess, setOpenAccess] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const logoUrl = site.brand.logoUrl ?? logo.url;
   const luxury = site.theme === "luxury";
@@ -104,33 +103,13 @@ export function SiteHeader() {
             {pick("English", "العربية")}
           </Button>
 
-          <div className="relative hidden sm:block">
-            <Button
-              type="button"
-              onClick={() => setOpenAccess((v) => !v)}
-              className={cn("inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold", luxury ? "spring-nav-cta" : "rounded-full bg-[image:var(--gradient-brass)] text-primary-foreground")}
-            >
+          <SiteLink
+            to="/auth"
+            className={cn("hidden items-center gap-1.5 px-5 py-2 text-xs font-bold sm:inline-flex", luxury ? "spring-nav-cta" : "rounded-full bg-[image:var(--gradient-brass)] text-primary-foreground")}
+          >
+              <LogIn className="h-3.5 w-3.5" aria-hidden />
               {pick("دخول المنصة", "Sign in")}
-              <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-            </Button>
-            {openAccess ? (
-              <div
-                className={cn("absolute end-0 mt-2 w-52 overflow-hidden p-1.5", luxury ? "spring-access-menu" : "surface rounded-2xl")}
-                onMouseLeave={() => setOpenAccess(false)}
-              >
-                {site.access.map((a) => (
-                  <SiteLink
-                    key={a.to}
-                    to={a.to}
-                    onClick={() => setOpenAccess(false)}
-                    className="block rounded-xl px-3 py-2 text-sm font-semibold hover:bg-accent"
-                  >
-                    {pick(a.label.ar, a.label.en)}
-                  </SiteLink>
-                ))}
-              </div>
-            ) : null}
-          </div>
+          </SiteLink>
 
           <Button
             type="button"
@@ -159,21 +138,14 @@ export function SiteHeader() {
               </SiteLink>
             ))}
           </div>
-          <p className="mt-3 px-3 text-[11px] font-bold uppercase text-muted-foreground">
+          <SiteLink
+            to="/auth"
+            onClick={() => setOpenNav(false)}
+            className={cn("mt-3 inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold", luxury ? "spring-nav-cta" : "bg-primary text-primary-foreground")}
+          >
+            <LogIn className="h-4 w-4" aria-hidden />
             {pick("دخول المنصة", "Sign in")}
-          </p>
-          <div className="grid gap-1">
-            {site.access.map((a) => (
-              <SiteLink
-                key={a.to}
-                to={a.to}
-                onClick={() => setOpenNav(false)}
-                className="rounded-xl px-3 py-2 text-sm text-muted-foreground"
-              >
-                {pick(a.label.ar, a.label.en)}
-              </SiteLink>
-            ))}
-          </div>
+          </SiteLink>
         </div>
       ) : null}
     </header>

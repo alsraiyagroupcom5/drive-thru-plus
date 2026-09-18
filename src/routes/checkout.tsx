@@ -5,6 +5,7 @@ import {
   Car,
   Clock,
   CreditCard,
+  Gift,
   Smartphone,
   Timer,
   Wallet,
@@ -29,6 +30,7 @@ import {
 import { getCurrentPosition } from "@/components/customer/useArrivalTracker";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { cn } from "@/lib/utils";
+import { loyaltyPointsForTotal } from "@/lib/pricing";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -431,6 +433,24 @@ function CheckoutPage() {
             <span className="font-display font-semibold">{t("total")}</span>
             <span className="font-display text-lg font-bold text-primary">
               {money(subtotal, lang)}
+            </span>
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3">
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                <Gift className="h-4 w-4" aria-hidden />
+              </span>
+              <span>
+                <span className="block text-xs font-bold text-foreground">
+                  {pick("احتساب نقاط الولاء", "Loyalty reward")}
+                </span>
+                <span className="block text-[11px] text-muted-foreground">
+                  {pick("تُضاف إلى رصيدك بعد تأكيد الطلب", "Added to your balance after confirmation")}
+                </span>
+              </span>
+            </span>
+            <span className="shrink-0 font-display text-lg font-bold text-primary" dir="ltr">
+              +{loyaltyPointsForTotal(subtotal)} {t("points")}
             </span>
           </div>
         </section>

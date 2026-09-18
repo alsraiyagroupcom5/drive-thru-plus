@@ -18,3 +18,4 @@
 - [x] Owner menu-link mode: one restaurant link with branch selection or separate locked branch links
 - [x] Admin-selectable public website theme: current layout or uploaded QR-Spring luxury theme
 - [x] Admin-only dashboard redesign: Midnight & Ice command sidebar and executive overview
+- [x] Loyalty reward display for customers and owner/admin order details

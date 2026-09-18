@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { Check, Car, ChefHat, PackageCheck, Receipt, MapPin, Navigation, Shield, Clock, Phone } from "lucide-react";
+import { Check, Car, ChefHat, PackageCheck, Receipt, MapPin, Navigation, Shield, Clock, Phone, Gift } from "lucide-react";
 import { useArrivalTracker } from "@/components/customer/useArrivalTracker";
 import {
   ReadyAlertOverlay,
@@ -543,6 +543,15 @@ function TrackPage() {
           <span className="font-display font-semibold">{t("total")}</span>
           <span className="font-display text-lg font-bold text-primary">
             {money(Number(o.total), lang)}
+          </span>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3">
+          <span className="inline-flex items-center gap-2 text-xs font-bold">
+            <Gift className="h-4 w-4 text-primary" aria-hidden />
+            {pick("احتساب نقاط الولاء", "Loyalty reward")}
+          </span>
+          <span className="font-display text-base font-bold text-primary" dir="ltr">
+            +{Number(o.points_earned ?? 0)} {t("points")}
           </span>
         </div>
       </section>

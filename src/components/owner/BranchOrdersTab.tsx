@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Copy,
   ExternalLink,
+  Gift,
   Clock,
   LayoutGrid,
   List,
@@ -531,6 +532,23 @@ export function OrderDetail({
               </p>
             </div>
           ))}
+        </div>
+
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/10 p-4">
+          <span className="inline-flex items-center gap-2">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <Gift className="h-4 w-4" aria-hidden />
+            </span>
+            <span>
+              <span className="block text-xs font-bold">{pick("احتساب نقاط الولاء", "Loyalty reward")}</span>
+              <span className="block text-[10px] text-muted-foreground">
+                {pick("النقاط المكتسبة من هذا الطلب", "Points earned from this order")}
+              </span>
+            </span>
+          </span>
+          <span className="font-display text-lg font-bold text-primary" dir="ltr">
+            +{Number(order["points_earned"] ?? 0)} {pick("نقطة", "points")}
+          </span>
         </div>
 
         <div>

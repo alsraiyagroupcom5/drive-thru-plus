@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Repeat, ReceiptText } from "lucide-react";
+import { Gift, Repeat, ReceiptText } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/customer/AppShell";
 import { useI18n, money, formatDate } from "@/lib/i18n";
@@ -116,6 +116,10 @@ function OrdersPage() {
               </div>
               <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
                 {o.order_items.map((i) => `${i.quantity}× ${pick(i.name_ar, i.name_en)}`).join(" • ")}
+              </p>
+              <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-[11px] font-bold text-primary">
+                <Gift className="h-3.5 w-3.5" aria-hidden />
+                {pick("احتساب نقاط الولاء", "Loyalty reward")} · <span dir="ltr">+{o.points_earned} {t("points")}</span>
               </p>
               <div className="mt-3 flex items-center justify-between">
                 <span className="font-display text-base font-semibold text-primary">

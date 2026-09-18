@@ -11,6 +11,11 @@ export function hasDiscount(discountPercent?: number | string | null) {
   return (Number(discountPercent ?? 0) || 0) > 0;
 }
 
+/** One loyalty point is earned for every whole QAR spent. */
+export function loyaltyPointsForTotal(total: number | string) {
+  return Math.max(0, Math.floor(Number(total) || 0));
+}
+
 /** Local (Qatar) calendar day, used for "out of stock for today". */
 export function todayISO(date = new Date()) {
   return new Date(date.getTime() + 3 * 60 * 60_000).toISOString().slice(0, 10);

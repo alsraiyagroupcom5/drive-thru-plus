@@ -230,7 +230,7 @@ export const placeOrder = createServerFn({ method: "POST" })
     const { data: products } = await db.from("products").select("*").in("id", ids);
     const byId = new Map((products ?? []).map((p) => [p.id, p]));
 
-    const { effectivePrice, todayISO } = await import("@/lib/pricing");
+    const { effectivePrice, loyaltyPointsForTotal, todayISO } = await import("@/lib/pricing");
     const today = todayISO();
     const { data: availability } = await db
       .from("branch_product_availability")
@@ -314,7 +314,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         subtotal: total,
         tax: 0,
         total,
-        points_earned: Math.floor(total),
+        points_earned: loyaltyPointsForTotal(total),
         customer_name: customer.full_name,
         customer_phone: customer.phone,
         vehicle_snapshot: vehicle
@@ -393,7 +393,7 @@ export const placeOrder = createServerFn({ method: "POST" })
       .update({
         total_orders: customer.total_orders + 1,
         total_spent: Number(customer.total_spent) + total,
-        loyalty_points: customer.loyalty_points + Math.floor(total),
+        loyalty_points: customer.loyalty_points + loyaltyPointsForTotal(total),
         last_order_at: new Date().toISOString(),
       })
       .eq("id", customerId);

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Crosshair, ExternalLink, Link2, MapPin, Navigation, Radar, Timer, Gauge } from "lucide-react";
+import { Crosshair, ExternalLink, Gift, Link2, MapPin, Navigation, Radar, Timer, Gauge } from "lucide-react";
 import { Modal } from "@/components/console/Modal";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { saveMenuLinkMode, saveTrackingSettings } from "@/lib/owner.functions";
+import { saveLoyaltyRate, saveMenuLinkMode, saveTrackingSettings } from "@/lib/owner.functions";
 import { OrderOverrideCard } from "@/components/console/OrderOverrideCard";
 
 type Row = Record<string, unknown>;
@@ -32,6 +32,19 @@ export function TrackingTab({
 }) {
   const { pick } = useI18n();
   const [editing, setEditing] = useState<Row | null>(null);
+  const savedRate = Number(restaurant?.["loyalty_points_per_currency"] ?? 1) || 1;
+  const [rate, setRate] = useState(String(savedRate));
+  const saveRate = useMutation({
+    mutationFn: () =>
+      saveLoyaltyRate({
+        data: { restaurantId: restaurantId ?? null, pointsPerCurrency: Number(rate) },
+      }),
+    onSuccess: () => {
+      toast.success(pick("تم تحديث معدل نقاط الولاء", "Loyalty rate updated"));
+      onChanged();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
   const linkMode = (restaurant?.["menu_link_mode"] as string | undefined) ?? "all_branches";
   const saveLinkMode = useMutation({
     mutationFn: (mode: "all_branches" | "separate_branches") =>
@@ -74,6 +87,53 @@ export function TrackingTab({
               <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{pick(option.hintAr, option.hintEn)}</span>
             </button>
           ))}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-primary">
+          <Gift className="h-3.5 w-3.5" aria-hidden />
+          {pick("نقاط الولاء", "Loyalty points")}
+        </p>
+        <h2 className="mt-2 font-display text-xl font-bold">
+          {pick("حدّد كم نقطة يكسبها العميل لكل ريال", "Set how many points a customer earns per riyal")}
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          {pick(
+            "مثال: 5 نقاط لكل ريال، أو نقطتان لكل ريال. تُحتسب النقاط تلقائيًا عند إتمام الطلب.",
+            "For example 5 points per riyal, or 2 points per riyal. Points are calculated automatically at checkout.",
+          )}
+        </p>
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <div className="w-40">
+            <label className={label} htmlFor="loyalty-rate">
+              {pick("نقاط لكل ريال", "Points per riyal")}
+            </label>
+            <input
+              id="loyalty-rate"
+              type="number"
+              min={0.01}
+              max={100}
+              step={0.5}
+              dir="ltr"
+              className={cn(input, "mt-1")}
+              value={rate}
+              onChange={(e) => setRate(e.target.value)}
+            />
+          </div>
+          <button
+            type="button"
+            disabled={saveRate.isPending}
+            onClick={() => saveRate.mutate()}
+            className="h-11 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-60"
+          >
+            {pick("حفظ", "Save")}
+          </button>
+          <p className="text-xs text-muted-foreground">
+            <span dir="ltr">
+              {pick("الحالي", "Current")}: {savedRate} {pick("نقطة / ريال", "pts / riyal")}
+            </span>
+          </p>
         </div>
       </section>
 

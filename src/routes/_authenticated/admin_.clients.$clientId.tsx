@@ -256,7 +256,7 @@ function ClientWorkspace() {
         <TrackingTab
           branches={branches}
           restaurantId={clientId}
-          restaurant={summary.data?.restaurant as Row | undefined}
+          restaurant={(summary.data?.restaurant as Row) ?? null}
           onChanged={refresh}
         />
       ) : null}

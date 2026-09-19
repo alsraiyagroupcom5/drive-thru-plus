@@ -128,11 +128,21 @@ export const getMe = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
 
+    const { data: restaurantRow } = await db
+      .from("restaurants")
+      .select("loyalty_points_per_currency")
+      .eq("id", customer.restaurant_id)
+      .maybeSingle();
+
     return {
       id: customer.id,
       phone: customer.phone,
       fullName: customer.full_name,
       loyaltyPoints: customer.loyalty_points,
+      pointsPerCurrency: Number(
+        (restaurantRow as { loyalty_points_per_currency?: number } | null)
+          ?.loyalty_points_per_currency ?? 1,
+      ),
       totalOrders: customer.total_orders,
       vehicles: vehicles ?? [],
       lastOrder,
@@ -217,6 +227,14 @@ export const placeOrder = createServerFn({ method: "POST" })
       .eq("id", customerId)
       .maybeSingle();
     if (!customer) throw new Error("UNAUTHENTICATED");
+
+    const { data: restaurantRow } = await db
+      .from("restaurants")
+      .select("loyalty_points_per_currency")
+      .eq("id", RESTAURANT_ID)
+      .maybeSingle();
+    const pointsRate = (restaurantRow as { loyalty_points_per_currency?: number } | null)
+      ?.loyalty_points_per_currency ?? 1;
 
     const { data: branch } = await db
       .from("branches")
@@ -314,7 +332,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         subtotal: total,
         tax: 0,
         total,
-        points_earned: loyaltyPointsForTotal(total),
+        points_earned: loyaltyPointsForTotal(total, pointsRate),
         customer_name: customer.full_name,
         customer_phone: customer.phone,
         vehicle_snapshot: vehicle
@@ -393,7 +411,7 @@ export const placeOrder = createServerFn({ method: "POST" })
       .update({
         total_orders: customer.total_orders + 1,
         total_spent: Number(customer.total_spent) + total,
-        loyalty_points: customer.loyalty_points + loyaltyPointsForTotal(total),
+        loyalty_points: customer.loyalty_points + loyaltyPointsForTotal(total, pointsRate),
         last_order_at: new Date().toISOString(),
       })
       .eq("id", customerId);

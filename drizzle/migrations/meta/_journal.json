@@ -148,6 +148,13 @@
       "when": 1789167223373,
       "tag": "0020_order_prep_timing_preference",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1789845941407,
+      "tag": "0021_restaurant_loyalty_rate",
+      "breakpoints": true
     }
   ]
 }

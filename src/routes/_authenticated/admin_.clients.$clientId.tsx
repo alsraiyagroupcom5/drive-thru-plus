@@ -253,7 +253,12 @@ function ClientWorkspace() {
       ) : null}
 
       {tab === "settings" ? (
-        <TrackingTab branches={branches} restaurantId={clientId} onChanged={refresh} />
+        <TrackingTab
+          branches={branches}
+          restaurantId={clientId}
+          restaurant={(summary.data?.restaurant as Row) ?? null}
+          onChanged={refresh}
+        />
       ) : null}
 
       {tab === "orders" ? (

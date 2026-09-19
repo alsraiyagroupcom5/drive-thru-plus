@@ -450,7 +450,7 @@ function CheckoutPage() {
               </span>
             </span>
             <span className="shrink-0 font-display text-lg font-bold text-primary" dir="ltr">
-              +{loyaltyPointsForTotal(subtotal)} {t("points")}
+              +{loyaltyPointsForTotal(subtotal, me.data?.pointsPerCurrency ?? 1)} {t("points")}
             </span>
           </div>
         </section>

@@ -125,6 +125,30 @@ export const saveMenuLinkMode = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const saveLoyaltyRate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Scoped & { pointsPerCurrency: number }) => d)
+  .handler(async ({ data, context }) => {
+    const rid = await resolveRestaurant(context, data.restaurantId);
+    const rate = Number(data.pointsPerCurrency);
+    if (!Number.isFinite(rate) || rate <= 0 || rate > 100) throw new Error("INVALID_LOYALTY_RATE");
+    const value = Math.round(rate * 100) / 100;
+    const db = await admin();
+    const { error } = await db
+      .from("restaurants")
+      .update({ loyalty_points_per_currency: value })
+      .eq("id", rid);
+    if (error) throw new Error(error.message);
+    await db.from("audit_logs").insert({
+      actor: context.userId,
+      action: "restaurant.loyalty_rate.update",
+      entity: "restaurant",
+      entity_id: rid,
+      details: { points_per_currency: value },
+    });
+    return { ok: true, pointsPerCurrency: value };
+  });
+
 /* ---------------------------- branches ---------------------------- */
 
 type BranchInput = Scoped & {

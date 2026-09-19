@@ -915,6 +915,7 @@ export type Database = {
           currency: string
           id: string
           logo_url: string | null
+          loyalty_points_per_currency: number
           menu_link_mode: string
           name_ar: string
           name_en: string
@@ -928,6 +929,7 @@ export type Database = {
           currency?: string
           id?: string
           logo_url?: string | null
+          loyalty_points_per_currency?: number
           menu_link_mode?: string
           name_ar: string
           name_en: string
@@ -941,6 +943,7 @@ export type Database = {
           currency?: string
           id?: string
           logo_url?: string | null
+          loyalty_points_per_currency?: number
           menu_link_mode?: string
           name_ar?: string
           name_en?: string
